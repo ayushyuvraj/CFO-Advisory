@@ -52,7 +52,7 @@ export function MandateScrollReveal() {
   return (
     <section
       ref={sectionRef}
-      className="border-y border-[#162447] bg-[#07112B]/45 py-24 sm:py-32"
+      className="relative z-10 border-y border-[#162447]/70 bg-[#030816]/45 py-24 backdrop-blur-[2px] sm:py-32"
     >
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <p className="max-w-5xl text-2xl font-medium tracking-tight leading-[1.32] text-[#F4F7FB] sm:text-4xl lg:text-[42px] lg:leading-[1.24]">

@@ -23,7 +23,7 @@ export function CapabilitiesBento() {
     PREVIEW_WORKFLOWS.find((w) => w.id === selectedId) ?? PREVIEW_WORKFLOWS[0];
 
   return (
-    <section id="capabilities" className="bg-[#030816] py-24 sm:py-32">
+    <section id="capabilities" className="relative z-10 py-24 sm:py-32">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-[#F4F7FB] sm:text-5xl">
           Institutional precision across every finance workflow.
@@ -36,7 +36,7 @@ export function CapabilitiesBento() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col justify-between rounded-sm border border-[#162447] bg-[#0B1736] p-6 sm:p-8 md:col-span-4"
+            className="flex flex-col justify-between rounded-sm border border-[#162447]/90 bg-[#07112B]/80 p-6 backdrop-blur-xl sm:p-8 md:col-span-4"
           >
             <div>
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#162447] pb-5">

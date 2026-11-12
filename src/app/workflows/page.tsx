@@ -16,6 +16,7 @@ import {
   type WorkflowPillar,
 } from "@/data/workflows";
 import { WorkflowDrawer } from "@/components/workflows/WorkflowDrawer";
+import { AmbientLedgerGridCanvas } from "@/components/three/AmbientLedgerGridCanvas";
 
 function WorkflowsSkeleton() {
   return (
@@ -91,9 +92,10 @@ export default function WorkflowsPage() {
   }
 
   return (
-    <section className="min-h-[100dvh] bg-[#030816] px-4 pt-28 pb-20 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1400px]">
-        <div className="flex flex-col justify-between gap-6 rounded-sm border border-[#162447] bg-[#0B1736] p-6 sm:p-8 lg:flex-row lg:items-center">
+    <section className="relative min-h-[100dvh] bg-[#030816] px-4 pt-28 pb-20 sm:px-6 lg:px-8">
+      <AmbientLedgerGridCanvas />
+      <div className="relative z-10 mx-auto max-w-[1400px]">
+        <div className="flex flex-col justify-between gap-6 rounded-sm border border-[#162447]/90 bg-[#0B1736]/82 p-6 backdrop-blur-xl sm:p-8 lg:flex-row lg:items-center">
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-sm border border-[#1E6BFF]/40 bg-[#1E6BFF]/10 px-2.5 py-1 font-mono text-xs text-[#7FB0FF]">
@@ -102,6 +104,13 @@ export default function WorkflowsPage() {
                   aria-hidden="true"
                 />
                 Synced with Workflow Studio
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#10B981]/35 bg-[#10B981]/10 px-2.5 py-1 font-mono text-xs text-[#10B981]">
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-[#10B981]"
+                  aria-hidden="true"
+                />
+                Δ 0.00 VERIFIED
               </span>
               <span className="rounded-sm border border-[#162447] bg-[#07112B] px-2.5 py-1 font-mono text-xs text-[#CBD5E1]">
                 {user.badge}
@@ -194,7 +203,7 @@ export default function WorkflowsPage() {
                 key={wf.id}
                 type="button"
                 onClick={() => setSelectedWorkflow(wf)}
-                className="group flex flex-col justify-between rounded-sm border border-[#162447] bg-[#0B1736] p-6 text-left transition-[border-color,background-color,transform] duration-150 hover:border-[#1E6BFF]/70 hover:bg-[#0D1C42] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF]"
+                className="group flex flex-col justify-between rounded-sm border border-[#162447]/90 bg-[#0B1736]/82 p-6 text-left backdrop-blur-xl transition-[border-color,background-color,transform] duration-150 hover:border-[#1E6BFF]/70 hover:bg-[#0D1C42]/90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF]"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">

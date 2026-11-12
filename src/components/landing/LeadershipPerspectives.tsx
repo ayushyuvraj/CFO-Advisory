@@ -33,7 +33,7 @@ export function LeadershipPerspectives() {
   return (
     <section
       id="perspectives"
-      className="border-t border-[#162447] bg-[#07112B]/30 py-24 sm:py-32"
+      className="relative z-10 border-t border-[#162447]/80 bg-[#030816]/35 py-24 sm:py-32"
     >
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-[#F4F7FB] sm:text-5xl">
@@ -46,7 +46,7 @@ export function LeadershipPerspectives() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col justify-between rounded-sm border border-[#162447] bg-[#0B1736] p-8 sm:p-10"
+            className="flex flex-col justify-between rounded-sm border border-[#162447]/90 bg-[#07112B]/80 p-8 backdrop-blur-xl sm:p-10"
           >
             <p className="text-xl font-medium leading-relaxed tracking-tight text-[#F4F7FB] sm:text-2xl">
               {featured.quote}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { AuthProvider } from "@/context/AuthContext";
+import { EquilibriumSceneProvider } from "@/context/EquilibriumSceneContext";
 import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
 import { Navbar } from "@/components/layout/Navbar";
 import { LoginModal } from "@/components/auth/LoginModal";
@@ -38,11 +39,13 @@ export default function RootLayout({
       <body className="min-h-[100dvh] bg-[#030816] text-[#F4F7FB] antialiased selection:bg-[#1E6BFF]/30 selection:text-[#F4F7FB]">
         <MotionConfig reducedMotion="user">
           <AuthProvider>
-            <SmoothScrollProvider>
-              <Navbar />
-              <main>{children}</main>
-              <LoginModal />
-            </SmoothScrollProvider>
+            <EquilibriumSceneProvider>
+              <SmoothScrollProvider>
+                <Navbar />
+                <main>{children}</main>
+                <LoginModal />
+              </SmoothScrollProvider>
+            </EquilibriumSceneProvider>
           </AuthProvider>
         </MotionConfig>
       </body>
