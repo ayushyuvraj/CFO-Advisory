@@ -18,16 +18,16 @@
 ## Four Practice Pillars (Sticky-Stack)
 1. **01 · Enterprise Performance Management (EPM / FP&A)**
    - Focus: Driver-based rolling forecasts, multi-dimensional profitability modeling across product, channel, and customer, and integrated planning beyond static spreadsheets.
-   - Image: `/images/pillar-epm.png`
+   - Image: `/images/pillar-epm.jpg`
 2. **02 · Finance Transformation & AI Automation**
    - Focus: KPMG Powered Finance target operating models across SAP, Oracle, Workday, and Dynamics, global business services (GBS) design, and GenAI digital finance teammates.
-   - Image: `/images/pillar-ai.png`
+   - Image: `/images/pillar-ai.jpg`
 3. **03 · Treasury & Working Capital Management**
    - Focus: Real-time 13-week liquidity modeling, cash conversion cycle optimization across AR, AP, and inventory, FX exposure governance, and TMS modernization.
-   - Image: `/images/pillar-treasury.png`
+   - Image: `/images/pillar-treasury.jpg`
 4. **04 · Close-to-Report & ESG Assurance**
    - Focus: KPMG Intelligent Close cycle acceleration, IFRS and US GAAP technical accounting, capital markets and carve-out readiness, and audit-ready CSRD sustainability reporting.
-   - Image: `/images/pillar-esg.png`
+   - Image: `/images/pillar-esg.jpg`
 
 ## Cross-Platform Workflow Sync (Horizontal-Pan Stages)
 1. **01 · Studio Authoring:** Advisory teams and client finance architects compose modular data and AI workflows in the companion Workflow Studio.
