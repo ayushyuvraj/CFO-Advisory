@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-abyss: #030816;
-  --color-cobalt-slate: #07112B;
-  --color-card: #0B1736;
-  --color-border: #162447;
-  --color-electric: #1E6BFF;
-  --color-institutional: #00338D;
-  --color-platinum: #F4F7FB;
-  --color-slate: #CBD5E1;
-  --color-muted: #7E91B3;
+  --color-canvas: #FFFFFF;
+  --color-surface: #F4F6FA;
+  --color-border: #D8DFE9;
+  --color-kpmg-blue: #00338D;
+  --color-kpmg-navy: #0C233C;
+  --color-cobalt: #1E49E2;
+  --color-pacific: #00B8F5;
+  --color-ice: #ACEAFF;
+  --color-purple: #7213EA;
+  --color-emerald: #009A44;
+  --color-slate-ink: #333940;
+  --color-muted-ink: #526075;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -18,29 +21,29 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
-  background-color: #030816;
-  color: #F4F7FB;
+  background-color: #FFFFFF;
+  color: #0C233C;
   overflow-x: clip;
   scroll-behavior: auto;
 }
 
 body {
-  background-color: #030816;
-  color: #F4F7FB;
+  background-color: #FFFFFF;
+  color: #0C233C;
   font-family: var(--font-sans);
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Crisp dark cobalt scrollbar */
+/* Crisp KPMG Cobalt scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1E6BFF #07112B;
+  scrollbar-color: #1E49E2 #F4F6FA;
 }
 
 ::-webkit-scrollbar {
@@ -49,29 +52,29 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #07112B;
+  background: #F4F6FA;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #162447;
+  background-color: #C2CEE0;
   border-radius: 4px;
-  border: 2px solid #07112B;
+  border: 2px solid #F4F6FA;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #1E6BFF;
+  background-color: #1E49E2;
 }
 
-/* Frosted header surface with reduced-transparency solid fallback */
+/* Frosted white KPMG header surface with solid fallback */
 .frosted-header {
-  background-color: rgba(3, 8, 22, 0.94);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
 }
 
 @media (prefers-reduced-transparency: reduce) {
   .frosted-header {
-    background-color: #030816;
+    background-color: #FFFFFF;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }

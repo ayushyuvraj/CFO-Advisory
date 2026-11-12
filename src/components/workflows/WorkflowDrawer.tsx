@@ -58,7 +58,7 @@ export function WorkflowDrawer({ workflow, onClose }: WorkflowDrawerProps) {
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             onClick={onClose}
-            className="fixed inset-0 bg-[#030816]/75 backdrop-blur-sm"
+            className="fixed inset-0 bg-[#0C233C]/45 backdrop-blur-sm"
             aria-hidden="true"
           />
 
@@ -69,28 +69,28 @@ export function WorkflowDrawer({ workflow, onClose }: WorkflowDrawerProps) {
             animate={{ x: 0 }}
             exit={prefersReducedMotion ? undefined : { x: "100%" }}
             transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
-            className="relative z-10 flex h-full w-full max-w-xl flex-col overflow-y-auto border-l border-[#162447] bg-[#0B1736] p-6 focus:outline-none sm:p-8"
+            className="relative z-10 flex h-full w-full max-w-xl flex-col overflow-y-auto border-l border-[#D8DFE9] bg-white p-6 text-[#0C233C] shadow-2xl focus:outline-none sm:p-8"
           >
-            <div className="flex items-start justify-between gap-4 border-b border-[#162447] pb-5">
+            <div className="flex items-start justify-between gap-4 border-b border-[#D8DFE9] pb-5">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs text-[#7FB0FF]">
+                  <span className="font-mono text-xs font-semibold text-[#1E49E2]">
                     {workflow.id}
                   </span>
-                  <span className="rounded-sm border border-[#162447] bg-[#07112B] px-2 py-0.5 font-mono text-xs text-[#CBD5E1]">
+                  <span className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2 py-0.5 font-mono text-xs text-[#333940]">
                     {workflow.status}
                   </span>
-                  <span className="rounded-sm border border-[#1E6BFF]/40 bg-[#1E6BFF]/10 px-2 py-0.5 font-mono text-xs text-[#7FB0FF]">
+                  <span className="rounded-sm border border-[#00338D]/25 bg-[#00338D]/10 px-2 py-0.5 font-mono text-xs text-[#00338D]">
                     {workflow.controlTier}
                   </span>
                 </div>
                 <h2
                   id="drawer-workflow-title"
-                  className="mt-3 text-xl font-semibold tracking-tight text-[#F4F7FB] sm:text-2xl"
+                  className="mt-3 text-xl font-semibold tracking-tight text-[#0C233C] sm:text-2xl"
                 >
                   {workflow.title}
                 </h2>
-                <p className="mt-1 text-sm text-[#7E91B3]">
+                <p className="mt-1 text-sm text-[#4B5563]">
                   {workflow.pillar} · {workflow.owner}
                 </p>
               </div>
@@ -99,53 +99,53 @@ export function WorkflowDrawer({ workflow, onClose }: WorkflowDrawerProps) {
                 type="button"
                 onClick={onClose}
                 aria-label="Close workflow lineage drawer"
-                className="rounded-sm border border-[#162447] bg-[#07112B] p-2 text-[#CBD5E1] transition-[border-color,color,transform] duration-150 hover:border-white/20 hover:text-[#F4F7FB] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF]"
+                className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-2 text-[#333940] transition-[border-color,color,transform] duration-150 hover:border-[#00338D] hover:text-[#00338D] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
               >
                 <X size={18} weight="light" />
               </button>
             </div>
 
             <div className="mt-6 space-y-6">
-              <p className="text-sm leading-relaxed text-[#CBD5E1]">
+              <p className="text-sm leading-relaxed text-[#333940]">
                 {workflow.executiveSummary}
               </p>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="rounded-sm border border-[#162447] bg-[#07112B] p-4">
-                  <div className="flex items-center gap-2 text-xs text-[#7E91B3]">
-                    <Clock size={15} weight="light" className="text-[#1E6BFF]" />
+                <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4">
+                  <div className="flex items-center gap-2 text-xs text-[#4B5563]">
+                    <Clock size={15} weight="light" className="text-[#1E49E2]" />
                     <span>Execution Cadence</span>
                   </div>
-                  <p className="mt-1.5 text-sm font-medium text-[#F4F7FB]">
+                  <p className="mt-1.5 text-sm font-medium text-[#0C233C]">
                     {workflow.cadence}
                   </p>
                 </div>
 
-                <div className="rounded-sm border border-[#162447] bg-[#07112B] p-4">
-                  <div className="flex items-center gap-2 text-xs text-[#7E91B3]">
+                <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4">
+                  <div className="flex items-center gap-2 text-xs text-[#4B5563]">
                     <ShieldCheck
                       size={15}
                       weight="light"
-                      className="text-[#1E6BFF]"
+                      className="text-[#009A44]"
                     />
                     <span>Last Verified Run</span>
                   </div>
-                  <p className="mt-1.5 font-mono text-sm font-medium text-[#F4F7FB]">
+                  <p className="mt-1.5 font-mono text-sm font-medium text-[#0C233C]">
                     {verifiedMap[workflow.id] ?? workflow.lastRunAt}
                   </p>
                 </div>
               </div>
 
               <div>
-                <div className="flex items-center gap-2 text-xs font-medium text-[#CBD5E1]">
-                  <Database size={15} weight="light" className="text-[#1E6BFF]" />
+                <div className="flex items-center gap-2 text-xs font-medium text-[#333940]">
+                  <Database size={15} weight="light" className="text-[#1E49E2]" />
                   <span>Connected Enterprise Systems</span>
                 </div>
                 <div className="mt-2.5 flex flex-wrap gap-2">
                   {workflow.sourceSystems.map((sys) => (
                     <span
                       key={sys}
-                      className="rounded-sm border border-[#162447] bg-[#07112B] px-3 py-1.5 font-mono text-xs text-[#F4F7FB]"
+                      className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-3 py-1.5 font-mono text-xs text-[#0C233C]"
                     >
                       {sys}
                     </span>
@@ -154,29 +154,29 @@ export function WorkflowDrawer({ workflow, onClose }: WorkflowDrawerProps) {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-[#F4F7FB]">
+                <h3 className="text-sm font-semibold text-[#0C233C]">
                   Execution &amp; Lineage Steps
                 </h3>
                 <ol className="mt-3 space-y-2.5">
                   {workflow.executionSteps.map((step) => (
                     <li
                       key={step.id}
-                      className="rounded-sm border border-[#162447] bg-[#07112B] p-4"
+                      className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs text-[#7FB0FF]">
+                        <span className="font-mono text-xs font-medium text-[#1E49E2]">
                           {step.id} · {step.system}
                         </span>
-                        <span className="inline-flex items-center gap-1 font-mono text-xs text-[#CBD5E1]">
+                        <span className="inline-flex items-center gap-1 font-mono text-xs text-[#333940]">
                           <CheckCircle
                             size={14}
                             weight="light"
-                            className="text-[#1E6BFF]"
+                            className="text-[#009A44]"
                           />
                           {step.status} ({step.duration})
                         </span>
                       </div>
-                      <p className="mt-1.5 text-sm font-medium text-[#F4F7FB]">
+                      <p className="mt-1.5 text-sm font-medium text-[#0C233C]">
                         {step.stage}
                       </p>
                     </li>
@@ -186,12 +186,12 @@ export function WorkflowDrawer({ workflow, onClose }: WorkflowDrawerProps) {
             </div>
 
             <div className="mt-auto pt-8">
-              <div className="flex flex-col gap-3 border-t border-[#162447] pt-5 sm:flex-row">
+              <div className="flex flex-col gap-3 border-t border-[#D8DFE9] pt-5 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => handleSimulateSync(workflow.id)}
                   disabled={syncingId === workflow.id}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-[#162447] bg-[#07112B] px-4 py-2.5 text-sm font-medium text-[#F4F7FB] whitespace-nowrap transition-[border-color,background-color,transform] duration-150 hover:border-[#1E6BFF] hover:bg-[#0B1736] active:scale-[0.98] disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF]"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-4 py-2.5 text-sm font-medium text-[#0C233C] whitespace-nowrap transition-[border-color,background-color,transform] duration-150 hover:border-[#00338D] hover:bg-white active:scale-[0.98] disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
                 >
                   <ArrowClockwise
                     size={16}
@@ -209,7 +209,7 @@ export function WorkflowDrawer({ workflow, onClose }: WorkflowDrawerProps) {
                   href={workflow.studioUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-[#1E6BFF] px-4 py-2.5 text-sm font-medium text-white whitespace-nowrap transition-[background-color,transform] duration-150 hover:bg-[#1557D6] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF]"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white whitespace-nowrap transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
                 >
                   <span>Open in Workflow Studio</span>
                   <ArrowSquareOut size={16} weight="light" />

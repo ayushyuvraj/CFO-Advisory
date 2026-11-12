@@ -32,10 +32,12 @@ export function SmoothScrollProvider({
     registerScrollTo,
   } = useEquilibriumScene();
 
+  const isInfiniteRoute = pathname === "/";
+
   useEffect(() => {
     registerScrollTo((target: string | number) => {
       if (lenisRef.current) {
-        lenisRef.current.scrollTo(target, { duration: 1.25 });
+        lenisRef.current.scrollTo(target, { duration: 1.15 });
       } else if (typeof target === "string") {
         const id = target.replace(/^#/, "");
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -56,20 +58,34 @@ export function SmoothScrollProvider({
     }
 
     const lenis = new Lenis({
-      lerp: 0.075,
+      lerp: 0.08,
       smoothWheel: true,
+      syncTouch: true,
+      infinite: isInfiniteRoute,
     });
     lenisRef.current = lenis;
 
     lenis.on("scroll", (e: { progress: number; velocity: number }) => {
       ScrollTrigger.update();
-      const p = Math.min(1, Math.max(0, e.progress || 0));
+      const raw = Number.isFinite(e.progress) ? e.progress : 0;
+      // Wrap modularly into [0, 1) for circular infinite scroll
+      const p = ((raw % 1) + 1) % 1;
       scrollProgressRef.current = p;
       scrollVelocityRef.current = e.velocity || 0;
       audioEngine.modulateByScroll(e.velocity || 0, p);
 
       const chapter: ChapterId =
-        p < 0.16 ? 1 : p < 0.42 ? 2 : p < 0.68 ? 3 : p < 0.87 ? 4 : 5;
+        p < 0.16
+          ? 1
+          : p < 0.39
+            ? 2
+            : p < 0.63
+              ? 3
+              : p < 0.84
+                ? 4
+                : p < 0.96
+                  ? 5
+                  : 1;
       setActiveChapter(chapter);
     });
 
@@ -86,6 +102,7 @@ export function SmoothScrollProvider({
       lenisRef.current = null;
     };
   }, [
+    isInfiniteRoute,
     prefersReducedMotion,
     scrollProgressRef,
     scrollVelocityRef,

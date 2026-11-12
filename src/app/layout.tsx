@@ -34,9 +34,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark`}
+      className={`${geistSans.variable} ${geistMono.variable} light`}
     >
-      <body className="min-h-[100dvh] bg-[#030816] text-[#F4F7FB] antialiased selection:bg-[#1E6BFF]/30 selection:text-[#F4F7FB]">
+      <body className="min-h-[100dvh] bg-white text-[#0C233C] antialiased selection:bg-[#1E49E2]/15 selection:text-[#00338D]">
         <MotionConfig reducedMotion="user">
           <AuthProvider>
             <EquilibriumSceneProvider>

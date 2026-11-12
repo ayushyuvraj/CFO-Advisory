@@ -21,16 +21,65 @@ export type ChapterId = 1 | 2 | 3 | 4 | 5;
 export interface ChapterMeta {
   id: ChapterId;
   code: string;
+  currencySymbol: string;
+  currencyCode: string;
   label: string;
+  shortLabel: string;
   anchorId: string;
+  accentHex: string;
 }
 
 export const CHAPTERS: ChapterMeta[] = [
-  { id: 1, code: "01", label: "Equilibrium Vault", anchorId: "vault" },
-  { id: 2, code: "02", label: "Practice Strata", anchorId: "practice" },
-  { id: 3, code: "03", label: "Reconciled Ledger", anchorId: "ledger" },
-  { id: 4, code: "04", label: "Workflow Sync", anchorId: "orchestration" },
-  { id: 5, code: "05", label: "Boardroom Gateway", anchorId: "perspectives" },
+  {
+    id: 1,
+    code: "01",
+    currencySymbol: "¤",
+    currencyCode: "FX",
+    label: "Global Currency Horizon",
+    shortLabel: "01 Horizon",
+    anchorId: "chapter-horizon",
+    accentHex: "#00338D",
+  },
+  {
+    id: 2,
+    code: "02",
+    currencySymbol: "₹",
+    currencyCode: "INR",
+    label: "INR · Powered Finance & EPM",
+    shortLabel: "02 ₹ INR",
+    anchorId: "chapter-inr",
+    accentHex: "#1E49E2",
+  },
+  {
+    id: 3,
+    code: "03",
+    currencySymbol: "$",
+    currencyCode: "USD",
+    label: "USD · Treasury & Liquidity",
+    shortLabel: "03 $ USD",
+    anchorId: "chapter-usd",
+    accentHex: "#00B8F5",
+  },
+  {
+    id: 4,
+    code: "04",
+    currencySymbol: "€",
+    currencyCode: "EUR / GBP",
+    label: "EUR & GBP · Tax & Balance Sheet Tally",
+    shortLabel: "04 € / £",
+    anchorId: "chapter-eur",
+    accentHex: "#7213EA",
+  },
+  {
+    id: 5,
+    code: "05",
+    currencySymbol: "→",
+    currencyCode: "HUB",
+    label: "Workflows Hub Gateway",
+    shortLabel: "05 Hub",
+    anchorId: "chapter-gateway",
+    accentHex: "#009A44",
+  },
 ];
 
 export type StratumFocus =

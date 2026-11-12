@@ -122,7 +122,7 @@ export function LoginModal() {
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onClick={closeLogin}
-            className="fixed inset-0 bg-[#030816]/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-[#0C233C]/45 backdrop-blur-sm"
             aria-hidden="true"
           />
 
@@ -141,17 +141,17 @@ export function LoginModal() {
                 : { opacity: 0, scale: 0.97, y: 6 }
             }
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 w-full max-w-md rounded-sm border border-[#162447] bg-[#0B1736] p-6 shadow-2xl shadow-black/50 focus:outline-none sm:p-7"
+            className="relative z-10 w-full max-w-md rounded-sm border border-[#D8DFE9] bg-white p-6 text-[#0C233C] shadow-2xl shadow-[#0C233C]/20 focus:outline-none sm:p-7"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2
                   id="login-modal-title"
-                  className="text-xl font-semibold tracking-tight text-[#F4F7FB]"
+                  className="text-xl font-semibold tracking-tight text-[#0C233C]"
                 >
                   Sign in to Workflows
                 </h2>
-                <p className="mt-1 text-sm text-[#CBD5E1]">
+                <p className="mt-1 text-sm text-[#4B5563]">
                   Access synchronized CFO Advisory workflows from Workflow Studio.
                 </p>
               </div>
@@ -159,7 +159,7 @@ export function LoginModal() {
                 type="button"
                 onClick={closeLogin}
                 aria-label="Close sign in dialog"
-                className="rounded-sm border border-[#162447] bg-[#07112B] p-1.5 text-[#CBD5E1] transition-[border-color,color,transform] duration-150 hover:border-white/20 hover:text-[#F4F7FB] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF]"
+                className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-1.5 text-[#333940] transition-[border-color,color,transform] duration-150 hover:border-[#00338D] hover:text-[#00338D] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
               >
                 <X size={18} weight="light" />
               </button>
@@ -168,17 +168,17 @@ export function LoginModal() {
             <div
               role="tablist"
               aria-label="Authentication methods"
-              className="mt-6 grid grid-cols-3 gap-1.5 rounded-sm border border-[#162447] bg-[#07112B] p-1"
+              className="mt-6 grid grid-cols-3 gap-1.5 rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-1"
             >
               <button
                 type="button"
                 role="tab"
                 aria-selected={activeTab === "sso"}
                 onClick={() => handleTabSwitch("sso")}
-                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF] ${
+                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
                   activeTab === "sso"
-                    ? "bg-[#1E6BFF] text-white"
-                    : "text-[#CBD5E1] hover:text-[#F4F7FB]"
+                    ? "bg-[#00338D] text-white"
+                    : "text-[#333940] hover:text-[#00338D]"
                 }`}
               >
                 KPMG SSO
@@ -188,10 +188,10 @@ export function LoginModal() {
                 role="tab"
                 aria-selected={activeTab === "credentials"}
                 onClick={() => handleTabSwitch("credentials")}
-                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF] ${
+                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
                   activeTab === "credentials"
-                    ? "bg-[#1E6BFF] text-white"
-                    : "text-[#CBD5E1] hover:text-[#F4F7FB]"
+                    ? "bg-[#00338D] text-white"
+                    : "text-[#333940] hover:text-[#00338D]"
                 }`}
               >
                 Work Email
@@ -201,10 +201,10 @@ export function LoginModal() {
                 role="tab"
                 aria-selected={activeTab === "token"}
                 onClick={() => handleTabSwitch("token")}
-                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF] ${
+                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
                   activeTab === "token"
-                    ? "bg-[#1E6BFF] text-white"
-                    : "text-[#CBD5E1] hover:text-[#F4F7FB]"
+                    ? "bg-[#00338D] text-white"
+                    : "text-[#333940] hover:text-[#00338D]"
                 }`}
               >
                 Client Token
@@ -213,18 +213,18 @@ export function LoginModal() {
 
             {activeTab === "sso" && (
               <div className="mt-6 space-y-5">
-                <div className="rounded-sm border border-[#162447] bg-[#07112B] p-4">
+                <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4">
                   <div className="flex items-start gap-3">
                     <ShieldCheck
                       size={20}
                       weight="light"
-                      className="mt-0.5 shrink-0 text-[#1E6BFF]"
+                      className="mt-0.5 shrink-0 text-[#00338D]"
                     />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-[#F4F7FB]">
+                      <p className="text-sm font-medium text-[#0C233C]">
                         KPMG Enterprise Entra ID
                       </p>
-                      <p className="text-xs leading-relaxed text-[#CBD5E1]">
+                      <p className="text-xs leading-relaxed text-[#4B5563]">
                         Single sign-on for advisory leadership and engagement architects. Demo session authenticates as Elena Vance, Managing Director.
                       </p>
                     </div>
@@ -235,7 +235,7 @@ export function LoginModal() {
                   <p
                     id="login-error-alert"
                     role="alert"
-                    className="text-xs font-medium text-[#FCA5A5]"
+                    className="text-xs font-medium text-[#B91C1C]"
                   >
                     {errorMessage}
                   </p>
@@ -245,7 +245,7 @@ export function LoginModal() {
                   type="button"
                   onClick={handleSSO}
                   disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#1E6BFF] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1557D6] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1736]"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <span>
                     {submitting
@@ -262,7 +262,7 @@ export function LoginModal() {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="advisory-email"
-                    className="text-xs font-medium text-[#F4F7FB]"
+                    className="text-xs font-medium text-[#0C233C]"
                   >
                     Advisory work email
                   </label>
@@ -270,7 +270,7 @@ export function LoginModal() {
                     <EnvelopeSimple
                       size={16}
                       weight="light"
-                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#7E91B3]"
+                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
                     />
                     <input
                       id="advisory-email"
@@ -281,10 +281,10 @@ export function LoginModal() {
                       placeholder="name@enterprise.com"
                       aria-invalid={Boolean(errorMessage)}
                       aria-describedby={emailDescribedBy}
-                      className="w-full rounded-sm border border-[#162447] bg-[#07112B] py-2.5 pr-3 pl-9 text-sm text-[#F4F7FB] placeholder:text-[#7E91B3] transition-colors duration-150 focus:border-[#1E6BFF] focus:outline-none focus:ring-1 focus:ring-[#1E6BFF]"
+                      className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2.5 pr-3 pl-9 text-sm text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
                     />
                   </div>
-                  <p id="advisory-email-hint" className="text-xs text-[#7E91B3]">
+                  <p id="advisory-email-hint" className="text-xs text-[#4B5563]">
                     Use your corporate finance or advisory domain email.
                   </p>
                 </div>
@@ -292,7 +292,7 @@ export function LoginModal() {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="advisory-passcode"
-                    className="text-xs font-medium text-[#F4F7FB]"
+                    className="text-xs font-medium text-[#0C233C]"
                   >
                     Session passcode
                   </label>
@@ -305,9 +305,9 @@ export function LoginModal() {
                     placeholder="Minimum 6 characters"
                     aria-invalid={Boolean(errorMessage)}
                     aria-describedby={passcodeDescribedBy}
-                    className="w-full rounded-sm border border-[#162447] bg-[#07112B] px-3 py-2.5 text-sm text-[#F4F7FB] placeholder:text-[#7E91B3] transition-colors duration-150 focus:border-[#1E6BFF] focus:outline-none focus:ring-1 focus:ring-[#1E6BFF]"
+                    className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
                   />
-                  <p id="advisory-passcode-hint" className="text-xs text-[#7E91B3]">
+                  <p id="advisory-passcode-hint" className="text-xs text-[#4B5563]">
                     Protected under engagement governance policy.
                   </p>
                 </div>
@@ -316,7 +316,7 @@ export function LoginModal() {
                   <p
                     id="login-error-alert"
                     role="alert"
-                    className="text-xs font-medium text-[#FCA5A5]"
+                    className="text-xs font-medium text-[#B91C1C]"
                   >
                     {errorMessage}
                   </p>
@@ -325,7 +325,7 @@ export function LoginModal() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#1E6BFF] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1557D6] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1736]"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <span>
                     {submitting ? "Authenticating..." : "Authenticate Session"}
@@ -341,7 +341,7 @@ export function LoginModal() {
                   <div className="flex items-center justify-between gap-2">
                     <label
                       htmlFor="engagement-token"
-                      className="text-xs font-medium text-[#F4F7FB]"
+                      className="text-xs font-medium text-[#0C233C]"
                     >
                       Client engagement token
                     </label>
@@ -351,7 +351,7 @@ export function LoginModal() {
                         setToken("KPMG-CFO-2026");
                         setErrorMessage(null);
                       }}
-                      className="text-xs font-mono text-[#7FB0FF] underline underline-offset-4 transition-colors duration-150 hover:text-[#F4F7FB] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1E6BFF]"
+                      className="text-xs font-mono text-[#1E49E2] underline underline-offset-4 transition-colors duration-150 hover:text-[#00338D] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1E49E2]"
                     >
                       Fill KPMG-CFO-2026
                     </button>
@@ -360,7 +360,7 @@ export function LoginModal() {
                     <Key
                       size={16}
                       weight="light"
-                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#7E91B3]"
+                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
                     />
                     <input
                       id="engagement-token"
@@ -370,10 +370,10 @@ export function LoginModal() {
                       placeholder="KPMG-CFO-2026"
                       aria-invalid={Boolean(errorMessage)}
                       aria-describedby={tokenDescribedBy}
-                      className="w-full rounded-sm border border-[#162447] bg-[#07112B] py-2.5 pr-3 pl-9 font-mono text-sm uppercase text-[#F4F7FB] placeholder:text-[#7E91B3] transition-colors duration-150 focus:border-[#1E6BFF] focus:outline-none focus:ring-1 focus:ring-[#1E6BFF]"
+                      className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2.5 pr-3 pl-9 font-mono text-sm uppercase text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
                     />
                   </div>
-                  <p id="engagement-token-hint" className="text-xs text-[#7E91B3]">
+                  <p id="engagement-token-hint" className="text-xs text-[#4B5563]">
                     Issued by your KPMG engagement partner for boardroom read access. Sample token: KPMG-CFO-2026.
                   </p>
                 </div>
@@ -382,7 +382,7 @@ export function LoginModal() {
                   <p
                     id="login-error-alert"
                     role="alert"
-                    className="text-xs font-medium text-[#FCA5A5]"
+                    className="text-xs font-medium text-[#B91C1C]"
                   >
                     {errorMessage}
                   </p>
@@ -391,7 +391,7 @@ export function LoginModal() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#1E6BFF] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1557D6] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E6BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1736]"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <span>
                     {submitting ? "Validating token..." : "Verify Engagement Token"}

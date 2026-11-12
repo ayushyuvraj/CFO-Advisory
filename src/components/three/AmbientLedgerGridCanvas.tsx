@@ -37,11 +37,11 @@ function SubtleWorkflowField() {
 
   return (
     <>
-      <color attach="background" args={["#030816"]} />
-      <fog attach="fog" args={["#030816", 6, 22]} />
+      <color attach="background" args={["#F8FAFC"]} />
+      <fog attach="fog" args={["#F8FAFC", 6, 22]} />
       <gridHelper
         ref={gridRef}
-        args={[40, 40, "#1E6BFF", "#0F2149"]}
+        args={[40, 40, "#CBD5E1", "#E2E8F0"]}
         position={[0, -3.2, 0]}
       />
       <points ref={pointsRef}>
@@ -52,10 +52,10 @@ function SubtleWorkflowField() {
           />
         </bufferGeometry>
         <pointsMaterial
-          color="#7FB0FF"
+          color="#1E49E2"
           size={0.045}
           transparent
-          opacity={0.45}
+          opacity={0.35}
           sizeAttenuation
         />
       </points>
