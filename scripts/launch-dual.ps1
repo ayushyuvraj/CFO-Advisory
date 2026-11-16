@@ -13,7 +13,7 @@ $ErrorActionPreference = "Stop"
 $PortOriginal = if ($env:PORT_ORIGINAL) { [int]$env:PORT_ORIGINAL } else { 3000 }
 $PortV2       = if ($env:PORT_V2) { [int]$env:PORT_V2 } else { 3001 }
 
-$root = Split-Path -Parent $PSScriptRoot
+$root = (Get-Item -LiteralPath (Split-Path -Parent $PSScriptRoot)).FullName
 Set-Location $root
 
 Write-Host ""
