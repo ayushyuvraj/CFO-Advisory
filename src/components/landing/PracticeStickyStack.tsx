@@ -6,11 +6,16 @@ import { useReducedMotion } from "motion/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useIsomorphicLayoutEffect } from "@/hooks/useIsomorphicLayoutEffect";
+import {
+  useEquilibriumScene,
+  type StratumFocus,
+} from "@/context/EquilibriumSceneContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface PillarItem {
   index: string;
+  stratum: Exclude<StratumFocus, null>;
   title: string;
   subtitle: string;
   description: string;
@@ -22,6 +27,7 @@ interface PillarItem {
 const PILLARS: PillarItem[] = [
   {
     index: "01",
+    stratum: "pnl",
     title: "Enterprise Performance Management",
     subtitle: "EPM and FP&A Architecture",
     description:
@@ -32,6 +38,7 @@ const PILLARS: PillarItem[] = [
   },
   {
     index: "02",
+    stratum: "balance-sheet",
     title: "Finance Transformation & AI Automation",
     subtitle: "Powered Finance Operating Models",
     description:
@@ -42,6 +49,7 @@ const PILLARS: PillarItem[] = [
   },
   {
     index: "03",
+    stratum: "treasury",
     title: "Treasury & Working Capital Management",
     subtitle: "Liquidity and Cash Precision",
     description:
@@ -52,6 +60,7 @@ const PILLARS: PillarItem[] = [
   },
   {
     index: "04",
+    stratum: "tax",
     title: "Close-to-Report & ESG Assurance",
     subtitle: "Intelligent Close and CSRD",
     description:
@@ -65,6 +74,7 @@ const PILLARS: PillarItem[] = [
 export function PracticeStickyStack() {
   const stackRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const { setHoveredStratum } = useEquilibriumScene();
 
   useIsomorphicLayoutEffect(() => {
     const container = stackRef.current;
@@ -135,7 +145,7 @@ export function PracticeStickyStack() {
   }, [prefersReducedMotion]);
 
   return (
-    <section id="practice" className="relative bg-[#030816] pt-24 pb-12">
+    <section id="practice" className="relative z-10 pt-24 pb-12">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
           <span className="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-[#7FB0FF]">
@@ -154,7 +164,11 @@ export function PracticeStickyStack() {
             style={{ zIndex: idx + 1 }}
             className="stack-card relative mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6 md:flex md:min-h-[100dvh] md:items-center md:justify-center md:py-16 lg:px-8"
           >
-            <article className="stack-card-inner grid w-full grid-cols-1 overflow-hidden rounded-sm border border-[#162447] bg-[#0B1736] shadow-[0_24px_60px_rgba(3,8,22,0.92)] md:h-[500px] md:grid-cols-[1.1fr_1fr]">
+            <article
+              onMouseEnter={() => setHoveredStratum(pillar.stratum)}
+              onMouseLeave={() => setHoveredStratum(null)}
+              className="stack-card-inner grid w-full grid-cols-1 overflow-hidden rounded-sm border border-[#162447]/90 bg-[#07112B]/78 shadow-[0_24px_60px_rgba(3,8,22,0.85)] backdrop-blur-xl transition-colors duration-200 hover:border-[#1E6BFF]/70 md:h-[480px] md:grid-cols-[1.1fr_1fr]"
+            >
               <div className="flex flex-col justify-between p-6 sm:p-10 lg:p-12">
                 <div>
                   <span className="font-mono text-sm font-medium text-[#7FB0FF]">
@@ -176,7 +190,7 @@ export function PracticeStickyStack() {
                     {pillar.systems.map((sys) => (
                       <span
                         key={sys}
-                        className="rounded-sm border border-[#162447] bg-[#07112B] px-3 py-1 font-mono text-xs text-[#CBD5E1]"
+                        className="rounded-sm border border-[#162447] bg-[#030816]/80 px-3 py-1 font-mono text-xs text-[#CBD5E1]"
                       >
                         {sys}
                       </span>
@@ -191,7 +205,11 @@ export function PracticeStickyStack() {
                   alt={pillar.alt}
                   fill
                   sizes="(max-width: 768px) 100vw, 46vw"
-                  className="object-cover object-center"
+                  className="object-cover object-center opacity-90"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#07112B]/65"
                 />
               </div>
             </article>

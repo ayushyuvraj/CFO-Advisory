@@ -8,6 +8,7 @@ import React, {
   useState,
   useSyncExternalStore,
 } from "react";
+import { KPMG_LEAD_USER } from "@/config/authConfig";
 
 export type AuthMethod = "sso" | "credentials" | "token";
 
@@ -161,24 +162,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithCredentials = useCallback(
     async (email: string, passcode: string): Promise<AuthUser> => {
       const cleanEmail = email.trim().toLowerCase();
-      const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail);
-      if (!emailValid) {
-        throw new Error("Enter a valid corporate advisory email address.");
-      }
-      if (passcode.trim().length < 6) {
-        throw new Error("Passcode must be at least 6 characters.");
+      const cleanPasscode = passcode.trim();
+
+      if (!cleanEmail || !cleanPasscode) {
+        throw new Error("Please enter your KPMG advisory email and passcode.");
       }
 
       setIsAuthenticating(true);
-      await new Promise((resolve) => setTimeout(resolve, 420));
+      await new Promise((resolve) => setTimeout(resolve, 380));
+
+      if (
+        cleanEmail !== KPMG_LEAD_USER.email.toLowerCase() ||
+        cleanPasscode !== KPMG_LEAD_USER.passcode
+      ) {
+        setIsAuthenticating(false);
+        throw new Error(
+          "Invalid advisory credentials. Please verify your email and passcode."
+        );
+      }
 
       const credUser: AuthUser = {
-        id: `usr-${cleanEmail}`,
-        name: deriveNameFromEmail(cleanEmail),
-        role: "CFO Advisory Lead",
-        email: cleanEmail,
+        id: "usr-kpmg-lead",
+        name: KPMG_LEAD_USER.name,
+        role: KPMG_LEAD_USER.role,
+        email: KPMG_LEAD_USER.email,
         method: "credentials",
-        badge: "Verified Credentials",
+        badge: KPMG_LEAD_USER.badge,
       };
       persistSession(credUser);
       setIsAuthenticating(false);

@@ -18,9 +18,9 @@ export function PortalGatewayFooter() {
   };
 
   return (
-    <footer className="border-t border-[#162447] bg-[#030816]">
+    <footer className="relative z-10 border-t border-[#162447]/80 bg-[#030816]/75 backdrop-blur-md">
       <div className="mx-auto max-w-[1400px] px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
-        <div className="flex flex-col items-start justify-between gap-8 rounded-sm border border-[#162447] bg-[#0B1736] p-8 sm:p-12 lg:flex-row lg:items-center">
+        <div className="flex flex-col items-start justify-between gap-8 rounded-sm border border-[#162447]/90 bg-[#07112B]/85 p-8 backdrop-blur-xl sm:p-12 lg:flex-row lg:items-center">
           <div className="max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-tight text-[#F4F7FB] sm:text-4xl">
               Enter the CFO Advisory Workflows Hub.

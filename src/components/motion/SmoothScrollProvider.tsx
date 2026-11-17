@@ -7,6 +7,11 @@ import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useIsomorphicLayoutEffect } from "@/hooks/useIsomorphicLayoutEffect";
+import {
+  useEquilibriumScene,
+  type ChapterId,
+} from "@/context/EquilibriumSceneContext";
+import { audioEngine } from "@/lib/audio/ProceduralAudioEngine";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,22 +25,69 @@ export function SmoothScrollProvider({
   const lenisRef = useRef<Lenis | null>(null);
   const previousPathnameRef = useRef<string | null>(null);
 
+  const {
+    scrollProgressRef,
+    scrollVelocityRef,
+    setActiveChapter,
+    registerScrollTo,
+  } = useEquilibriumScene();
+
+  const isInfiniteRoute = pathname === "/";
+
   useEffect(() => {
-    if (prefersReducedMotion) return;
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    registerScrollTo((target: string | number) => {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(target, { duration: 1.15 });
+      } else if (typeof target === "string") {
+        const id = target.replace(/^#/, "");
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: target, behavior: "smooth" });
+      }
+    });
+  }, [registerScrollTo]);
+
+  useEffect(() => {
+    const reduced =
+      prefersReducedMotion ||
+      (typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+    if (reduced) {
       return;
     }
 
     const lenis = new Lenis({
       lerp: 0.08,
       smoothWheel: true,
+      syncTouch: true,
+      infinite: isInfiniteRoute,
     });
     lenisRef.current = lenis;
 
-    lenis.on("scroll", ScrollTrigger.update);
+    lenis.on("scroll", (e: { progress: number; velocity: number }) => {
+      ScrollTrigger.update();
+      const raw = Number.isFinite(e.progress) ? e.progress : 0;
+      // Wrap modularly into [0, 1) for circular infinite scroll
+      const p = ((raw % 1) + 1) % 1;
+      scrollProgressRef.current = p;
+      scrollVelocityRef.current = e.velocity || 0;
+      audioEngine.modulateByScroll(e.velocity || 0, p);
+
+      const chapter: ChapterId =
+        p < 0.16
+          ? 1
+          : p < 0.39
+            ? 2
+            : p < 0.63
+              ? 3
+              : p < 0.84
+                ? 4
+                : p < 0.96
+                  ? 5
+                  : 1;
+      setActiveChapter(chapter);
+    });
 
     const tick = (time: number) => {
       lenis.raf(time * 1000);
@@ -49,7 +101,13 @@ export function SmoothScrollProvider({
       lenis.destroy();
       lenisRef.current = null;
     };
-  }, [prefersReducedMotion]);
+  }, [
+    isInfiniteRoute,
+    prefersReducedMotion,
+    scrollProgressRef,
+    scrollVelocityRef,
+    setActiveChapter,
+  ]);
 
   useIsomorphicLayoutEffect(() => {
     const isRouteTransition =
@@ -58,6 +116,9 @@ export function SmoothScrollProvider({
     previousPathnameRef.current = pathname;
 
     if (isRouteTransition && !window.location.hash) {
+      scrollProgressRef.current = 0;
+      scrollVelocityRef.current = 0;
+      setActiveChapter(1);
       lenisRef.current?.scrollTo(0, { immediate: true });
       window.scrollTo(0, 0);
     }
@@ -69,7 +130,7 @@ export function SmoothScrollProvider({
     return () => {
       window.cancelAnimationFrame(rafId);
     };
-  }, [pathname]);
+  }, [pathname, scrollProgressRef, scrollVelocityRef, setActiveChapter]);
 
   return <>{children}</>;
 }

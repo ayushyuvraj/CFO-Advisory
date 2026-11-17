@@ -91,7 +91,7 @@ export function WorkflowHorizontalPan() {
   return (
     <section
       id="orchestration"
-      className="relative border-t border-[#162447] bg-[#07112B]/35"
+      className="relative z-10 border-t border-[#162447]/80 bg-[#030816]/35"
     >
       <div
         ref={pinRef}
@@ -116,7 +116,7 @@ export function WorkflowHorizontalPan() {
               return (
                 <article
                   key={stage.code}
-                  className="flex w-full shrink-0 flex-col justify-between rounded-sm border border-[#162447] bg-[#0B1736] p-7 md:w-[420px] lg:w-[460px]"
+                  className="flex w-full shrink-0 flex-col justify-between rounded-sm border border-[#162447]/90 bg-[#07112B]/80 p-7 backdrop-blur-xl md:w-[420px] lg:w-[460px]"
                 >
                   <div>
                     <div className="flex items-center justify-between border-b border-[#162447] pb-4">
