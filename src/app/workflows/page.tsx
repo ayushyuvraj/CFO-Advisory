@@ -19,7 +19,7 @@ import { CONNECTED_PLATFORMS, type ConnectedPlatform } from "@/data/platforms";
 import { AmbientLedgerGridCanvas } from "@/components/three/AmbientLedgerGridCanvas";
 import { AddProductModal } from "@/components/workflows/AddProductModal";
 import { AuditConsole } from "@/components/workflows/AuditConsole";
-import { RegisteredProduct } from "@/lib/telemetry/types";
+import { RegisteredProduct, TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
 
 function WorkflowsSkeleton() {
   return (
@@ -37,11 +37,16 @@ export default function WorkflowsPage() {
   const [activeTab, setActiveTab] = useState<"catalog" | "audit">("catalog");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [products, setProducts] = useState<ConnectedPlatform[]>(CONNECTED_PLATFORMS);
+  const [telemetrySummary, setTelemetrySummary] = useState<{
+    total: number;
+    latestEvent?: TelemetryEvent;
+    metrics?: TelemetryMetrics;
+  } | null>(null);
 
   // Fetch dynamic registered products
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch("/api/products", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.products && data.products.length > 0) {
@@ -67,12 +72,37 @@ export default function WorkflowsPage() {
     }
   };
 
+  const fetchTelemetrySummary = async () => {
+    try {
+      const res = await fetch("/api/telemetry?limit=1", {
+        cache: "no-store",
+        headers: { Pragma: "no-cache" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTelemetrySummary({
+          total: data.total || 0,
+          latestEvent: data.events?.[0],
+          metrics: data.metrics || null,
+        });
+      }
+    } catch (err) {
+      console.error("[Catalog] Error fetching telemetry summary:", err);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchTelemetrySummary();
+    const interval = setInterval(() => {
+      fetchTelemetrySummary();
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleProductCreated = () => {
     fetchProducts();
+    fetchTelemetrySummary();
   };
 
   if (isLoading) {
@@ -117,7 +147,7 @@ export default function WorkflowsPage() {
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#009A44]/30 bg-[#009A44]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#009A44]">
                 <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" aria-hidden="true" />
-                SYSTEM ONLINE · 100% OPERATIONAL
+                SYSTEM ONLINE · {telemetrySummary && telemetrySummary.total > 0 ? `${telemetrySummary.total} AUDIT RUN${telemetrySummary.total > 1 ? "S" : ""} CAPTURED` : "100% OPERATIONAL"}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#00338D]">
                 <ShieldCheck size={14} weight="bold" />
@@ -180,6 +210,11 @@ export default function WorkflowsPage() {
             >
               <ChartLineUp size={16} weight={activeTab === "audit" ? "bold" : "regular"} />
               <span>Live Audit & Telemetry</span>
+              {telemetrySummary && telemetrySummary.total > 0 && (
+                <span className="rounded-full bg-[#009A44] px-1.5 py-0.5 font-mono text-[10px] font-bold text-white leading-none">
+                  {telemetrySummary.total}
+                </span>
+              )}
               <span className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse" />
             </button>
           </div>
@@ -264,6 +299,45 @@ export default function WorkflowsPage() {
                           </span>
                         ))}
                       </div>
+
+                      {/* Live Telemetry Status Bar for Connected Platform */}
+                      {telemetrySummary && telemetrySummary.total > 0 && telemetrySummary.latestEvent && (
+                        <div className="rounded-sm border border-[#009A44]/40 bg-[#009A44]/5 p-4 transition-colors hover:border-[#009A44]">
+                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#009A44]/20 pb-2.5">
+                            <div className="flex items-center gap-2">
+                              <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" />
+                              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#009A44]">
+                                Live Telemetry Lineage · {telemetrySummary.total} Run{telemetrySummary.total > 1 ? "s" : ""} Recorded
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("audit")}
+                              className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-[#00338D] hover:underline"
+                            >
+                              <span>Open Live Audit Inspector →</span>
+                            </button>
+                          </div>
+                          <div className="mt-2.5 grid grid-cols-2 gap-3 font-mono text-[11px] sm:grid-cols-4">
+                            <div>
+                              <p className="text-[#4B5563]">Last Action</p>
+                              <p className="font-semibold text-[#0C233C] truncate">{telemetrySummary.latestEvent.action_name}</p>
+                            </div>
+                            <div>
+                              <p className="text-[#4B5563]">Active Model</p>
+                              <p className="font-semibold text-[#1E49E2]">{telemetrySummary.latestEvent.model_name}</p>
+                            </div>
+                            <div>
+                              <p className="text-[#4B5563]">Total Tokens</p>
+                              <p className="font-semibold text-[#0C233C]">{telemetrySummary.latestEvent.total_tokens?.toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <p className="text-[#4B5563]">Pipeline Latency</p>
+                              <p className="font-semibold text-[#009A44]">{telemetrySummary.latestEvent.duration_ms} ms</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* 1-Click Launch Action Column */}

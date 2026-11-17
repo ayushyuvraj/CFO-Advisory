@@ -4,7 +4,18 @@ import crypto from "crypto";
 import { TelemetryEvent, TelemetryMetrics } from "./types";
 import { getAllProducts } from "./productRegistry";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+function getDataDir(): string {
+  if (process.env.CFO_DATA_DIR) {
+    return process.env.CFO_DATA_DIR;
+  }
+  const parentData = path.join(process.cwd(), "..", "data");
+  if (fs.existsSync(parentData) && fs.existsSync(path.join(parentData, "cfo_products_registry.json"))) {
+    return parentData;
+  }
+  return path.join(process.cwd(), "data");
+}
+
+const DATA_DIR = getDataDir();
 const TELEMETRY_FILE = path.join(DATA_DIR, "cfo_telemetry_store.json");
 
 // PII Redaction Regexes for financial data

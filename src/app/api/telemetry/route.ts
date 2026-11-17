@@ -2,14 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { appendTelemetryEvent, getTelemetryEvents, getTelemetryMetrics } from "@/lib/telemetry/telemetryStore";
 import { getProductByApiKey } from "@/lib/telemetry/productRegistry";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization") || "";
     const apiKey = authHeader.replace(/^Bearer\s+/i, "").trim();
 
+    // In local dev/demo, if no API key is supplied or invalid, we allow graceful fallback for testing
+    // but check if a valid product key was provided
     const product = apiKey ? getProductByApiKey(apiKey) : null;
+
     const body = await req.json();
 
+    // If product was verified via API key, ensure product_id matches
     if (product) {
       body.product_id = product.id;
       body.product_name = product.name;
@@ -48,12 +55,21 @@ export async function GET(req: NextRequest) {
     const { events, total } = getTelemetryEvents({ productId, status, search, limit, offset });
     const metrics = getTelemetryMetrics();
 
-    return NextResponse.json({
-      events,
-      total,
-      metrics,
-      lastUpdated: new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        events,
+        total,
+        metrics,
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "Internal query failure";
     return NextResponse.json(
