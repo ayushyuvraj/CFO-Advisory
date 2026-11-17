@@ -1,0 +1,7 @@
+Offline highlight models: PaddleOCR PP-OCRv4, distributed in rapidocr-onnxruntime 1.4.4 (PyPI wheel).
+Copyright PaddlePaddle / PaddleOCR and RapidOCR authors. Apache License 2.0; see OCR_LICENSE.txt.
+Sources: https://github.com/PaddlePaddle/PaddleOCR and https://github.com/RapidAI/RapidOCR
+Model files are unmodified. Local inference adapter is application code. No model download occurs at runtime.
+SHA256:
+text_det.onnx d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9
+identifier_rec.onnx 48fc40f24f6d2a207a2b1091d3437eb3cc3eb6b676dc3ef9c37384005483683b

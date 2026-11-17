@@ -1,0 +1,18 @@
+# Not uploaded by `gcloud run deploy --source ./backend`.
+.gcloudignore
+.git
+.gitignore
+.venv/
+.venv-*/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.example
+cloudrun-backend.env.yaml
+data/
+samples/
+tests/
+.venv
+test_emails/
+email_attachments/

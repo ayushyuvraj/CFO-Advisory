@@ -1,0 +1,96 @@
+{
+  "_comment": "Business policy the agent applies. Owned by Finance — edit here, restart the API.",
+
+  "organisation": {
+    "name": "GENSTAR NETWORK SOLUTIONS PVT. LTD.",
+    "gstins": ["27AAQFV5235L1ZH", "27AAACA9988R1ZK", "29AAACA9988R1ZG", "06AAACA9988R1ZO"],
+    "mailbox": "ap.invoices@genstar-demo.in"
+  },
+
+  "tolerances": {
+    "_comment": "Match tolerances. Percent of PO value / quantity; absolute in INR.",
+    "quantity_pct": 0,
+    "price_pct": 2,
+    "amount_abs": 1,
+    "arithmetic_abs": 2,
+    "allow_unmatched_charges": ["freight", "packing", "forwarding", "handling", "insurance"]
+  },
+
+  "non_po": {
+    "_comment": "Non-PO invoices above this value need GPO sign-off and a cost centre.",
+    "gpo_threshold": 500000,
+    "require_cost_centre": true
+  },
+
+  "doa": {
+    "_comment": "Delegation of authority. Levels apply when the invoice total exceeds 'above'.",
+    "route": "IN-AP-03",
+    "levels": [
+      { "role": "AP Processor", "name": "S. Joshi", "email": "s.joshi@genstar-demo.in", "above": 0, "limit_text": "Verification", "sla_hours": 4 },
+      { "role": "Business Owner", "name": "P. Avale · Plant Operations", "email": "p.avale@genstar-demo.in", "above": 0, "limit_text": "DOA up to ₹10,00,000", "sla_hours": 24 },
+      { "role": "Finance Controller", "name": "A. Shah", "email": "a.shah@genstar-demo.in", "above": 1000000, "limit_text": "DOA up to ₹50,00,000", "sla_hours": 24 },
+      { "role": "CFO", "name": "Puru KG.", "email": "puru.kg@genstar-demo.in", "above": 5000000, "limit_text": "DOA above ₹50,00,000", "sla_hours": 48 }
+    ],
+    "enforce_approver_identity": false,
+    "segregation_of_duties": true
+  },
+
+  "tds": {
+    "_comment": "SAC prefix → TDS section. Longest prefix wins. Rates for companies / firms with PAN.",
+    "rules": [
+      { "sac_prefix": "9983", "section": "194J", "rate": 10, "label": "Professional / technical services" },
+      { "sac_prefix": "998311", "section": "194J", "rate": 10, "label": "Management consulting" },
+      { "sac_prefix": "9982", "section": "194J", "rate": 10, "label": "Legal and accounting services" },
+      { "sac_prefix": "9985", "section": "194C", "rate": 2, "label": "Support services (contract)" },
+      { "sac_prefix": "9965", "section": "194C", "rate": 2, "label": "Goods transport" },
+      { "sac_prefix": "9967", "section": "194C", "rate": 2, "label": "Transport support services" },
+      { "sac_prefix": "9987", "section": "194C", "rate": 2, "label": "Maintenance and repair" }
+    ],
+    "threshold_single": 30000,
+    "_min_service_share": "TDS applies only when service lines are at least this share of taxable value — freight or commissioning on a goods invoice does not attract 194C/194J.",
+    "min_service_share": 0.5
+  },
+
+  "fx_rates": {
+    "_comment": "INR per unit of foreign currency, used for DOA limits, dashboards and Zoho posting. Replace with the CBIC notified rate (or a rate feed) each month.",
+    "EUR": 94.20,
+    "USD": 83.60,
+    "GBP": 110.40
+  },
+
+  "payments": {
+    "two_person_release": true,
+    "default_mode": "NEFT",
+    "rtgs_above": 200000,
+    "bank_account": "HDFC ****8871",
+    "treasury": { "name": "U. Gupta", "email": "u.gupta@genstar-demo.in", "role": "Treasury" },
+    "default_terms_days": 45
+  },
+
+  "park_reasons": [
+    "Missing PO",
+    "Missing approval",
+    "Vendor mismatch",
+    "Amount discrepancy",
+    "Quantity discrepancy",
+    "Tax / GST discrepancy",
+    "Missing supporting document",
+    "Other"
+  ],
+
+  "correction_reasons": [
+    "Quantity corrected to goods receipt",
+    "Over-delivery not accepted",
+    "Vendor credit note expected",
+    "Data extraction error"
+  ],
+
+  "close_checklist": [
+    { "label": "Invoice intake cut-off applied", "owner": "AP Lead" },
+    { "label": "All matched invoices posted to ERP", "owner": "AP Lead" },
+    { "label": "TDS and GST liability computed", "owner": "Tax" },
+    { "label": "Bank reconciliation completed", "owner": "Treasury" },
+    { "label": "GR/IR ageing reviewed and provisioned", "owner": "Controller" },
+    { "label": "Period locked in ERP", "owner": "Controller" }
+  ]
+}

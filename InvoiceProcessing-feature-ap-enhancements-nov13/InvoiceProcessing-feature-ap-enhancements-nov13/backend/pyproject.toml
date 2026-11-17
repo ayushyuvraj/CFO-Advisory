@@ -1,0 +1,14 @@
+[project]
+name = "finance-command-center-backend"
+version = "1.0.0"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = [".", "scripts"]

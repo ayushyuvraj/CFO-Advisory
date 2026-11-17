@@ -1,0 +1,36 @@
+node_modules/
+dist/
+.vite/
+
+*.local
+*.log
+
+.DS_Store
+Thumbs.db
+
+.idea/
+.vscode/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python environments and caches
+.venv*/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+.venv
+
+# Local invoice/email data
+/backend/data/
+/backend/test_emails/
+/backend/email_attachments/
+
+# Deployment configuration and packages
+/backend/cloudrun-backend.env.yaml
+/app/cloudrun-frontend.env.yaml
+
+fcc-deploy*.zip

@@ -1,0 +1,9 @@
+# Not uploaded by `gcloud run deploy --source .` — Cloud Build installs and builds itself.
+.gcloudignore
+.git
+.gitignore
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+*.local

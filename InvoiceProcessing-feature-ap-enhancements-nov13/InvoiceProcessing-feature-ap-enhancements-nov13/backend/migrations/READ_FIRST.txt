@@ -1,0 +1,67 @@
+WHY THIS MIGRATION IS REQUIRED
+
+Feature: Multiple Invoice Case (page-aware Extraction).
+
+Your cloud database currently allows ONE case link per PDF attachment.
+The new application needs multiple invoice-case links for the SAME intact PDF.
+Example: one PDF contains invoices 31121 and 31122. Each invoice has its own
+case/fields/totals and original page range. Page navigation selects the right
+invoice's data. This does NOT require physically splitting the PDF.
+
+WHAT CHANGES
+
+Only public.email_invoice_links in database financecommandcenterhub:
+- part_index: distinguishes invoice links within one attachment.
+- source_page_start: first original PDF page for that invoice.
+- source_page_end: last original PDF page for that invoice.
+- source_invoice_number: invoice number identified in the original document.
+- Primary key becomes (attachment_id, part_index), allowing multiple links.
+
+Existing rows receive part_index=0. This identifies old/legacy links.
+Other new metadata fields remain blank for existing links.
+
+WHY WE CANNOT SKIP IT
+
+The new backend expects this structure and checks it during startup.
+Without migration it will refuse to start. Email Inbox styling and Excel export
+alone do not require it; the multiple-invoice backend feature does.
+
+EXISTING DATA
+
+- Existing email/invoice records and link values are retained.
+- No DELETE, TRUNCATE, DROP TABLE, case repair or reprocessing is performed.
+- No original PDF is changed or split.
+- Vendor/PO master data and other databases on recon-postgres are not targeted.
+- This is a real database STRUCTURE change, not a read-only query.
+- Old cases are not automatically converted into page-aware contexts.
+
+The script compares every original link-row value before and after the change.
+If preservation fails, or any SQL statement fails, the DO block rolls back.
+It checks the selected database and existing primary key before changing it.
+It also expects 3 links, matching the CSV you exported. If that count changed,
+it stops; recheck/export the links before proceeding.
+
+WHAT HAS BEEN CHECKED SO FAR
+
+- Cloud primary key: attachment_id (old structure).
+- New metadata columns: 0.
+- Pending invoice jobs: 0 at the time of the read-only check.
+- Pending email jobs: 0 at the time of the read-only check.
+- Your exported CSV contains 3 existing links.
+The CSV is a targeted link-row export, not a full database backup.
+
+HOW TO RUN
+
+1. Pause uploads until migration and deployment are finished.
+2. Open GCP Cloud SQL Studio on recon-postgres.
+3. Select database financecommandcenterhub.
+4. Open MIGRATION.sql from this folder and copy its ENTIRE contents.
+5. Paste into the query editor and click Run.
+6. Share the success/error output. Do not deploy the backend yet.
+
+Run this in Cloud SQL Studio, not your local pgAdmin/database or a terminal.
+Do not run the older repair/delete scripts. Deleting the existing test email
+is not necessary for this migration.
+
+This migration has not been executed by the assistant. After success, we will
+verify the schema and preserved links before proceeding with deployment.

@@ -1,0 +1,79 @@
+/*
+ * Design tokens.
+ *
+ * The base scales come from the Industry design system (_ds/industry-…/styles.css):
+ * a light technical ground, a single steel accent with a 100–900 OKLCH ramp,
+ * condensed headings over a body face, a 0.85x density spacing scale.
+ *
+ * The prototype then retunes those tokens to a KPMG-aligned identity — deep blue
+ * accent (#00338d), a soft blue-grey ground instead of flat white, a cool-navy
+ * neutral ramp, rounded corners, and Archivo / IBM Plex Sans in place of the
+ * Barlow pairing. Those retuned values are what ships, and they live here so every
+ * surface reads from one place.
+ */
+
+:root {
+  /* — type — */
+  --font-heading: 'Archivo', 'Barlow Condensed', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', 'Barlow', system-ui, sans-serif;
+
+  /* — ground and ink — */
+  --color-bg: #eaeef5;
+  --color-surface: #f6f8fc;
+  --color-text: #101a2c;
+  --color-divider: #d4dcea;
+
+  /* — neutral ramp, re-tinted cool navy — */
+  --color-neutral-100: #f6f8fc;
+  --color-neutral-200: #e6ebf4;
+  --color-neutral-300: #d4dcea;
+  --color-neutral-400: #b7c2d6;
+  --color-neutral-500: #8f9db6;
+  --color-neutral-600: #6b7a94;
+  --color-neutral-700: #4d5c76;
+  --color-neutral-800: #2b3a53;
+  --color-neutral-900: #101a2c;
+
+  /* — accent ramp: KPMG blue — */
+  --color-accent: #00338d;
+  --color-accent-100: #eef3fb;
+  --color-accent-200: #d7e2f4;
+  --color-accent-300: #aec3e7;
+  --color-accent-400: #7c9bd4;
+  --color-accent-500: #4a71bd;
+  --color-accent-600: #1f4d9e;
+  --color-accent-700: #00338d;
+  --color-accent-800: #012a6f;
+  --color-accent-900: #001f52;
+  --color-accent-2: #1f4d9e;
+
+  /* — status: green validated, amber attention, red exception — */
+  --ok: #1f7a4d;
+  --ok-bg: #e9f4ee;
+  --ok-line: #a9d5bd;
+  --warn: #96570b;
+  --warn-bg: #fdf2e2;
+  --warn-line: #e8c48c;
+  --err: #a8231b;
+  --err-bg: #fbecea;
+  --err-line: #e5aca6;
+
+  /* — the document-intelligence trace colour (source bounding boxes) — */
+  --trace: #c8102e;
+
+  /* — spacing, 0.85x density from the design system — */
+  --space-1: 3.4px;
+  --space-2: 6.8px;
+  --space-3: 10.2px;
+  --space-4: 13.6px;
+  --space-6: 20.4px;
+  --space-8: 27.2px;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 26, 44, 0.06), 0 1px 3px rgba(16, 26, 44, 0.05);
+  --shadow-md: 0 2px 6px rgba(16, 26, 44, 0.07), 0 8px 20px rgba(16, 26, 44, 0.06);
+  --shadow-lg: 0 10px 34px rgba(16, 26, 44, 0.14);
+}

@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+data/
+samples/
+cloudrun-backend.env.yaml
+test_emails/
+email_attachments/

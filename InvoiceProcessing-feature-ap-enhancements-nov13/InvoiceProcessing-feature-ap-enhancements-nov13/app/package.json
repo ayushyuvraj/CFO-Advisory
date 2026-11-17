@@ -1,0 +1,29 @@
+{
+  "name": "finance-command-center",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Finance Command Center — P2P: AI-powered GST invoice processing and procure-to-pay orchestration",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "start": "vite preview --host 0.0.0.0 --strictPort",
+    "gcp-build": "npm run build"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^8.3.0",
+    "@vitejs/plugin-react": "^6.1.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.6.3"
+  }
+}

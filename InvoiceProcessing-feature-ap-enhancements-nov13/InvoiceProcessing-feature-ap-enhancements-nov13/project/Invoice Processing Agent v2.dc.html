@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/industry-0942542c-810d-4c59-931a-3e245d9e23ae/styles.css">
+<script src="_ds/industry-0942542c-810d-4c59-931a-3e245d9e23ae/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --font-heading: 'Archivo', 'Barlow Condensed', system-ui, sans-serif;
+    --font-body: 'IBM Plex Sans', 'Barlow', system-ui, sans-serif;
+    --color-bg: #eaeef5;
+    --color-surface: #f6f8fc;
+    --color-text: #101a2c;
+    --color-divider: #d4dcea;
+    --color-neutral-100: #f6f8fc;
+    --color-neutral-200: #e6ebf4;
+    --color-neutral-300: #d4dcea;
+    --color-neutral-400: #b7c2d6;
+    --color-neutral-500: #8f9db6;
+    --color-neutral-600: #6b7a94;
+    --color-neutral-700: #4d5c76;
+    --color-neutral-800: #2b3a53;
+    --color-neutral-900: #101a2c;
+    --shadow-sm: 0 1px 2px rgba(16, 26, 44, .06), 0 1px 3px rgba(16, 26, 44, .05);
+    --shadow-md: 0 2px 6px rgba(16, 26, 44, .07), 0 8px 20px rgba(16, 26, 44, .06);
+    --shadow-lg: 0 10px 34px rgba(16, 26, 44, .14);
+    --color-accent: #00338d;
+    --color-accent-100: #eef3fb;
+    --color-accent-200: #d7e2f4;
+    --color-accent-300: #aec3e7;
+    --color-accent-400: #7c9bd4;
+    --color-accent-500: #4a71bd;
+    --color-accent-600: #1f4d9e;
+    --color-accent-700: #00338d;
+    --color-accent-800: #012a6f;
+    --color-accent-900: #001f52;
+    --color-accent-2: #1f4d9e;
+    --ok: #1f7a4d; --ok-bg: #e9f4ee; --ok-line: #a9d5bd;
+    --warn: #96570b; --warn-bg: #fdf2e2; --warn-line: #e8c48c;
+    --err: #a8231b; --err-bg: #fbecea; --err-line: #e5aca6;
+    --trace: #c8102e;
+  }
+  body { margin: 0; background: var(--color-bg) }
+  * { box-sizing: border-box }
+  .btn { min-height: 44px; padding: 0 22px; font-family: var(--font-heading); font-size: 14px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; border-radius: 8px }
+  .btn-primary { box-shadow: 0 2px 6px rgba(0, 51, 141, .22) }
+  .btn-ghost { text-transform: none; font-family: var(--font-body); letter-spacing: 0; min-height: 38px; padding: 0 14px }
+  .btn-lg { min-height: 54px; font-size: 15.5px; padding: 0 28px }
+  .input, select.input { min-height: 40px; border-radius: 8px; background: #fff; font-size: 13.5px }
+  .field label { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-neutral-600) }
+  .card { border-radius: 14px; box-shadow: var(--shadow-sm) }
+  .table th { font-family: var(--font-heading); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-neutral-700) }
+  .blueprint > .corner { display: none }
+  #root div[style*="border"], #root span[style*="border"], .dialog { border-radius: 10px }
+  #root div[style*="border-bottom: 1px dashed"], #root div[style*="border-bottom: 1px solid"] { border-radius: 0 }
+  #root h1, #root h2, #root h3 { font-family: var(--font-heading) }
+  .ic { width: 17px; height: 17px; flex: 0 0 17px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round }
+  .chip { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border: 1px solid var(--color-accent-200); background: var(--color-accent-100); color: var(--color-accent-700); border-radius: 10px }
+  .ground { background-image: radial-gradient(circle at 12% 0%, #dfe7f5 0%, rgba(223, 231, 245, 0) 46%), radial-gradient(circle at 92% 8%, #e3ecf8 0%, rgba(227, 236, 248, 0) 40%); background-attachment: fixed }
+  @keyframes ipa-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .2 } }
+  @keyframes ipa-in { from { opacity: 0; transform: translateY(5px) } to { opacity: 1; transform: none } }
+  a { color: var(--color-accent-700) }
+  a:hover { color: var(--color-accent-900) }
+</style>
+</helmet>
+
+<div class="ground" style="display: flex; align-items: stretch; min-height: 100vh; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); font-size: 14px; line-height: 1.5">
+
+  <div style="width: 250px; flex: 0 0 250px; border-right: 1px solid var(--color-divider); background: #fff; display: flex; flex-direction: column; box-shadow: 1px 0 3px rgba(16, 26, 44, .04)">
+    <div style="padding: 20px 18px 17px; border-bottom: 1px solid var(--color-divider); display: flex; gap: 10px; align-items: flex-start">
+      <div style="width: 28px; height: 28px; flex: 0 0 28px; background: var(--color-accent-700); color: #fff; display: grid; place-items: center; font-family: var(--font-heading); font-size: 14px">IP</div>
+      <div>
+        <div style="font-family: var(--font-heading); font-size: 17px; line-height: 1.08; letter-spacing: .02em; text-transform: uppercase">Invoice Processing<br>Agent</div>
+        <div style="font-size: 10.5px; color: var(--color-neutral-700); margin-top: 5px; line-height: 1.35">AI-powered Accounts Payable Automation</div>
+      </div>
+    </div>
+
+    <div style="padding: 16px 8px; display: flex; flex-direction: column; gap: 2px">
+      <div style="font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--color-neutral-600); padding: 0 10px 10px">Workspace</div>
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="3">
+        <div onClick="{{ item.go }}" style="cursor: pointer; padding: 10px 11px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-left: 3px solid {{ item.bar }}; background: {{ item.bg }}; color: {{ item.fg }}; font-weight: 500" style-hover="background: var(--color-accent-100)">
+          <span style="display: flex; align-items: center; gap: 10px">
+            <svg class="ic" viewBox="0 0 24 24"><path d="{{ item.iconPath }}"></path></svg>
+            {{ item.label }}
+          </span>
+          <sc-if value="{{ item.badge }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size: 10.5px; padding: 1px 6px; border: 1px solid var(--color-divider); color: var(--color-neutral-700)">{{ item.badge }}</span>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: auto; padding: 16px 8px 18px; border-top: 1px solid var(--color-divider); display: flex; flex-direction: column; gap: 2px">
+      <div onClick="{{ openConnector }}" style="cursor: pointer; padding: 10px 11px; display: flex; align-items: center; justify-content: space-between; color: var(--color-neutral-800)" style-hover="background: var(--color-accent-100)">
+        <span>Connected Systems</span>
+        <span style="font-size: 10.5px; color: var(--ok)">{{ connectedCount }}</span>
+      </div>
+      <div style="padding: 10px 11px; color: var(--color-neutral-600)">Settings</div>
+      <div style="margin: 12px 11px 0; padding-top: 12px; border-top: 1px dashed var(--color-divider); font-size: 10.5px; color: var(--color-neutral-600); line-height: 1.45">{{ orgName }}<br>Shared Services — Pune GCC</div>
+    </div>
+  </div>
+
+  <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+
+    <div style="border-bottom: 1px solid var(--color-divider); background: #fff; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap">
+      <div>
+        <div style="font-family: var(--font-heading); font-size: 21px; letter-spacing: .02em; text-transform: uppercase; line-height: 1.1">{{ viewTitle }}</div>
+        <div style="font-size: 11.5px; color: var(--color-neutral-700)">{{ viewSub }}</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; border: 1px solid var(--color-divider); border-left: 3px solid var(--color-accent-700); padding: 9px 16px">
+        <span style="width: 8px; height: 8px; background: {{ agentDotColor }}; animation: {{ agentDotAnim }}"></span>
+        <div>
+          <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600)">Agent Status</div>
+          <div style="font-family: var(--font-heading); font-size: 15px; letter-spacing: .04em; text-transform: uppercase">{{ agentStatus }}</div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ isProcessing }}" hint-placeholder-val="{{ true }}">
+      <div style="padding: 22px 30px 0">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px">
+          <sc-for list="{{ stepper }}" as="s" hint-placeholder-count="5">
+            <div onClick="{{ s.go }}" style="min-width: 0; padding: 11px 14px; border: 1px solid {{ s.cellLine }}; cursor: {{ s.cursor }}; background: {{ s.bg }}; color: {{ s.fg }}; display: flex; gap: 10px; align-items: center">
+              <span style="font-family: var(--font-heading); font-size: 12px; border: 1px solid {{ s.numBorder }}; width: 22px; height: 22px; display: grid; place-items: center; flex: 0 0 22px">{{ s.n }}</span>
+              <span style="font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; font-family: var(--font-heading); min-width: 0; line-height: 1.25">{{ s.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showIntake }}" hint-placeholder-val="{{ true }}">
+      <div style="padding: 26px 30px 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 26px; align-items: start">
+        <div class="card blueprint" style="padding: 26px; background: #fff">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="font-family: var(--font-heading); font-size: 25px; letter-spacing: .01em; margin-bottom: 5px">How would you like to provide the invoice?</div>
+          <div style="color: var(--color-neutral-700); font-size: 12.5px; max-width: 64ch">From invoice intake to validation, exception handling and posting — powered by intelligent agents across your AP landscape.</div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 24px">
+            <sc-for list="{{ methods }}" as="m" hint-placeholder-count="3">
+              <div onClick="{{ m.go }}" style="cursor: pointer; border: 1px solid {{ m.border }}; border-top: 3px solid {{ m.topBorder }}; background: {{ m.bg }}; padding: 16px 15px; min-height: 148px; display: flex; flex-direction: column" style-hover="border-color: var(--color-accent)">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px">
+                  <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); padding-top: 8px">{{ m.kicker }}</div>
+                  <span class="chip"><svg class="ic" viewBox="0 0 24 24"><path d="{{ m.iconPath }}"></path></svg></span>
+                </div>
+                <div style="font-family: var(--font-heading); font-size: 19px; margin-top: 8px; line-height: 1.1">{{ m.title }}</div>
+                <div style="font-size: 11.5px; color: var(--color-neutral-700); margin-top: 7px; line-height: 1.45">{{ m.body }}</div>
+                <div style="margin-top: auto; padding-top: 12px; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: {{ m.metaColor }}">{{ m.meta }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ showMailbox }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top: 20px; border: 1px solid var(--color-divider); background: #fff">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--color-divider); background: var(--color-accent-100)">
+                <div>
+                  <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .04em; text-transform: uppercase">AP Inbox</div>
+                  <div style="font-size: 11.5px; color: var(--color-neutral-700)">Shared mailbox monitored — ap.invoices@aurora-mfg.in</div>
+                </div>
+                <div style="text-align: right">
+                  <div style="display: flex; align-items: center; gap: 7px; justify-content: flex-end; font-size: 11.5px; color: var(--ok)"><span style="width: 7px; height: 7px; background: var(--ok); animation: ipa-pulse 1.6s infinite"></span>Agent active</div>
+                  <div style="font-size: 11.5px; color: var(--color-neutral-700)">3 new invoices today</div>
+                </div>
+              </div>
+              <sc-for list="{{ mailboxItems }}" as="m" hint-placeholder-count="3">
+                <div onClick="{{ m.go }}" style="cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--color-divider)" style-hover="background: var(--color-accent-100)">
+                  <div>
+                    <div style="font-family: var(--font-heading); font-size: 16px">{{ m.vendor }}</div>
+                    <div style="font-size: 11.5px; color: var(--color-neutral-700)">{{ m.subject }}</div>
+                  </div>
+                  <div style="text-align: right">
+                    <div style="font-family: var(--font-heading); font-size: 15px">{{ m.total }}</div>
+                    <div style="font-size: 11px; color: var(--color-neutral-600)">{{ m.time }} · {{ m.attach }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showDrop }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top: 20px; border: 1px dashed var(--color-accent-400); background: var(--color-accent-100); padding: 32px 22px; text-align: center">
+              <div style="font-family: var(--font-heading); font-size: 20px; letter-spacing: .03em; text-transform: uppercase">{{ dropTitle }}</div>
+              <div style="font-size: 11.5px; color: var(--color-accent-800); margin-top: 6px">{{ dropSub }}</div>
+            </div>
+          </sc-if>
+
+          <div style="display: flex; gap: 36px; margin-top: 22px; flex-wrap: wrap">
+            <div>
+              <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600)">Supported formats</div>
+              <div style="font-size: 12.5px; margin-top: 4px">PDF | JPG | PNG | TIFF</div>
+            </div>
+            <div>
+              <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600)">AI processing</div>
+              <div style="font-size: 12.5px; margin-top: 4px">OCR + document understanding + invoice intelligence</div>
+            </div>
+            <div>
+              <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600)">Tax intelligence</div>
+              <div style="font-size: 12.5px; margin-top: 4px">GST / GSTIN, HSN-SAC, TDS, RCM</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card blueprint" style="padding: 22px; background: #fff">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="font-family: var(--font-heading); font-size: 19px; letter-spacing: .03em; text-transform: uppercase">Select Demo Invoice</div>
+          <div style="font-size: 11.5px; color: var(--color-neutral-700); margin-top: 4px">Three formats, three agent behaviours.</div>
+          <div class="field" style="margin: 16px 0 6px">
+            <select class="input" value="{{ selValue }}" onChange="{{ onSelectChange }}" style="width: 100%; font-family: var(--font-body)">
+              <option value="">Choose an invoice…</option>
+              <sc-for list="{{ demoOptions }}" as="o" hint-placeholder-count="3">
+                <option value="{{ o.id }}">{{ o.name }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px">
+            <sc-for list="{{ demoCards }}" as="d" hint-placeholder-count="3">
+              <div onClick="{{ d.go }}" style="cursor: pointer; border: 1px solid {{ d.border }}; border-left: 3px solid {{ d.leftBorder }}; background: {{ d.bg }}; padding: 14px" style-hover="border-color: var(--color-accent)">
+                <div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline">
+                  <div style="font-family: var(--font-heading); font-size: 17px; line-height: 1.1">{{ d.vendor }}</div>
+                  <span style="font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; padding: 2px 7px; border: 1px solid {{ d.chipLine }}; background: {{ d.chipBg }}; color: {{ d.chipFg }}">{{ d.kind }}</span>
+                </div>
+                <div style="font-size: 11.5px; color: var(--color-neutral-700); margin-top: 6px; line-height: 1.45">{{ d.desc }}</div>
+                <div style="display: flex; gap: 16px; margin-top: 10px; font-size: 11px; color: var(--color-neutral-700)">
+                  <span>{{ d.totalText }}</span>
+                  <span>{{ d.pagesText }}</span>
+                  <span>{{ d.itemsText }}</span>
+                </div>
+                <div style="margin-top: 8px; font-size: 11px; color: {{ d.outcomeColor }}">{{ d.outcome }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 0 30px 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px">
+        <sc-for list="{{ intakeStats }}" as="k" hint-placeholder-count="4">
+          <div class="card blueprint" style="padding: 15px 16px; background: #fff; border-top: 3px solid var(--color-accent-700)">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <span class="chip" style="float: right"><svg class="ic" viewBox="0 0 24 24"><path d="{{ k.iconPath }}"></path></svg></span>
+            <div style="font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--color-neutral-600); padding-right: 40px; min-height: 26px">{{ k.label }}</div>
+            <div style="font-family: var(--font-heading); font-size: 28px; line-height: 1.05; color: var(--color-accent-900)">{{ k.value }}</div>
+            <div style="font-size: 11px; color: var(--color-neutral-700)">{{ k.note }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="padding: 0 30px 46px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: stretch">
+        <div class="card blueprint" style="padding: 20px; background: #fff">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Intake by Channel — Today</div>
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px">
+            <sc-for list="{{ channelMix }}" as="c" hint-placeholder-count="3">
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px">
+                  <span>{{ c.label }}</span>
+                  <span style="font-family: var(--font-heading); font-size: 15px">{{ c.value }}</span>
+                </div>
+                <div style="height: 14px; border: 1px solid var(--color-accent-300); background: var(--color-accent-100)">
+                  <div style="height: 12px; background: var(--color-accent-700); width: {{ c.width }}"></div>
+                </div>
+                <div style="font-size: 10.5px; color: var(--color-neutral-600); margin-top: 4px">{{ c.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div class="card blueprint" style="padding: 20px; background: #fff">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Agent Capability</div>
+          <div style="font-size: 11.5px; color: var(--color-neutral-700); margin-top: 4px">What the agent handles without a human touch.</div>
+          <div style="display: flex; flex-direction: column; gap: 7px; margin-top: 14px">
+            <sc-for list="{{ capabilities }}" as="c" hint-placeholder-count="8">
+              <div style="display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding-bottom: 6px; border-bottom: 1px dashed var(--color-divider)">
+                <span style="color: var(--ok)">✓</span>
+                <span style="font-size: 12px">{{ c.label }}</span>
+                <span style="font-size: 11px; color: var(--color-neutral-600); white-space: nowrap; padding-left: 4px">{{ c.meta }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div class="card blueprint" style="padding: 20px; background: #fff">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+            <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Live Agent Feed</div>
+            <div style="display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--ok)"><span style="width: 7px; height: 7px; background: var(--ok); animation: ipa-pulse 1.6s infinite"></span>Active</div>
+          </div>
+          <div style="margin-top: 14px; display: flex; flex-direction: column">
+            <sc-for list="{{ liveFeed }}" as="f" hint-placeholder-count="7">
+              <div style="display: grid; grid-template-columns: 52px 14px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 7px 0; border-bottom: 1px dashed var(--color-divider)">
+                <span style="font-size: 10.5px; color: var(--color-neutral-600); font-variant-numeric: tabular-nums">{{ f.time }}</span>
+                <span style="color: {{ f.color }}; font-size: 12px">{{ f.mark }}</span>
+                <span style="font-size: 11.5px; overflow-wrap: anywhere">{{ f.text }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showReview }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 22px 30px 60px">
+        <div class="card blueprint" style="padding: 18px 20px; margin-bottom: 22px; background: #fff">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap">
+            <div style="display: flex; gap: 12px; align-items: flex-start">
+              <span class="chip"><svg class="ic" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></span>
+              <div>
+                <div style="font-family: var(--font-heading); font-size: 18px; letter-spacing: .05em; text-transform: uppercase">AI Processing Pipeline</div>
+                <div style="font-size: 11.5px; color: var(--color-neutral-700)">{{ pipelineSub }}</div>
+              </div>
+            </div>
+            <div style="text-align: right">
+              <div style="font-family: var(--font-heading); font-size: 34px; line-height: 1; color: var(--color-accent-900)">{{ runProgress }}</div>
+              <div style="font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600)">{{ pipelineState }}</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin-top: 16px">
+            <sc-for list="{{ pipeline }}" as="p" hint-placeholder-count="10">
+              <div style="display: flex; align-items: center; gap: 9px; border: 1px solid {{ p.line }}; background: {{ p.bg }}; padding: 10px 12px; animation: ipa-in .25s">
+                <span style="color: {{ p.fg }}; font-size: 12px; width: 14px; text-align: center">{{ p.mark }}</span>
+                <span style="font-size: 12px; color: {{ p.textColor }}; min-width: 0">{{ p.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top: 14px; height: 4px; background: var(--color-accent-100)">
+            <div style="height: 4px; background: var(--color-accent-700); width: {{ runProgress }}; transition: width .3s"></div>
+          </div>
+          <div style="margin-top: 11px; font-size: 11px; color: var(--color-neutral-600)">Ind AS · GST · SOX-aligned controls | Complete audit trail captured</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr); gap: 22px; align-items: start">
+
+          <div class="card blueprint" style="padding: 18px; background: #fff">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px">
+              <div>
+                <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Source Document</div>
+                <div style="font-size: 11px; color: var(--color-neutral-600)">{{ traceHint }}</div>
+              </div>
+              <div style="font-size: 11px; color: var(--color-neutral-700)">{{ pageLabel }}</div>
+            </div>
+
+            <div style="display: flex; gap: 14px; align-items: flex-start">
+              <sc-if value="{{ multiPage }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 0 0 46px">
+                  <sc-for list="{{ pageThumbs }}" as="t" hint-placeholder-count="3">
+                    <div onClick="{{ t.go }}" style="cursor: pointer; border: 1px solid {{ t.border }}; background: #fff; height: 60px; display: grid; place-items: center; font-size: 10.5px; color: var(--color-neutral-700)">{{ t.n }}</div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="flex: 1 1 auto; min-width: 0; background: #fff; border: 1px solid var(--color-neutral-300); padding: 22px; font-size: 11px; box-shadow: var(--shadow-sm)">
+                <div style="display: flex; justify-content: space-between; gap: 18px; border-bottom: 2px solid var(--color-accent-900); padding-bottom: 11px">
+                  <div>
+                    <span onMouseEnter="{{ tr.vendor.enter }}" onClick="{{ tr.vendor.enter }}" style="display: inline-block; cursor: pointer; font-family: var(--font-heading); font-size: 18px; letter-spacing: .02em; text-transform: uppercase; line-height: 1.1; outline: {{ tr.vendor.outline }}; outline-offset: 2px; background: {{ tr.vendor.bg }}">{{ inv.vendor }}</span>
+                    <sc-for list="{{ inv.addr }}" as="l" hint-placeholder-count="3">
+                      <div style="color: var(--color-neutral-700); line-height: 1.35">{{ l }}</div>
+                    </sc-for>
+                    <div style="margin-top: 5px">GSTIN: <span onMouseEnter="{{ tr.gstin.enter }}" onClick="{{ tr.gstin.enter }}" style="cursor: pointer; outline: {{ tr.gstin.outline }}; outline-offset: 2px; background: {{ tr.gstin.bg }}">{{ inv.gstin }}</span></div>
+                    <div>PAN: {{ inv.pan }} · Vendor code <span onMouseEnter="{{ tr.vendorId.enter }}" onClick="{{ tr.vendorId.enter }}" style="cursor: pointer; outline: {{ tr.vendorId.outline }}; outline-offset: 2px; background: {{ tr.vendorId.bg }}">{{ inv.vendorId }}</span></div>
+                  </div>
+                  <div style="text-align: right; white-space: nowrap">
+                    <div style="font-family: var(--font-heading); font-size: 15px; letter-spacing: .1em; text-transform: uppercase">{{ inv.docType }}</div>
+                    <div style="margin-top: 6px">No. <span onMouseEnter="{{ tr.number.enter }}" onClick="{{ tr.number.enter }}" style="cursor: pointer; outline: {{ tr.number.outline }}; outline-offset: 2px; background: {{ tr.number.bg }}">{{ inv.number }}</span></div>
+                    <div>Date <span onMouseEnter="{{ tr.date.enter }}" onClick="{{ tr.date.enter }}" style="cursor: pointer; outline: {{ tr.date.outline }}; outline-offset: 2px; background: {{ tr.date.bg }}">{{ inv.date }}</span></div>
+                    <div><span onMouseEnter="{{ tr.po.enter }}" onClick="{{ tr.po.enter }}" style="cursor: pointer; outline: {{ tr.po.outline }}; outline-offset: 2px; background: {{ tr.po.bg }}">{{ inv.poLabel }}</span></div>
+                    <div>Place of supply: {{ inv.pos }}</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--color-neutral-300)">
+                  <div>
+                    <div style="font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600)">Bill to</div>
+                    <span onMouseEnter="{{ tr.entity.enter }}" onClick="{{ tr.entity.enter }}" style="display: inline-block; cursor: pointer; font-weight: 600; margin-top: 3px; outline: {{ tr.entity.outline }}; outline-offset: 2px; background: {{ tr.entity.bg }}">{{ inv.entity }}</span>
+                    <sc-for list="{{ inv.entityAddr }}" as="l" hint-placeholder-count="2">
+                      <div style="color: var(--color-neutral-700)">{{ l }}</div>
+                    </sc-for>
+                    <div>GSTIN: {{ inv.buyerGstin }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600)">Ship to</div>
+                    <div style="margin-top: 3px">{{ inv.shipTo }}</div>
+                    <div style="color: var(--color-neutral-700)">Terms: <span onMouseEnter="{{ tr.terms.enter }}" onClick="{{ tr.terms.enter }}" style="cursor: pointer; outline: {{ tr.terms.outline }}; outline-offset: 2px; background: {{ tr.terms.bg }}">{{ inv.terms }}</span></div>
+                    <div style="color: var(--color-neutral-700)">Currency: <span onMouseEnter="{{ tr.currency.enter }}" onClick="{{ tr.currency.enter }}" style="cursor: pointer; outline: {{ tr.currency.outline }}; outline-offset: 2px; background: {{ tr.currency.bg }}">{{ inv.currency }}</span></div>
+                  </div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 10.5px">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--color-neutral-400)">
+                      <th style="text-align: left; padding: 4px 4px 7px 0; font-weight: 600">Description</th>
+                      <th style="text-align: left; padding: 4px; font-weight: 600">HSN/SAC</th>
+                      <th style="text-align: right; padding: 4px; font-weight: 600">Qty</th>
+                      <th style="text-align: right; padding: 4px; font-weight: 600">Rate</th>
+                      <th style="text-align: right; padding: 4px 0 7px 4px; font-weight: 600">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ pageItems }}" as="it" hint-placeholder-count="6">
+                      <tr onMouseEnter="{{ it.enter }}" onClick="{{ it.enter }}" style="cursor: pointer; border-bottom: 1px solid var(--color-neutral-200); outline: {{ it.outline }}; background: {{ it.bg }}">
+                        <td style="padding: 6px 4px 6px 0">{{ it.desc }}</td>
+                        <td style="padding: 6px 4px; color: var(--color-neutral-700)">{{ it.hsn }}</td>
+                        <td style="padding: 6px 4px; text-align: right; color: {{ it.qtyColor }}">{{ it.qtyText }}</td>
+                        <td style="padding: 6px 4px; text-align: right">{{ it.rateText }}</td>
+                        <td style="padding: 6px 0 6px 4px; text-align: right">{{ it.amountText }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+
+                <sc-if value="{{ showTotals }}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; justify-content: flex-end; margin-top: 14px">
+                    <div style="width: 268px">
+                      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--color-neutral-200)">
+                        <span style="color: var(--color-neutral-700)">Taxable value</span>
+                        <span onMouseEnter="{{ tr.subtotal.enter }}" onClick="{{ tr.subtotal.enter }}" style="cursor: pointer; outline: {{ tr.subtotal.outline }}; outline-offset: 2px; background: {{ tr.subtotal.bg }}">{{ inv.subtotalText }}</span>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--color-neutral-200)">
+                        <span style="color: var(--color-neutral-700)">{{ inv.taxLabel }}</span>
+                        <span onMouseEnter="{{ tr.tax.enter }}" onClick="{{ tr.tax.enter }}" style="cursor: pointer; outline: {{ tr.tax.outline }}; outline-offset: 2px; background: {{ tr.tax.bg }}">{{ inv.taxText }}</span>
+                      </div>
+                      <sc-for list="{{ inv.extraRows }}" as="t" hint-placeholder-count="1">
+                        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--color-neutral-200)">
+                          <span style="color: var(--color-neutral-700)">{{ t.label }}</span>
+                          <span>{{ t.value }}</span>
+                        </div>
+                      </sc-for>
+                      <div style="display: flex; justify-content: space-between; padding: 9px 0 0; font-family: var(--font-heading); font-size: 16px">
+                        <span>{{ inv.grandLabel }}</span>
+                        <span onMouseEnter="{{ tr.total.enter }}" onClick="{{ tr.total.enter }}" style="cursor: pointer; outline: {{ tr.total.outline }}; outline-offset: 2px; background: {{ tr.total.bg }}">{{ inv.totalText }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="margin-top: 16px; padding-top: 9px; border-top: 1px solid var(--color-neutral-300); color: var(--color-neutral-700); font-size: 10px">{{ inv.footNote }}</div>
+                </sc-if>
+                <sc-if value="{{ showContinued }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 16px; text-align: right; color: var(--color-neutral-600); font-size: 10px">Continued on next page…</div>
+                </sc-if>
+              </div>
+            </div>
+
+            <sc-if value="{{ focusBadge }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 14px; border: 1px solid var(--trace); border-left: 3px solid var(--trace); padding: 10px 13px; display: flex; justify-content: space-between; align-items: center; gap: 12px">
+                <div>
+                  <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--trace)">AI extracted</div>
+                  <div style="font-family: var(--font-heading); font-size: 16px">{{ focusBadge }}</div>
+                </div>
+                <div style="font-size: 11.5px; color: var(--color-neutral-700); text-align: right">{{ focusSource }}<br>{{ focusConfText }}</div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 20px">
+            <div class="card blueprint" style="padding: 20px; background: #fff">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+                <div>
+                  <div style="font-family: var(--font-heading); font-size: 19px; letter-spacing: .03em; text-transform: uppercase">AI Extracted Data</div>
+                  <div style="font-size: 11px; color: var(--color-neutral-600)">Click a field to trace it on the source document.</div>
+                </div>
+                <div style="font-size: 11px; color: var(--color-neutral-700); text-align: right">{{ correctedNote }}</div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px">
+                <sc-for list="{{ fields }}" as="f" hint-placeholder-count="12">
+                  <div class="field" onMouseEnter="{{ f.focus }}" onClick="{{ f.focus }}" style="border: 1px solid {{ f.wrapBorder }}; background: {{ f.wrapBg }}; padding: 9px 11px 10px; cursor: pointer">
+                    <label style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+                      <span>{{ f.label }}</span>
+                      <span style="font-size: 10px; letter-spacing: .04em; color: {{ f.confColor }}">{{ f.confText }}</span>
+                    </label>
+                    <input class="input" value="{{ f.value }}" onChange="{{ f.onChange }}" style="width: 100%; border-color: {{ f.inputBorder }}">
+                    <div style="display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; font-size: 10px; letter-spacing: .08em; text-transform: uppercase">
+                      <span style="color: var(--color-neutral-600)">{{ f.sourceLabel }}</span>
+                      <span style="color: var(--color-accent-700)">{{ f.correctedLabel }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="font-family: var(--font-heading); font-size: 16px; letter-spacing: .05em; text-transform: uppercase; margin: 22px 0 10px">Line Items — {{ itemCountText }}</div>
+              <div style="overflow-x: auto">
+                <table class="table" style="width: 100%; font-size: 11.5px">
+                  <thead>
+                    <tr>
+                      <th style="text-align: left">Description</th>
+                      <th style="text-align: right">Qty</th>
+                      <th style="text-align: right">Unit Price</th>
+                      <th style="text-align: right">Tax</th>
+                      <th style="text-align: right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ allItems }}" as="it" hint-placeholder-count="6">
+                      <tr onMouseEnter="{{ it.enter }}" onClick="{{ it.focus }}" style="cursor: pointer; outline: {{ it.outline }}; background: {{ it.bg }}">
+                        <td>{{ it.desc }}</td>
+                        <td style="text-align: right; color: {{ it.qtyColor }}">{{ it.qtyText }}</td>
+                        <td style="text-align: right">{{ it.rateText }}</td>
+                        <td style="text-align: right">{{ it.taxText }}</td>
+                        <td style="text-align: right">{{ it.amountText }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card blueprint" style="padding: 20px; background: #fff">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+                <div style="font-family: var(--font-heading); font-size: 19px; letter-spacing: .03em; text-transform: uppercase">Agent Summary</div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: {{ analysisColor }}">
+                  <span style="width: 7px; height: 7px; background: {{ analysisColor }}"></span>{{ analysisLabel }}
+                </div>
+              </div>
+              <div style="font-family: var(--font-heading); font-size: 17px; margin-top: 12px">Document understood successfully</div>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; margin-top: 8px">
+                <sc-for list="{{ inv.checks }}" as="c" hint-placeholder-count="6">
+                  <div style="display: flex; gap: 8px; align-items: baseline; font-size: 12.5px">
+                    <span style="color: var(--ok)">✓</span><span>{{ c }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 18px; margin-top: 18px; padding: 13px 15px; border: 1px solid var(--color-divider); background: var(--color-accent-100)">
+                <div>
+                  <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-700)">Overall extraction confidence</div>
+                  <div style="font-family: var(--font-heading); font-size: 30px; line-height: 1.05; color: var(--color-accent-900)">{{ inv.extractionConfidence }}</div>
+                </div>
+                <div style="flex: 1 1 auto">
+                  <div style="height: 8px; background: #fff; border: 1px solid var(--color-accent-300)">
+                    <div style="height: 6px; background: var(--color-accent-700); width: {{ inv.extractionConfidence }}"></div>
+                  </div>
+                  <div style="font-size: 11px; color: var(--color-neutral-700); margin-top: 6px">{{ actionCount }} agent actions completed · {{ inv.items.length }} line items interpreted</div>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px">
+                <sc-for list="{{ inv.actions }}" as="a" hint-placeholder-count="8">
+                  <span style="font-size: 10.5px; padding: 3px 8px; border: 1px solid var(--color-divider); color: var(--color-neutral-800)">{{ a }}</span>
+                </sc-for>
+              </div>
+
+              <div onClick="{{ toggleActivity }}" style="cursor: pointer; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--color-divider); display: flex; justify-content: space-between; align-items: center">
+                <span style="font-family: var(--font-heading); font-size: 16px; letter-spacing: .05em; text-transform: uppercase">Agent Activity</span>
+                <span style="font-size: 11px; color: var(--color-accent-700)">{{ activityToggleLabel }}</span>
+              </div>
+              <sc-if value="{{ activityOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top: 12px; display: flex; flex-direction: column">
+                  <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="9">
+                    <div style="display: grid; grid-template-columns: 18px 1fr 62px; gap: 10px; align-items: baseline; padding: 5px 0; border-bottom: 1px dashed var(--color-divider)">
+                      <span style="color: {{ t.color }}; font-size: 13px">{{ t.mark }}</span>
+                      <span style="font-size: 12.5px">{{ t.text }}</span>
+                      <span style="font-size: 10.5px; color: var(--color-neutral-600); text-align: right; font-variant-numeric: tabular-nums">{{ t.time }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center">
+              <button class="btn btn-primary btn-lg blueprint" onClick="{{ toValidation }}">
+                <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                Continue to Validation
+              </button>
+              <button class="btn btn-secondary" onClick="{{ backToIntake }}">Change invoice</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showValidation }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 22px 30px 60px; display: flex; flex-direction: column; gap: 22px">
+        <div>
+          <div style="font-family: var(--font-heading); font-size: 23px; letter-spacing: .02em">AI Validation &amp; 3-Way Match</div>
+          <div style="color: var(--color-neutral-700); font-size: 12.5px">Invoice ↔ Purchase Order ↔ Goods Receipt, checked against SAP S/4HANA records.</div>
+        </div>
+
+        <div style="border: 1px solid {{ verdictLine }}; border-left: 4px solid {{ verdictLine }}; background: {{ verdictBg }}; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap">
+          <div>
+            <div style="font-family: var(--font-heading); font-size: 21px; letter-spacing: .04em; text-transform: uppercase; color: {{ verdictFg }}">{{ matchVerdict }}</div>
+            <div style="font-size: 12.5px; color: {{ verdictFg }}; margin-top: 3px">{{ verdictReason }}</div>
+          </div>
+          <div style="text-align: right; font-size: 12px; color: {{ verdictFg }}">
+            <div>Agent confidence: {{ inv.matchConfidence }}</div>
+            <div>Risk level: {{ inv.riskLevel }}</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); gap: 14px; align-items: stretch">
+          <sc-for list="{{ matchCards }}" as="c" hint-placeholder-count="3">
+            <div class="card blueprint" style="padding: 16px; background: #fff; border-top: 3px solid {{ c.topLine }}; grid-column: {{ c.col }}">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+                <div style="font-family: var(--font-heading); font-size: 16px; letter-spacing: .1em; text-transform: uppercase">{{ c.title }}</div>
+                <span style="font-size: 10px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border: 1px solid {{ c.chipLine }}; background: {{ c.chipBg }}; color: {{ c.chipFg }}; white-space: nowrap">{{ c.status }}</span>
+              </div>
+              <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px">
+                <sc-for list="{{ c.rows }}" as="r" hint-placeholder-count="4">
+                  <div style="display: flex; justify-content: space-between; gap: 10px; font-size: 12px; border-bottom: 1px dashed var(--color-divider); padding-bottom: 5px">
+                    <span style="color: var(--color-neutral-700)">{{ r.k }}</span>
+                    <span style="text-align: right; color: {{ r.color }}">{{ r.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="grid-column: 2; display: grid; place-items: center; font-family: var(--font-heading); font-size: 19px; color: var(--color-accent-700)">↔</div>
+          <div style="grid-column: 4; display: grid; place-items: center; font-family: var(--font-heading); font-size: 19px; color: var(--color-accent-700)">↔</div>
+        </div>
+
+        <sc-if value="{{ hasDiscrepancy }}" hint-placeholder-val="{{ false }}">
+          <div class="card blueprint" style="padding: 20px; background: #fff; border-left: 4px solid var(--err)">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap">
+              <div>
+                <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--err)">Discrepancy detected</div>
+                <div style="font-family: var(--font-heading); font-size: 20px; margin-top: 4px">{{ inv.discrepancy.title }}</div>
+                <div style="font-size: 12.5px; color: var(--color-neutral-700); max-width: 60ch; margin-top: 4px">{{ inv.discrepancy.where }}</div>
+              </div>
+              <div style="display: flex; gap: 12px">
+                <sc-for list="{{ inv.discrepancy.figures }}" as="f" hint-placeholder-count="4">
+                  <div style="border: 1px solid {{ f.line }}; background: {{ f.bg }}; padding: 11px 15px; min-width: 118px">
+                    <div style="font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-700)">{{ f.k }}</div>
+                    <div style="font-family: var(--font-heading); font-size: 22px; color: {{ f.fg }}">{{ f.v }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: start">
+          <div class="card blueprint" style="padding: 20px; background: #fff">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 12px">Reconciliation</div>
+            <table class="table" style="width: 100%; font-size: 12px">
+              <thead>
+                <tr>
+                  <th style="text-align: left">Validation</th>
+                  <th style="text-align: right">Invoice</th>
+                  <th style="text-align: right">PO / GR</th>
+                  <th style="text-align: right">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ inv.recon }}" as="r" hint-placeholder-count="6">
+                  <tr>
+                    <td>{{ r.k }}</td>
+                    <td style="text-align: right">{{ r.inv }}</td>
+                    <td style="text-align: right">{{ r.ref }}</td>
+                    <td style="text-align: right; color: {{ r.color }}">{{ r.res }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 18px">
+            <div class="card blueprint" style="padding: 20px; background: #fff">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">{{ validationPanelTitle }}</div>
+              <div style="border-left: 3px solid var(--color-accent-700); padding: 5px 0 5px 14px; margin-top: 12px; color: var(--color-neutral-800); font-size: 12.5px">{{ inv.validationNarrative }}</div>
+              <div style="display: flex; gap: 22px; margin-top: 14px; flex-wrap: wrap">
+                <div>
+                  <div style="font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600)">Risk level</div>
+                  <div style="font-family: var(--font-heading); font-size: 16px; color: {{ riskColor }}">{{ inv.riskLevel }}</div>
+                </div>
+                <div>
+                  <div style="font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600)">Agent recommendation</div>
+                  <div style="font-family: var(--font-heading); font-size: 16px">{{ inv.recommendedAction }}</div>
+                </div>
+              </div>
+
+              <sc-if value="{{ needsAction }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top: 18px">
+                  <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600)">Recommended agent action</div>
+                  <div style="display: flex; flex-direction: column; gap: 9px; margin-top: 9px">
+                    <sc-for list="{{ exceptionOptions }}" as="o" hint-placeholder-count="3">
+                      <div onClick="{{ o.go }}" style="border: 1px solid {{ o.border }}; border-left: 3px solid {{ o.leftLine }}; background: {{ o.bg }}; padding: 12px 13px; cursor: {{ o.cursor }}; opacity: {{ o.opacity }}" style-hover="border-color: var(--color-accent)">
+                        <div style="display: flex; justify-content: space-between; gap: 8px; align-items: baseline">
+                          <span style="font-family: var(--font-heading); font-size: 16px">{{ o.title }}</span>
+                          <span style="font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 7px; border: 1px solid {{ o.chipLine }}; color: {{ o.chipFg }}; background: {{ o.chipBg }}">{{ o.badge }}</span>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--color-neutral-700); margin-top: 4px">{{ o.reason }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center">
+              <button class="btn btn-primary btn-lg blueprint" onClick="{{ toSubmit }}">
+                <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                {{ validationCta }}
+              </button>
+              <button class="btn btn-secondary" onClick="{{ backToReview }}">Back to extraction</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showSubmit }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 22px 30px 60px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .82fr); gap: 24px; align-items: start">
+        <div class="card blueprint" style="padding: 24px; background: #fff">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="font-family: var(--font-heading); font-size: 23px; letter-spacing: .02em">Agent Decision</div>
+          <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; padding: 5px 11px; border: 1px solid {{ verdictLine }}; background: {{ verdictBg }}; color: {{ verdictFg }}; font-size: 12px">
+            <span style="width: 7px; height: 7px; background: {{ verdictFg }}"></span>{{ decisionState }}
+          </div>
+          <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 9px">
+            <sc-for list="{{ submitSummary }}" as="r" hint-placeholder-count="7">
+              <div style="display: flex; justify-content: space-between; gap: 14px; padding-bottom: 7px; border-bottom: 1px dashed var(--color-divider)">
+                <span style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600); padding-top: 4px">{{ r.k }}</span>
+                <span style="text-align: right; font-family: var(--font-heading); font-size: 17px; color: {{ r.color }}">{{ r.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <button class="btn btn-primary btn-lg btn-block blueprint" onClick="{{ doSubmit }}">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            Submit for Posting
+          </button>
+          <button class="btn btn-secondary btn-lg btn-block" onClick="{{ openPark }}">Park Invoice</button>
+          <button class="btn btn-secondary btn-lg btn-block" onClick="{{ doClarify }}">Request Clarification</button>
+          <div style="border: 1px solid var(--color-divider); border-left: 3px solid var(--color-accent-700); padding: 15px 16px; color: var(--color-neutral-800); font-size: 12.5px; background: #fff">
+            <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600); margin-bottom: 6px">Agent recommendation</div>
+            {{ inv.recommendation }}
+          </div>
+          <sc-if value="{{ clarifySent }}" hint-placeholder-val="{{ false }}">
+            <div style="border: 1px solid var(--warn-line); background: var(--warn-bg); padding: 13px 15px; font-size: 12px; color: var(--warn)">Clarification requested from the business owner — cost centre and approval evidence pending. The case remains open in the AP Inbox.</div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showDone }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 46px 30px; display: grid; place-items: center">
+        <div class="card blueprint" style="padding: 32px 34px; max-width: 600px; width: 100%; text-align: center; background: #fff; border-top: 4px solid {{ doneLine }}">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: {{ doneLine }}">{{ doneKicker }}</div>
+          <div style="font-family: var(--font-heading); font-size: 28px; letter-spacing: .01em; margin-top: 8px; line-height: 1.15">{{ doneTitle }}</div>
+          <div style="color: var(--color-neutral-700); font-size: 12.5px; margin-top: 8px">{{ doneBody }}</div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 24px; text-align: left">
+            <sc-for list="{{ doneStats }}" as="s" hint-placeholder-count="3">
+              <div style="border: 1px solid var(--color-divider); padding: 12px 13px">
+                <div style="font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600)">{{ s.k }}</div>
+                <div style="font-family: var(--font-heading); font-size: 17px; margin-top: 3px">{{ s.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap">
+            <button class="btn btn-primary blueprint" onClick="{{ navInboxFromDone }}">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              Open AP Inbox
+            </button>
+            <button class="btn btn-secondary" onClick="{{ resetFlow }}">Process another invoice</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isInbox }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 24px 30px 60px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px">
+          <sc-for list="{{ inboxKpis }}" as="k" hint-placeholder-count="5">
+            <div class="card blueprint" style="padding: 15px 16px; background: #fff; border-top: 3px solid {{ k.line }}">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px">
+                <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-neutral-600)">{{ k.label }}</div>
+                <span class="chip" style="border-color: {{ k.line }}; color: {{ k.fg }}; background: {{ k.chipBg }}"><svg class="ic" viewBox="0 0 24 24"><path d="{{ k.iconPath }}"></path></svg></span>
+              </div>
+              <div style="font-family: var(--font-heading); font-size: 29px; line-height: 1.1; margin-top: 5px; color: {{ k.fg }}">{{ k.value }}</div>
+              <div style="font-size: 11px; color: var(--color-neutral-700)">{{ k.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end">
+          <div class="field" style="flex: 1 1 220px; min-width: 180px">
+            <label>Search</label>
+            <input class="input" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Case, invoice, vendor, PO" style="width: 100%">
+          </div>
+          <div class="field">
+            <label>Processing status</label>
+            <select class="input" value="{{ fStatus }}" onChange="{{ onStatus }}" style="font-family: var(--font-body)">
+              <sc-for list="{{ statusOptions }}" as="s" hint-placeholder-count="6">
+                <option value="{{ s }}">{{ s }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div class="field">
+            <label>PO type</label>
+            <select class="input" value="{{ fType }}" onChange="{{ onType }}" style="font-family: var(--font-body)">
+              <sc-for list="{{ typeOptions }}" as="s" hint-placeholder-count="3">
+                <option value="{{ s }}">{{ s }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div class="field">
+            <label>Currency</label>
+            <select class="input" value="{{ fCurrency }}" onChange="{{ onCurrency }}" style="font-family: var(--font-body)">
+              <sc-for list="{{ currencyOptions }}" as="s" hint-placeholder-count="4">
+                <option value="{{ s }}">{{ s }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div class="field">
+            <label>Exception type</label>
+            <select class="input" value="{{ fException }}" onChange="{{ onException }}" style="font-family: var(--font-body)">
+              <sc-for list="{{ exceptionOptionsList }}" as="s" hint-placeholder-count="4">
+                <option value="{{ s }}">{{ s }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <button class="btn btn-ghost" onClick="{{ clearFilters }}">Clear filters</button>
+        </div>
+
+        <div class="card blueprint" style="padding: 16px; background: #fff">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px">
+            <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">AP Processing Inbox</div>
+            <div style="font-size: 11.5px; color: var(--color-neutral-700)">{{ rowCountText }}</div>
+          </div>
+          <div style="overflow-x: auto">
+            <table class="table" style="width: 100%; font-size: 11.5px; min-width: 1100px">
+              <thead>
+                <tr>
+                  <th style="text-align: left">Case ID</th>
+                  <th style="text-align: left">Invoice No.</th>
+                  <th style="text-align: left">Vendor</th>
+                  <th style="text-align: left">Invoice Date</th>
+                  <th style="text-align: left">PO Number</th>
+                  <th style="text-align: right">Amount</th>
+                  <th style="text-align: left">Curr.</th>
+                  <th style="text-align: right">AI Conf.</th>
+                  <th style="text-align: left">Match</th>
+                  <th style="text-align: left">Status</th>
+                  <th style="text-align: left">Received</th>
+                  <th style="text-align: right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+                  <tr onClick="{{ r.go }}" style="cursor: pointer; background: {{ r.bg }}" style-hover="background: var(--color-accent-100)">
+                    <td style="font-variant-numeric: tabular-nums">{{ r.caseId }}</td>
+                    <td>{{ r.number }}</td>
+                    <td>{{ r.vendor }}</td>
+                    <td>{{ r.date }}</td>
+                    <td>{{ r.po }}</td>
+                    <td style="text-align: right; font-variant-numeric: tabular-nums">{{ r.amountText }}</td>
+                    <td>{{ r.currency }}</td>
+                    <td style="text-align: right">{{ r.conf }}</td>
+                    <td style="color: {{ r.matchColor }}">{{ r.match }}</td>
+                    <td><span style="font-size: 10px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; padding: 2px 7px; border: 1px solid {{ r.pillLine }}; background: {{ r.pillBg }}; color: {{ r.pillFg }}">{{ r.status }}</span></td>
+                    <td>{{ r.received }}</td>
+                    <td style="text-align: right; color: var(--color-accent-700)">{{ r.action }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 24px 30px 60px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+            <div class="card blueprint" style="padding: 15px 16px; background: #fff; border-top: 3px solid var(--color-accent-700)">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <span class="chip" style="float: right"><svg class="ic" viewBox="0 0 24 24"><path d="{{ k.iconPath }}"></path></svg></span>
+              <div style="font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--color-neutral-600); min-height: 26px; padding-right: 40px">{{ k.label }}</div>
+              <div style="font-family: var(--font-heading); font-size: 30px; line-height: 1.05; margin-top: 3px; color: var(--color-accent-900)">{{ k.value }}</div>
+              <div style="font-size: 11px; color: {{ k.deltaColor }}">{{ k.delta }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start">
+          <div class="card blueprint" style="padding: 20px; background: #fff">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Invoice Processing Funnel</div>
+            <div style="display: flex; flex-direction: column; gap: 11px; margin-top: 16px">
+              <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="5">
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px">
+                    <span>{{ f.label }}</span>
+                    <span style="color: var(--color-neutral-700)">{{ f.valueText }}</span>
+                  </div>
+                  <div style="height: 18px; border: 1px solid var(--color-accent-300); background: var(--color-accent-100)">
+                    <div style="height: 16px; background: var(--color-accent-700); width: {{ f.width }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div class="card blueprint" style="padding: 20px; background: #fff">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Processing Outcome</div>
+            <div style="display: flex; align-items: center; gap: 22px; margin-top: 16px">
+              <div style="position: relative; flex: 0 0 152px">
+                <svg viewBox="0 0 42 42" style="width: 152px; height: 152px; transform: rotate(-90deg)">
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--color-neutral-200)" stroke-width="6"></circle>
+                  <sc-for list="{{ outcomes }}" as="o" hint-placeholder-count="4">
+                    <circle cx="21" cy="21" r="15.9" fill="none" stroke="{{ o.color }}" stroke-width="6" stroke-dasharray="{{ o.dash }}" stroke-dashoffset="{{ o.offset }}"></circle>
+                  </sc-for>
+                </svg>
+                <div style="position: absolute; inset: 0; display: grid; place-items: center; text-align: center">
+                  <div>
+                    <div style="font-family: var(--font-heading); font-size: 26px; line-height: 1; color: var(--color-accent-900)">82%</div>
+                    <div style="font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600)">Touchless</div>
+                  </div>
+                </div>
+              </div>
+              <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 9px">
+              <sc-for list="{{ outcomes }}" as="o" hint-placeholder-count="4">
+                <div style="display: flex; align-items: center; gap: 9px; font-size: 12px; border-bottom: 1px dashed var(--color-divider); padding-bottom: 6px">
+                  <span style="width: 10px; height: 10px; background: {{ o.color }}"></span>
+                  <span style="flex: 1 1 auto">{{ o.label }}</span>
+                  <span style="font-family: var(--font-heading); font-size: 15px">{{ o.valueText }}</span>
+                </div>
+              </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px; align-items: start">
+          <div class="card blueprint" style="padding: 20px; background: #fff">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Exception Breakdown</div>
+            <div style="display: flex; align-items: flex-end; gap: 12px; height: 164px; margin-top: 18px; border-bottom: 1px solid var(--color-divider); border-left: 1px solid var(--color-divider); padding: 0 6px">
+              <sc-for list="{{ exBars }}" as="b" hint-placeholder-count="6">
+                <div style="flex: 1 1 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 6px">
+                  <span style="font-family: var(--font-heading); font-size: 14px">{{ b.value }}</span>
+                  <div style="width: 100%; height: {{ b.height }}; background: {{ b.color }}; border: 1px solid var(--color-accent-700)"></div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; gap: 12px; padding: 8px 6px 0">
+              <sc-for list="{{ exBars }}" as="b" hint-placeholder-count="6">
+                <div style="flex: 1 1 0; font-size: 10px; text-align: center; color: var(--color-neutral-700); line-height: 1.25">{{ b.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div class="card blueprint" style="padding: 20px; background: #fff">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+              <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Audit Trail</div>
+              <div style="font-size: 11px; color: var(--color-neutral-600)">Immutable · agent-written</div>
+            </div>
+            <div style="margin-top: 14px; display: flex; flex-direction: column">
+              <sc-for list="{{ auditTrail }}" as="a" hint-placeholder-count="7">
+                <div style="display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding: 9px 0; border-bottom: 1px dashed var(--color-divider); font-size: 12px">
+                  <span style="color: var(--color-neutral-600); font-variant-numeric: tabular-nums">{{ a.when }}</span>
+                  <span style="color: var(--color-accent-700)">{{ a.actor }}</span>
+                  <span style="flex: 1 1 200px; min-width: 160px">{{ a.event }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start">
+          <div class="card blueprint" style="padding: 20px; background: #fff">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">AI Performance</div>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px">
+              <sc-for list="{{ aiPerf }}" as="p" hint-placeholder-count="5">
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px">
+                    <span>{{ p.label }}</span>
+                    <span style="font-family: var(--font-heading); font-size: 15px">{{ p.value }}</span>
+                  </div>
+                  <div style="height: 7px; background: var(--color-accent-100)">
+                    <div style="height: 7px; background: var(--color-accent-700); width: {{ p.width }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div class="card blueprint" style="padding: 20px; background: #fff">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="font-family: var(--font-heading); font-size: 17px; letter-spacing: .05em; text-transform: uppercase">Operational Impact</div>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px">
+              <sc-for list="{{ impact }}" as="i" hint-placeholder-count="4">
+                <div style="border: 1px solid var(--color-divider); padding: 13px 14px">
+                  <div style="font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600)">{{ i.label }}</div>
+                  <div style="font-family: var(--font-heading); font-size: 23px; margin-top: 4px">{{ i.value }}</div>
+                  <div style="font-size: 11px; color: var(--color-neutral-700)">{{ i.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top: 14px; font-size: 11px; color: var(--color-neutral-600)">Illustrative demo metrics — not audited figures.</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ showChat }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; right: 22px; bottom: 22px; z-index: 45; width: 392px; max-width: 92vw; background: #fff; border: 1px solid var(--color-accent-700); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; max-height: 74vh">
+      <div onClick="{{ toggleChat }}" style="cursor: pointer; background: var(--color-accent-700); color: #fff; padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px">
+        <div>
+          <div style="font-family: var(--font-heading); font-size: 16px; letter-spacing: .05em; text-transform: uppercase">Ask Invoice Agent</div>
+          <div style="font-size: 11px; opacity: .82">{{ chatSubtitle }}</div>
+        </div>
+        <span style="font-size: 18px; line-height: 1">{{ chatToggleMark }}</span>
+      </div>
+
+      <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 14px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px">
+          <sc-for list="{{ chatLog }}" as="m" hint-placeholder-count="2">
+            <div style="align-self: {{ m.align }}; max-width: 92%; border: 1px solid {{ m.line }}; border-left: 3px solid {{ m.leftLine }}; background: {{ m.bg }}; padding: 10px 12px">
+              <div style="font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: {{ m.roleColor }}">{{ m.role }}</div>
+              <sc-if value="{{ m.sources }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top: 7px; font-size: 11px; color: var(--color-neutral-700)">
+                  <div style="letter-spacing: .1em; text-transform: uppercase; font-size: 9.5px; color: var(--color-neutral-600)">Agent checked</div>
+                  <div>{{ m.sources }}</div>
+                </div>
+              </sc-if>
+              <div style="font-size: 12.5px; margin-top: 6px; color: var(--color-text)">{{ m.text }}</div>
+              <sc-if value="{{ m.recommendation }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--color-divider); font-size: 11.5px">
+                  <span style="letter-spacing: .1em; text-transform: uppercase; font-size: 9.5px; color: var(--color-neutral-600)">Recommendation</span><br>{{ m.recommendation }}
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="padding: 0 16px 8px; display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{ chatPrompts }}" as="p" hint-placeholder-count="4">
+            <span onClick="{{ p.go }}" style="cursor: pointer; font-size: 11px; padding: 5px 9px; border: 1px solid var(--color-accent-300); color: var(--color-accent-800)" style-hover="background: var(--color-accent-100)">{{ p.text }}</span>
+          </sc-for>
+        </div>
+
+        <div style="padding: 10px 16px 14px; border-top: 1px solid var(--color-divider); display: flex; gap: 8px">
+          <input class="input" value="{{ chatDraft }}" onChange="{{ onChatDraft }}" onKeyDown="{{ onChatKey }}" placeholder="Ask about this invoice…" style="flex: 1 1 auto; min-width: 0">
+          <button class="btn btn-primary" onClick="{{ sendChat }}" style="min-height: 38px; padding: 0 14px; font-size: 13px">Ask</button>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ detail }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(0, 31, 82, .35); z-index: 50; display: flex; justify-content: flex-end" onClick="{{ closeDetail }}">
+      <div onClick="{{ stop }}" style="width: 500px; max-width: 94vw; height: 100%; background: var(--color-bg); border-left: 1px solid var(--color-divider); box-shadow: var(--shadow-lg); overflow-y: auto; padding: 24px 26px 34px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 14px">
+          <div>
+            <div style="font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700)">{{ detail.caseId }}</div>
+            <div style="font-family: var(--font-heading); font-size: 23px; line-height: 1.1; margin-top: 4px">{{ detail.vendor }}</div>
+            <div style="font-size: 12px; color: var(--color-neutral-700)">{{ detail.number }} · {{ detail.date }}</div>
+          </div>
+          <button class="btn btn-ghost" onClick="{{ closeDetail }}">Close</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 20px">
+          <sc-for list="{{ detailRows }}" as="r" hint-placeholder-count="8">
+            <div style="border: 1px solid var(--color-divider); background: #fff; padding: 10px 11px">
+              <div style="font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600)">{{ r.k }}</div>
+              <div style="font-family: var(--font-heading); font-size: 16px; margin-top: 3px">{{ r.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-family: var(--font-heading); font-size: 16px; letter-spacing: .05em; text-transform: uppercase; margin: 22px 0 10px">Agent Activity</div>
+        <div style="display: flex; flex-direction: column">
+          <sc-for list="{{ detail.timeline }}" as="t" hint-placeholder-count="6">
+            <div style="display: grid; grid-template-columns: 18px 1fr 62px; gap: 10px; padding: 5px 0; align-items: baseline; border-bottom: 1px dashed var(--color-divider)">
+              <span style="color: var(--color-accent-700)">✓</span>
+              <span style="font-size: 12px">{{ t.text }}</span>
+              <span style="font-size: 10.5px; color: var(--color-neutral-600); text-align: right; font-variant-numeric: tabular-nums">{{ t.time }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top: 20px; border-left: 3px solid var(--color-accent-700); padding-left: 14px; font-size: 12.5px; color: var(--color-neutral-800)">{{ detail.note }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ connectorOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(0, 31, 82, .38); z-index: 55; display: flex; justify-content: flex-end" onClick="{{ closeConnector }}">
+      <div onClick="{{ stop }}" style="width: 520px; max-width: 94vw; height: 100%; background: #fff; border-left: 1px solid var(--color-divider); box-shadow: var(--shadow-lg); overflow-y: auto; display: flex; flex-direction: column">
+        <div style="padding: 24px 26px 20px; border-bottom: 1px solid var(--color-divider)">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 14px">
+            <div>
+              <div style="font-family: var(--font-heading); font-size: 23px; letter-spacing: .03em; text-transform: uppercase">Enterprise Connections</div>
+              <div style="font-size: 12px; color: var(--color-neutral-700); margin-top: 5px; max-width: 46ch">Connect the Invoice Processing Agent to enterprise systems and invoice intake channels.</div>
+            </div>
+            <button class="btn btn-ghost" onClick="{{ closeConnector }}">Close</button>
+          </div>
+          <div style="margin-top: 14px; font-size: 11.5px; color: var(--color-neutral-700)">One primary ERP connection at a time. Intake channels can run alongside it.</div>
+        </div>
+
+        <div style="padding: 20px 26px; display: flex; flex-direction: column; gap: 12px">
+          <sc-for list="{{ connectors }}" as="c" hint-placeholder-count="5">
+            <div style="border: 1px solid {{ c.line }}; border-left: 3px solid {{ c.leftLine }}; background: {{ c.bg }}; padding: 15px 16px; display: flex; justify-content: space-between; align-items: center; gap: 16px">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <span style="color: {{ c.markColor }}; font-size: 13px">{{ c.mark }}</span>
+                  <span style="font-family: var(--font-heading); font-size: 18px">{{ c.name }}</span>
+                </div>
+                <div style="font-size: 11.5px; color: var(--color-neutral-700); margin-top: 3px">{{ c.category }}</div>
+                <div style="font-size: 11px; color: {{ c.statusColor }}; margin-top: 4px">{{ c.detail }}</div>
+              </div>
+              <button class="btn {{ c.btnClass }}" onClick="{{ c.go }}" style="white-space: nowrap; min-height: 38px; font-size: 12.5px; padding: 0 15px">{{ c.cta }}</button>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ connectorToast }}" hint-placeholder-val="{{ false }}">
+          <div style="margin: 0 26px 24px; border: 1px solid {{ connectorToastLine }}; background: {{ connectorToastBg }}; padding: 14px 16px">
+            <div style="font-family: var(--font-heading); font-size: 16px; color: {{ connectorToastFg }}">{{ connectorToast }}</div>
+            <sc-if value="{{ connectorToastMeta }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 11.5px; color: var(--color-neutral-700); margin-top: 4px">{{ connectorToastMeta }}</div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ parkOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(0, 31, 82, .38)" onClick="{{ closePark }}">
+      <div class="dialog blueprint" onClick="{{ stop }}" style="width: 460px; max-width: 92vw; padding: 26px; background: #fff">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="dialog-title" style="font-family: var(--font-heading); font-size: 21px; letter-spacing: .02em">Why is this invoice being parked?</div>
+        <div class="dialog-body" style="margin-top: 14px">
+          <div class="field">
+            <label>Parking reason</label>
+            <select class="input" value="{{ parkReason }}" onChange="{{ onParkReason }}" style="width: 100%; font-family: var(--font-body)">
+              <sc-for list="{{ parkReasons }}" as="p" hint-placeholder-count="7">
+                <option value="{{ p }}">{{ p }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div style="font-size: 11.5px; color: var(--color-neutral-700); margin-top: 12px">The agent will hold the invoice, notify the business owner and re-run validation once the missing information arrives.</div>
+        </div>
+        <div class="dialog-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end">
+          <button class="btn btn-ghost" onClick="{{ closePark }}">Cancel</button>
+          <button class="btn btn-primary blueprint" onClick="{{ doPark }}">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            Park Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;orgName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Aurora Manufacturing India Pvt Ltd&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;showConfidence&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;agentSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:420,&quot;min&quot;:120,&quot;max&quot;:1200,&quot;step&quot;:60,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+class Component extends DCLogic {
+  state = {
+    view: 'processing', stage: 'intake', method: 'upload', sel: null, edits: {}, page: 1,
+    running: false, runIdx: 0, activityOpen: true,
+    connectorOpen: false, erp: null, mailbox: true, connecting: null, connectorToast: '', connectorMeta: '',
+    parkOpen: false, parkReason: 'Missing PO', clarifySent: false, done: null, cases: [],
+    q: '', fStatus: 'All statuses', fType: 'All', fCurrency: 'All', fException: 'All', detail: null,
+    focus: null, chatOpen: true, chatDraft: '', chats: {}
+  };
+
+  inr(n, dec) {
+    const neg = n < 0; const x = Math.abs(n);
+    let s = (dec === false ? Math.round(x).toString() : x.toFixed(2));
+    let parts = s.split('.'); let i = parts[0]; const f = parts[1];
+    let last3 = i.slice(-3); const rest = i.slice(0, -3);
+    if (rest) last3 = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3;
+    return (neg ? '-' : '') + '₹' + last3 + (f ? '.' + f : '');
+  }
+  money(n, cur) {
+    if (cur === 'INR') return this.inr(n);
+    const sym = { USD: '$', EUR: '€', GBP: '£' }[cur] || '';
+    return sym + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  invoices() {
+    if (this._inv) return this._inv;
+    const I = this.inr.bind(this);
+    const mk = (desc, hsn, qty, rate, taxPct) => ({
+      desc, hsn, qty, rate, taxPct,
+      qtyText: qty.toLocaleString('en-IN'), rateText: I(rate), taxText: taxPct + '%', amountText: I(qty * rate), page: 1
+    });
+
+    const bharat = {
+      id: 'bharat', vendor: 'Bharat Technologies Pvt Ltd', vendorId: 'V-100482',
+      kind: 'PO-backed', desc: 'Clean corporate GST tax invoice, PO-backed, six line items, IGST 18%.',
+      outcome: '3-way match passes — straight-through posting', outcomeTone: 'ok',
+      gstin: '27AABCB1234K1ZP', pan: 'AABCB1234K', docType: 'Tax Invoice',
+      addr: ['Unit 402, Cyber Towers, Hinjawadi Phase II', 'Pune, Maharashtra 411057', 'India'],
+      number: 'INV-2026-08452', date: '12 Aug 2026', po: '4500127845', currency: 'INR', terms: 'Net 45',
+      entity: 'Aurora Manufacturing India Pvt Ltd', entityAddr: ['Plot 14, MIDC Chakan', 'Pune, Maharashtra 410501'],
+      buyerGstin: '27AAACA9988R1ZM', shipTo: 'Chakan Plant — Gate 3, Stores', pos: 'Maharashtra (27)',
+      pages: 1, poLabel: 'PO 4500127845',
+      items: [
+        mk('Edge gateway controller EG-450', '85176290', 60, 24500, 18),
+        mk('Industrial IoT sensor module S-22', '85311020', 180, 4850, 18),
+        mk('Ruggedised network switch 16-port', '85176290', 24, 38900, 18),
+        mk('Cabling & termination kit', '85444999', 40, 6200, 18),
+        mk('On-site commissioning (per day)', '998719', 12, 18500, 18),
+        mk('Extended warranty — 24 months', '998719', 1, 148000, 18)
+      ],
+      subtotal: 4131300, taxLabel: 'IGST 18%', grandLabel: 'Total payable', extraRows: [{ label: 'Round off', value: I(0) }],
+      footNote: 'Payment by NEFT/RTGS to A/c 0093 4512 8871, IFSC HDFC0000093. Raised under GST Rule 46. E-invoice IRN 8f31c…d902.',
+      matchStatus: 'pass', matchConfidence: '99.6%', riskLevel: 'Low', recommendedAction: 'Submit for posting',
+      extractionConfidence: '99.4%',
+      checks: ['Vendor identified', 'Invoice structure interpreted', '12 fields extracted', '6 line items identified', 'PO number detected', 'Duplicate check completed'],
+      actions: ['Document classified', 'Vendor identified', 'GSTIN validated', 'Fields extracted', 'Line items interpreted', 'GST recomputed', 'Duplicate check completed', 'PO match initiated'],
+      recommendation: 'Straight-through posting recommended. The 3-way match passed with no material variance; the invoice is eligible for posting to SAP S/4HANA.'
+    };
+
+    const apex = {
+      id: 'apex', vendor: 'Apex Industrial Supplies India Pvt Ltd', vendorId: 'V-100915',
+      kind: 'Complex · 3 pages', desc: 'Dense multi-page layout, CGST + SGST split, freight and packing charges.',
+      outcome: '3-way match fails — quantity discrepancy', outcomeTone: 'err',
+      gstin: '29AAJCA5567P1Z4', pan: 'AAJCA5567P', docType: 'Tax Invoice',
+      addr: ['Shed 7, Peenya Industrial Area, 3rd Stage', 'Bengaluru, Karnataka 560058', 'India'],
+      number: 'AIS/26-27/1184', date: '04 Aug 2026', po: '4500131207', currency: 'INR', terms: 'Net 60',
+      entity: 'Aurora Manufacturing India Pvt Ltd', entityAddr: ['Survey 88, Bommasandra Link Road', 'Bengaluru, Karnataka 560099'],
+      buyerGstin: '29AAACA9988R1ZK', shipTo: 'Bommasandra Plant — Receiving Dock 2', pos: 'Karnataka (29)',
+      pages: 3, poLabel: 'PO 4500131207',
+      items: [
+        mk('Hex bolt M12 x 60 — grade 8.8', '73181500', 4800, 27.5, 18),
+        mk('Hardened washer M12', '73182200', 9600, 4.2, 18),
+        mk('Self-locking nut M12', '73181600', 4800, 9.8, 18),
+        mk('Mild steel channel 100x50 (6m)', '72162100', 120, 4380, 18),
+        mk('Welding electrode 3.15mm (5kg pack)', '83112000', 210, 1120, 18),
+        mk('Industrial adhesive 1L', '35061000', 96, 890, 18),
+        mk('Abrasive cutting disc 300mm', '68042290', 320, 265, 18),
+        mk('Hydraulic hose assembly 1/2 in', '40093100', 64, 2180, 18),
+        mk('Safety gloves — cut level 5 (pair)', '61161000', 600, 245, 18),
+        mk('Packing & forwarding', '998540', 1, 18600, 18),
+        mk('Freight — Bengaluru local', '996511', 1, 42400, 5)
+      ],
+      subtotal: 1963092, taxLabel: 'CGST 9% + SGST 9%', grandLabel: 'Total payable',
+      extraRows: [{ label: 'GST on freight 5%', value: I(2120) }],
+      footNote: 'Goods received against GR 5001284471. E-way bill 431802991724. Freight taxed at 5% under GTA forward charge.',
+      matchStatus: 'fail', matchConfidence: '97.1%', riskLevel: 'Medium', recommendedAction: 'Park invoice',
+      extractionConfidence: '98.6%',
+      checks: ['Vendor identified', 'Three pages merged and interpreted', '12 fields extracted', '11 line items identified', 'PO and GR located', 'Duplicate check completed'],
+      actions: ['Pages merged', 'Document classified', 'Vendor identified', 'Fields extracted', 'Line items interpreted', 'Mixed GST rates resolved', 'Duplicate check completed', 'Quantity variance detected', 'Exception raised'],
+      recommendation: 'Do not post automatically. The invoice bills 120 mild-steel channel sections against a purchase order and goods receipt of 100 — park the invoice pending business confirmation of the additional 20 units.',
+      discrepancy: {
+        title: 'Quantity discrepancy — mild steel channel 100x50 (6m)',
+        where: 'Line 4, page 1 of the invoice. The invoiced quantity exceeds both the purchase order and the recorded goods receipt.',
+        figures: [
+          { k: 'Invoice qty', v: '120', tone: 'err' },
+          { k: 'PO qty', v: '100', tone: 'plain' },
+          { k: 'Goods receipt', v: '100', tone: 'plain' },
+          { k: 'Difference', v: '+20 units', tone: 'err' }
+        ]
+      }
+    };
+
+    const vertex = {
+      id: 'vertex', vendor: 'Vertex Consulting Services LLP', vendorId: 'V-101334',
+      kind: 'Non-PO service', desc: 'Service invoice with no purchase order, SAC codes and TDS u/s 194J.',
+      outcome: 'Exception — no purchase order identified', outcomeTone: 'warn',
+      gstin: '07AAFFV2201Q1ZC', pan: 'AAFFV2201Q', docType: 'Tax Invoice (Services)',
+      addr: ['3rd Floor, Tower B, Cyber Hub Extension', 'Gurugram, Haryana 122002', 'India'],
+      number: 'VCS/2026/0417', date: '18 Aug 2026', po: '', currency: 'INR', terms: 'Net 30',
+      entity: 'Aurora Manufacturing India Pvt Ltd', entityAddr: ['Corporate Office, DLF Cyber City', 'Gurugram, Haryana 122002'],
+      buyerGstin: '06AAACA9988R1ZH', shipTo: 'Corporate — Finance Transformation', pos: 'Haryana (06)',
+      pages: 1, poLabel: 'PO: not referenced',
+      items: [
+        mk('Finance transformation advisory — Aug 2026', '998311', 1, 560000, 18),
+        mk('Process assessment workshops (4 sessions)', '998311', 4, 45000, 18),
+        mk('Reimbursable travel — at actuals', '998311', 1, 62000, 18)
+      ],
+      subtotal: 802000, taxLabel: 'CGST 9% + SGST 9%', grandLabel: 'Net payable after TDS',
+      extraRows: [{ label: 'Less TDS 10% u/s 194J', value: '-' + I(80200) }],
+      footNote: 'TDS deductible @10% u/s 194J on professional fees. Vendor is a registered LLP; reverse charge not applicable.',
+      matchStatus: 'exception', matchConfidence: '92.4%', riskLevel: 'Medium', recommendedAction: 'Park invoice',
+      extractionConfidence: '97.9%',
+      checks: ['Vendor identified', 'Service invoice recognised', '11 fields extracted', '3 line items identified', 'SAC codes interpreted', 'TDS computed u/s 194J'],
+      actions: ['Document classified', 'Vendor identified', 'Fields extracted', 'SAC codes interpreted', 'TDS computed', 'PO search executed — no match', 'Duplicate check completed', 'Exception risk assessed'],
+      recommendation: 'Park the invoice and request cost centre plus business-owner approval. Non-PO service invoices above ₹5,00,000 require GPO sign-off under current policy.'
+    };
+
+    [bharat, apex, vertex].forEach(v => {
+      if (v.id === 'apex') v.items.forEach((it, i) => { it.page = i < 5 ? 1 : (i < 9 ? 2 : 3); });
+      const tax = v.id === 'apex' ? 351616 : Math.round(v.subtotal * 0.18);
+      v.tax = tax;
+      const gross = v.subtotal + tax;
+      v.total = v.id === 'vertex' ? gross - 80200 : (v.id === 'apex' ? gross + 2120 : gross);
+      v.subtotalText = I(v.subtotal); v.taxText = I(tax); v.totalText = I(v.total); v.grossText = I(gross);
+    });
+
+    const chip = (tone) => tone;
+    bharat.match = [
+      { title: 'Invoice', status: '✓ Validated', tone: 'ok', rows: [
+        { k: 'Invoice No.', v: 'INV-2026-08452' }, { k: 'Vendor', v: 'Bharat Technologies' },
+        { k: 'Amount', v: bharat.totalText }, { k: 'Quantity', v: '317 units' }] },
+      { title: 'Purchase Order', status: '✓ Matched', tone: 'ok', rows: [
+        { k: 'PO Number', v: '4500127845' }, { k: 'PO Amount', v: bharat.totalText },
+        { k: 'Ordered Qty', v: '317 units' }, { k: 'Vendor', v: 'Bharat Technologies' }] },
+      { title: 'Goods Receipt', status: '✓ Matched', tone: 'ok', rows: [
+        { k: 'GR Number', v: '5001279043' }, { k: 'Received Qty', v: '317 units' },
+        { k: 'Receipt Date', v: '10 Aug 2026' }, { k: 'Plant', v: 'Chakan (1010)' }] }
+    ];
+    bharat.recon = [
+      { k: 'Vendor / GSTIN', inv: '27AABCB1234K1ZP', ref: '27AABCB1234K1ZP' },
+      { k: 'PO Number', inv: '4500127845', ref: '4500127845' },
+      { k: 'Quantity', inv: '317', ref: '317' },
+      { k: 'Taxable value', inv: bharat.subtotalText, ref: bharat.subtotalText },
+      { k: 'IGST', inv: bharat.taxText, ref: bharat.taxText },
+      { k: 'Total', inv: bharat.totalText, ref: bharat.totalText }
+    ];
+    bharat.validationNarrative = 'Invoice data successfully reconciled against the purchase order and goods receipt. GSTIN verified, no material discrepancies identified. The invoice is eligible for posting.';
+
+    apex.match = [
+      { title: 'Invoice', status: '⚠ Variance', tone: 'err', rows: [
+        { k: 'Invoice No.', v: 'AIS/26-27/1184' }, { k: 'Vendor', v: 'Apex Industrial' },
+        { k: 'Amount', v: apex.totalText }, { k: 'Channel qty', v: '120 units', tone: 'err' }] },
+      { title: 'Purchase Order', status: '✓ Found', tone: 'ok', rows: [
+        { k: 'PO Number', v: '4500131207' }, { k: 'PO Amount', v: this.inr(2059556) },
+        { k: 'Ordered Qty', v: '100 units' }, { k: 'Vendor', v: 'Apex Industrial' }] },
+      { title: 'Goods Receipt', status: '✓ Found', tone: 'ok', rows: [
+        { k: 'GR Number', v: '5001284471' }, { k: 'Received Qty', v: '100 units' },
+        { k: 'Receipt Date', v: '02 Aug 2026' }, { k: 'Plant', v: 'Bommasandra (1030)' }] }
+    ];
+    apex.recon = [
+      { k: 'Vendor / GSTIN', inv: '29AAJCA5567P1Z4', ref: '29AAJCA5567P1Z4' },
+      { k: 'PO Number', inv: '4500131207', ref: '4500131207' },
+      { k: 'Quantity (channel)', inv: '120', ref: '100', res: '⚠ +20 units' },
+      { k: 'Unit price', inv: this.inr(4380), ref: this.inr(4380) },
+      { k: 'Taxable value', inv: apex.subtotalText, ref: this.inr(1875492), res: '⚠ Variance' },
+      { k: 'CGST + SGST', inv: apex.taxText, ref: apex.taxText }
+    ];
+    apex.validationNarrative = 'Exception detected. The agent identified a quantity mismatch between the invoice, purchase order and goods receipt: 120 channel sections invoiced against 100 ordered and 100 received. The invoice should not be posted automatically.';
+
+    vertex.match = [
+      { title: 'Invoice', status: '✓ Validated', tone: 'ok', rows: [
+        { k: 'Invoice No.', v: 'VCS/2026/0417' }, { k: 'Vendor', v: 'Vertex Consulting LLP' },
+        { k: 'Invoice value', v: vertex.grossText }, { k: 'Net after TDS', v: vertex.totalText }] },
+      { title: 'Purchase Order', status: '⚠ Not found', tone: 'warn', rows: [
+        { k: 'PO Number', v: '—', tone: 'warn' }, { k: 'PO Amount', v: '—' },
+        { k: 'Ordered Qty', v: '—' }, { k: 'Search scope', v: 'All open POs, 24 months' }] },
+      { title: 'Goods Receipt', status: 'Not applicable', tone: 'plain', rows: [
+        { k: 'GR Number', v: '—' }, { k: 'Service entry', v: 'None recorded' },
+        { k: 'Receipt Date', v: '—' }, { k: 'Basis', v: 'Service invoice' }] }
+    ];
+    vertex.recon = [
+      { k: 'Vendor / GSTIN', inv: '07AAFFV2201Q1ZC', ref: '07AAFFV2201Q1ZC' },
+      { k: 'PO Number', inv: 'Not referenced', ref: 'No match', res: '⚠ Exception' },
+      { k: 'Cost centre', inv: 'Not stated', ref: 'Required', res: '⚠ Missing' },
+      { k: 'Taxable value', inv: vertex.subtotalText, ref: 'n/a' },
+      { k: 'CGST + SGST', inv: vertex.taxText, ref: vertex.taxText },
+      { k: 'TDS u/s 194J', inv: this.inr(80200), ref: this.inr(80200) }
+    ];
+    vertex.validationNarrative = 'No purchase order was identified for this invoice. The document is a valid non-PO professional services invoice with correct GST and TDS treatment, but business-owner validation and a cost centre are required before posting.';
+
+    [bharat, apex, vertex].forEach(v => {
+      v.recon = v.recon.map(r => Object.assign({ res: '✓' }, r));
+      v.recon.forEach(r => { r.color = r.res.indexOf('⚠') === 0 ? 'var(--err)' : 'var(--ok)'; });
+    });
+
+    const T = (rows) => rows.map((r, i) => ({ time: '10:32:' + String(1 + i * 2).padStart(2, '0'), text: r[0], mark: r[1] || '✓' }));
+    bharat.timeline = T([['Invoice received via AP shared mailbox'], ['Document classified as GST tax invoice'], ['Vendor identified — Bharat Technologies Pvt Ltd'], ['Invoice fields extracted (12 fields)'], ['PO 4500127845 identified in SAP S/4HANA'], ['Duplicate check completed — no match found'], ['3-way match completed — passed'], ['GST recomputation verified'], ['Recommended action: Submit for posting', '→']]);
+    apex.timeline = T([['Invoice received via SAP S/4HANA connector'], ['Three pages merged into one document'], ['Vendor identified — Apex Industrial Supplies India'], ['Invoice fields and 11 line items extracted'], ['PO 4500131207 and GR 5001284471 identified'], ['Duplicate check completed — no match found'], ['3-way match exception detected — quantity variance', '⚠'], ['Risk assessed as medium'], ['Recommended action: Park invoice', '→']]);
+    vertex.timeline = T([['Invoice received via AP shared mailbox'], ['Document classified as service tax invoice'], ['Vendor identified — Vertex Consulting Services LLP'], ['Invoice fields extracted (11 fields)'], ['PO search executed across open POs — no match', '⚠'], ['TDS computed @10% u/s 194J'], ['Duplicate check completed — no match found'], ['Exception risk assessed — medium'], ['Recommended action: Park invoice', '→']]);
+
+    bharat.fieldConf = { 'Vendor Name': 99.8, 'Vendor ID': 99.5, 'GSTIN': 99.7, 'Invoice Number': 99.8, 'Invoice Date': 99.9, 'PO Number': 99.2, 'Currency': 100, 'Payment Terms': 98.6, 'Billing Entity': 99.4, 'Taxable Value': 99.9, 'Tax Amount': 100, 'Total Amount': 100 };
+    apex.fieldConf = { 'Vendor Name': 99.4, 'Vendor ID': 98.9, 'GSTIN': 99.3, 'Invoice Number': 98.2, 'Invoice Date': 99.6, 'PO Number': 98.8, 'Currency': 100, 'Payment Terms': 97.4, 'Billing Entity': 99.1, 'Taxable Value': 99.5, 'Tax Amount': 99.2, 'Total Amount': 99.8 };
+    vertex.fieldConf = { 'Vendor Name': 99.1, 'Vendor ID': 98.4, 'GSTIN': 99.2, 'Invoice Number': 98.7, 'Invoice Date': 99.5, 'PO Number': 62.0, 'Currency': 100, 'Payment Terms': 97.9, 'Billing Entity': 96.8, 'Taxable Value': 99.4, 'Tax Amount': 99.1, 'Total Amount': 99.6 };
+
+    this._inv = { bharat, apex, vertex };
+    return this._inv;
+  }
+
+  baseRows() {
+    if (this._rows) return this._rows;
+    const V = [
+      ['Bharat Technologies Pvt Ltd', 'INR'], ['Apex Industrial Supplies India Pvt Ltd', 'INR'],
+      ['Vertex Consulting Services LLP', 'INR'], ['Mahalaxmi Logistics Pvt Ltd', 'INR'],
+      ['Sundaram Precision Components Ltd', 'INR'], ['Deccan Facility Management Pvt Ltd', 'INR'],
+      ['Kaveri Chemicals & Polymers Ltd', 'INR'], ['Indus Steel & Alloys Pvt Ltd', 'INR'],
+      ['Nexgen IT Services Pvt Ltd', 'INR'], ['Sagar Packaging Industries', 'INR'],
+      ['Trident Engineering Works Pvt Ltd', 'INR'], ['Vayu Air Freight Pvt Ltd', 'INR'],
+      ['Konark Power Systems Pvt Ltd', 'INR'], ['Rashtriya Tooling Solutions Ltd', 'INR'],
+      ['Saraswat Legal Advisors LLP', 'INR'], ['Chola Infra Projects Pvt Ltd', 'INR'],
+      ['Gokul Transport Corporation', 'INR'], ['Meridian Analytics India Pvt Ltd', 'INR'],
+      ['Helvetia Instruments GmbH', 'EUR'], ['Northbridge Analytics Ltd', 'GBP'],
+      ['Cascade Semicon Inc.', 'USD'], ['Arav Print & Media Pvt Ltd', 'INR']
+    ];
+    const status = ['Posted', 'Processed', 'In Progress', 'Validation Required', 'Exception', 'Parked', 'Awaiting Approval', 'Submitted'];
+    const exTypes = ['Missing PO', 'Price variance', 'Quantity variance', 'GST mismatch', 'Duplicate suspected', 'Missing approval'];
+    const rows = [];
+    for (let i = 0; i < 46; i++) {
+      const v = V[i % V.length];
+      const r = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453) % 1;
+      const st = status[Math.floor(r * 8) % 8];
+      const nonPo = st === 'Exception' || (i % 7 === 0);
+      const amt = v[1] === 'INR' ? Math.round((45000 + r * 3800000) / 100) * 100 : Math.round(1200 + r * 68000);
+      const day = 2 + (i % 26);
+      const isEx = st === 'Exception' || st === 'Validation Required';
+      rows.push({
+        caseId: 'AP-2026-00' + (1180 + i),
+        number: v[1] === 'INR' ? 'INV/26-27/' + (4100 + i * 7) : 'FI-2026-' + (8800 + i * 3),
+        vendor: v[0], currency: v[1],
+        date: String(day).padStart(2, '0') + ' Aug 2026',
+        received: String(Math.min(day + 2, 30)).padStart(2, '0') + ' Aug 2026',
+        po: nonPo ? '— (Non-PO)' : '45001' + (28000 + i * 13),
+        poType: nonPo ? 'Non-PO' : 'PO',
+        amount: amt, amountText: this.money(amt, v[1]),
+        conf: (94 + r * 6).toFixed(1) + '%', status: st,
+        match: st === 'Exception' ? '⚠ Failed' : (st === 'In Progress' || st === 'Validation Required' ? 'In review' : '✓ Passed'),
+        exception: isEx ? exTypes[Math.floor(r * 100) % 6] : '—',
+        action: isEx ? 'Review' : (st === 'Parked' ? 'Resume' : 'View'),
+        note: 'Handled autonomously by the Invoice Processing Agent. ' + (isEx ? 'Awaiting business action before posting.' : 'No manual intervention was required.'),
+        timeline: [
+          { time: '09:14:02', text: 'Document received' },
+          { time: '09:14:05', text: 'Classified and vendor identified' },
+          { time: '09:14:09', text: 'Fields and line items extracted' },
+          { time: '09:14:14', text: st === 'Exception' ? 'Validation failed — exception raised' : '3-way match completed' },
+          { time: '09:14:16', text: 'Duplicate check completed' },
+          { time: '09:14:18', text: 'Recommended action: ' + (isEx ? 'Route to business owner' : 'Submit for posting') }
+        ]
+      });
+    }
+    this._rows = rows;
+    return rows;
+  }
+
+  tone(t) {
+    const m = {
+      ok: { fg: 'var(--ok)', bg: 'var(--ok-bg)', line: 'var(--ok-line)' },
+      warn: { fg: 'var(--warn)', bg: 'var(--warn-bg)', line: 'var(--warn-line)' },
+      err: { fg: 'var(--err)', bg: 'var(--err-bg)', line: 'var(--err-line)' },
+      info: { fg: 'var(--color-accent-800)', bg: 'var(--color-accent-100)', line: 'var(--color-accent-300)' },
+      plain: { fg: 'var(--color-neutral-800)', bg: 'transparent', line: 'var(--color-divider)' }
+    };
+    return m[t] || m.plain;
+  }
+  statusTone(st) {
+    if (st === 'Posted' || st === 'Processed' || st === 'Submitted') return 'ok';
+    if (st === 'Exception') return 'err';
+    if (st === 'Parked' || st === 'Validation Required' || st === 'Awaiting Approval') return 'warn';
+    return 'info';
+  }
+
+  runSteps() {
+    return ['Reading invoice structure…', 'Identifying supplier…', 'Validating GSTIN…', 'Interpreting line items…', 'Recomputing GST…', 'Checking invoice against PO…', 'Validating quantities…', 'Checking for duplicate invoices…', 'Assessing exception risk…', 'Recommending next action…'];
+  }
+  startRun() {
+    clearInterval(this._t);
+    const speed = this.props.agentSpeed ?? 420;
+    this.setState({ running: true, runIdx: 0 });
+    this._t = setInterval(() => {
+      this.setState(s => {
+        const n = s.runIdx + 1;
+        if (n >= this.runSteps().length) { clearInterval(this._t); return { runIdx: n, running: false }; }
+        return { runIdx: n };
+      });
+    }, speed);
+  }
+  componentWillUnmount() { clearInterval(this._t); clearTimeout(this._c1); clearTimeout(this._c2); }
+
+  select(id) {
+    this.setState({ sel: id, stage: 'review', page: 1, edits: {}, clarifySent: false, done: null, focus: null, activityOpen: true, connectorOpen: false });
+    this.startRun();
+  }
+
+  connect(key, name) {
+    clearTimeout(this._c1); clearTimeout(this._c2);
+    this.setState({ connecting: key, connectorToast: 'Connecting to ' + name + '…', connectorMeta: '' });
+    this._c1 = setTimeout(() => {
+      this.setState(s => {
+        const next = { connecting: null, connectorToast: name + ' connected successfully', connectorMeta: 'Connection established · Last synchronized: Just now' };
+        if (key === 'mailbox') next.mailbox = true; else next.erp = key;
+        return next;
+      });
+    }, 900);
+  }
+
+  fieldDefs(inv) {
+    return [
+      ['Vendor Name', inv.vendor, 'vendor'], ['Vendor ID', inv.vendorId, 'vendorId'], ['GSTIN', inv.gstin, 'gstin'],
+      ['Invoice Number', inv.number, 'number'], ['Invoice Date', inv.date, 'date'],
+      ['PO Number', inv.po || 'Not found', 'po'], ['Currency', inv.currency, 'currency'],
+      ['Payment Terms', inv.terms, 'terms'], ['Billing Entity', inv.entity, 'entity'],
+      ['Taxable Value', inv.subtotalText, 'subtotal'], ['Tax Amount', inv.taxText, 'tax'], ['Total Amount', inv.totalText, 'total']
+    ];
+  }
+
+  addCase(status, note, extra) {
+    const inv = this.invoices()[this.state.sel] || this.invoices().bharat;
+    const caseId = 'AP-2026-00' + (1284 + this.state.cases.length);
+    const row = {
+      caseId, number: inv.number, vendor: inv.vendor, currency: inv.currency,
+      date: inv.date, received: inv.date, po: inv.po || '— (Non-PO)', poType: inv.po ? 'PO' : 'Non-PO',
+      amount: inv.total, amountText: inv.totalText, conf: inv.matchConfidence, status,
+      match: inv.matchStatus === 'pass' ? '✓ Passed' : '⚠ Failed',
+      exception: extra || (inv.matchStatus === 'pass' ? '—' : 'Missing PO'),
+      action: status === 'Parked' ? 'Resume' : 'View', isNew: true, note,
+      timeline: inv.timeline.concat([{ time: '10:32:20', text: note }])
+    };
+    this.setState(s => ({ cases: [row].concat(s.cases) }));
+    return caseId;
+  }
+
+  // ---------- copilot ----------
+  answers(inv) {
+    const q = [];
+    if (inv.matchStatus === 'fail') {
+      q.push({ p: 'Why did this invoice fail validation?', sources: 'Invoice · Purchase Order · Goods Receipt',
+        text: 'The invoice bills 120 mild-steel channel sections, while purchase order 4500131207 and goods receipt 5001284471 both show 100 units — a 20-unit excess worth ' + this.inr(87600) + ' before GST.',
+        rec: 'Park the invoice until the additional 20 units are confirmed by the plant.' });
+      q.push({ p: 'What is causing the mismatch?', sources: 'Invoice line 4 · PO line 4 · GR 5001284471',
+        text: 'Only line 4 differs. Every other line, the unit prices and the GST computation reconcile exactly, so this is a quantity issue rather than a pricing or tax issue.',
+        rec: 'Request a delivery challan for the extra 20 units, or ask for a credit note.' });
+      q.push({ p: 'Can this invoice be posted?', sources: '3-way match result · AP policy IN-04',
+        text: 'Not yet. A quantity discrepancy has been identified during the 3-way match and the variance exceeds the 2% tolerance for indirect materials.',
+        rec: 'Business confirmation is required before posting.' });
+    } else if (inv.matchStatus === 'exception') {
+      q.push({ p: 'Why did this invoice fail validation?', sources: 'Invoice · Open PO list (24 months) · Vendor master',
+        text: 'No purchase order reference exists on the document, and a search across all open POs for Vertex Consulting Services LLP returned no match. The invoice itself is valid: GST is correctly split and TDS of ' + this.inr(80200) + ' has been computed u/s 194J.',
+        rec: 'Park pending cost centre and business-owner approval.' });
+      q.push({ p: 'What is causing the mismatch?', sources: 'Invoice · Vendor master · AP policy IN-07',
+        text: 'This is a non-PO service invoice. There is nothing to match against, so the agent routes it to the business owner rather than treating it as an error.',
+        rec: 'Obtain cost centre and GPO sign-off — the invoice is above the ₹5,00,000 threshold.' });
+      q.push({ p: 'Can this invoice be posted?', sources: '3-way match result · AP policy IN-07',
+        text: 'Not until a cost centre and approval evidence are supplied. Once received, the agent will re-run validation automatically.',
+        rec: 'Request clarification from the business owner.' });
+    } else {
+      q.push({ p: 'Why did this invoice fail validation?', sources: 'Invoice · Purchase Order · Goods Receipt',
+        text: 'It did not fail. All six reconciliation checks passed: GSTIN, PO number, quantity, taxable value, IGST and total all agree with PO 4500127845 and goods receipt 5001279043.',
+        rec: 'Proceed to submission — straight-through posting.' });
+      q.push({ p: 'What is causing the mismatch?', sources: 'Reconciliation table',
+        text: 'There is no mismatch on this invoice. Variance across every checked attribute is zero.',
+        rec: 'No action required beyond posting.' });
+      q.push({ p: 'Can this invoice be posted?', sources: '3-way match result · AP policy IN-04',
+        text: 'Yes. The 3-way match passed with 99.6% agent confidence and no material variance.',
+        rec: 'Submit for posting to SAP S/4HANA.' });
+    }
+    q.push({ p: 'Where did the PO number come from?', sources: 'Page 1 — purchase order reference block',
+      text: inv.po
+        ? 'PO number ' + inv.po + ' was extracted from the purchase order reference in the header block on page 1, with ' + inv.fieldConf['PO Number'] + '% confidence.'
+        : 'No PO reference was found anywhere in the document. Confidence in that conclusion is 98% — the header, footer and remarks were all scanned.',
+      rec: inv.po ? 'Click the PO Number field to see the exact source location.' : 'Treat as a non-PO invoice and route for business approval.' });
+    q.push({ p: 'Summarize this invoice.', sources: 'Extracted fields · Line items · Enterprise records',
+      text: inv.vendor + ' — ' + inv.number + ' dated ' + inv.date + ', ' + inv.items.length + ' line items, taxable value ' + inv.subtotalText + ', ' + inv.taxLabel + ' ' + inv.taxText + ', ' + inv.grandLabel.toLowerCase() + ' ' + inv.totalText + '. Extraction confidence ' + inv.extractionConfidence + '.',
+      rec: inv.recommendedAction + '.' });
+    return q;
+  }
+
+  ask(text) {
+    const inv = this.invoices()[this.state.sel] || this.invoices().bharat;
+    const list = this.answers(inv);
+    const t = text.toLowerCase();
+    let hit = list.find(a => a.p.toLowerCase() === t);
+    if (!hit) {
+      const kw = [['post', 2], ['fail', 0], ['mismatch', 1], ['discrep', 1], ['po ', 3], ['purchase order', 3], ['summar', 4], ['tds', 4], ['gst', 4], ['confiden', 4]];
+      for (const [k, i] of kw) { if (t.includes(k)) { hit = list[i]; break; } }
+    }
+    if (!hit) hit = list[list.length - 1];
+    const key = this.state.sel || 'bharat';
+    this.setState(s => {
+      const log = (s.chats[key] || []).concat([
+        { role: 'You', text },
+        { role: 'Invoice Processing Agent', text: hit.text, sources: hit.sources, recommendation: hit.rec }
+      ]);
+      return { chats: Object.assign({}, s.chats, { [key]: log }), chatDraft: '' };
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const orgName = this.props.orgName ?? 'Aurora Manufacturing India Pvt Ltd';
+    const showConf = this.props.showConfidence ?? true;
+    const all = this.invoices();
+    const inv = all[s.sel] || all.bharat;
+    const steps = this.runSteps();
+    const go = (view) => () => this.setState({ view, detail: null });
+    const T = this.tone.bind(this);
+
+    const openCases = this.baseRows().filter(r => r.status !== 'Posted' && r.status !== 'Processed').length + s.cases.length;
+    const ICON = {
+      file: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zM14 2v5h6M8 13h8M8 17h5',
+      inbox: 'M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z',
+      grid: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
+      upload: 'M12 13v8M8 17l4-4 4 4M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 4 16.25',
+      db: 'M12 8c4.42 0 8-1.34 8-3s-3.58-3-8-3-8 1.34-8 3 3.58 3 8 3zM4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6',
+      mail: 'M4 4h16v16H4zM4 7l8 6 8-6',
+      check: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3',
+      clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
+      alert: 'm10.29 3.86-8.47 14.14A2 2 0 0 0 3.54 21h16.92a2 2 0 0 0 1.72-3L13.71 3.86a2 2 0 0 0-3.42 0M12 9v4M12 17h.01',
+      pause: 'M6 4h4v16H6zM14 4h4v16h-4z',
+      pulse: 'M22 12h-4l-3 9L9 3l-3 9H2',
+      layers: 'm12 2 9 5-9 5-9-5 9-5M3 12l9 5 9-5M3 17l9 5 9-5',
+      target: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+      gauge: 'M12 21a9 9 0 1 1 9-9M12 12l4-4'
+    };
+    const navItems = [['Invoice Processing', 'processing', '', ICON.file], ['AP Inbox', 'inbox', String(openCases), ICON.inbox], ['Dashboard', 'dashboard', '', ICON.grid]]
+      .map(([label, key, badge, iconPath]) => ({
+        label, badge, iconPath, go: go(key),
+        bar: s.view === key ? 'var(--color-accent-700)' : 'transparent',
+        bg: s.view === key ? 'var(--color-accent-100)' : 'transparent',
+        fg: s.view === key ? 'var(--color-accent-900)' : 'var(--color-neutral-800)'
+      }));
+
+    const order = ['intake', 'review', 'validation', 'submit', 'done'];
+    const labels = { intake: 'Invoice Intake', review: 'AI Extraction & Review', validation: 'Validation & 3-Way Match', submit: 'Agent Decision', done: 'Audit Trail' };
+    const cur = order.indexOf(s.stage);
+    const stepper = order.map((k, i) => {
+      const active = i === cur, past = i < cur;
+      return {
+        n: String(i + 1), label: labels[k], go: past ? () => this.setState({ stage: k }) : () => {},
+        cursor: past ? 'pointer' : 'default',
+        cellLine: active ? 'var(--color-accent-700)' : 'var(--color-divider)',
+        bg: active ? 'var(--color-accent-700)' : (past ? 'var(--color-accent-100)' : '#fff'),
+        fg: active ? '#fff' : (past ? 'var(--color-accent-900)' : 'var(--color-neutral-600)'),
+        numBorder: active ? 'rgba(255,255,255,.6)' : 'var(--color-divider)'
+      };
+    });
+
+    const stageAgent = { intake: 'Ready', review: s.running ? 'Analyzing' : 'Analysis complete', validation: 'Validating', submit: 'Awaiting decision', done: 'Completed' };
+    const agentStatus = s.view === 'processing' ? stageAgent[s.stage] : (s.view === 'inbox' ? 'Monitoring inbox' : 'Reporting');
+
+    // trace map
+    const lastPage = inv.pages;
+    const pageOf = { vendor: 1, vendorId: 1, gstin: 1, number: 1, date: 1, po: 1, currency: 1, terms: 1, entity: 1, subtotal: lastPage, tax: lastPage, total: lastPage };
+    const traceNames = { vendor: 'Vendor Name', vendorId: 'Vendor ID', gstin: 'GSTIN', number: 'Invoice Number', date: 'Invoice Date', po: 'PO Number', currency: 'Currency', terms: 'Payment Terms', entity: 'Billing Entity', subtotal: 'Taxable Value', tax: 'Tax Amount', total: 'Total Amount' };
+    const focusOn = (key) => () => {
+      const p = pageOf[key] || (key.indexOf('item') === 0 ? (inv.items[Number(key.slice(4))] || {}).page || 1 : 1);
+      this.setState({ focus: key, page: inv.pages > 1 ? p : 1 });
+    };
+    const traceStyle = (key) => ({
+      outline: s.focus === key ? '2px solid var(--trace)' : 'none',
+      bg: s.focus === key ? 'rgba(200,16,46,.09)' : 'transparent',
+      enter: focusOn(key)
+    });
+    const tr = {};
+    Object.keys(traceNames).forEach(k => { tr[k] = traceStyle(k); });
+
+    const fields = this.fieldDefs(inv).map(([label, def, key]) => {
+      const value = s.edits[label] !== undefined ? s.edits[label] : def;
+      const corrected = s.edits[label] !== undefined && s.edits[label] !== def;
+      const c = inv.fieldConf[label] ?? 99;
+      const focused = s.focus === key;
+      return {
+        label, value, corrected, focus: focusOn(key),
+        confText: showConf ? (c.toFixed(1) + '% confidence') : '',
+        confColor: c >= 99 ? 'var(--ok)' : (c >= 95 ? 'var(--color-neutral-700)' : 'var(--warn)'),
+        inputBorder: corrected ? 'var(--color-accent-700)' : (c < 95 ? 'var(--warn-line)' : 'var(--color-divider)'),
+        wrapBorder: focused ? 'var(--trace)' : 'var(--color-divider)',
+        wrapBg: focused ? 'rgba(200,16,46,.05)' : '#fff',
+        sourceLabel: 'Source: page ' + (pageOf[key] || 1),
+        correctedLabel: corrected ? 'User corrected' : '',
+        onChange: (e) => { const v = e.target.value; this.setState(st => ({ edits: Object.assign({}, st.edits, { [label]: v }) })); }
+      };
+    });
+
+    const decorateItem = (it, i) => {
+      const key = 'item' + i;
+      const focused = s.focus === key;
+      const flagged = inv.matchStatus === 'fail' && i === 3;
+      return Object.assign({}, it, {
+        enter: focusOn(key), focus: focusOn(key),
+        outline: focused ? '2px solid var(--trace)' : 'none',
+        bg: focused ? 'rgba(200,16,46,.07)' : 'transparent',
+        qtyColor: flagged ? 'var(--err)' : 'inherit'
+      });
+    };
+    const allItems = inv.items.map(decorateItem);
+    const pageItems = inv.pages > 1 ? allItems.filter(it => it.page === s.page) : allItems;
+
+    const focusKey = s.focus;
+    const focusIsItem = focusKey && focusKey.indexOf('item') === 0;
+    const focusBadge = focusKey ? (focusIsItem ? 'Line item ' + (Number(focusKey.slice(4)) + 1) : traceNames[focusKey]) : '';
+    const focusConf = focusKey && !focusIsItem ? inv.fieldConf[traceNames[focusKey]] : null;
+
+    const status = inv.matchStatus;
+    const vTone = T(status === 'pass' ? 'ok' : (status === 'fail' ? 'err' : 'warn'));
+    const matchVerdict = status === 'pass' ? '✓ 3-Way Match Passed' : (status === 'fail' ? '⚠ 3-Way Match Failed' : '⚠ Exception detected');
+    const verdictReason = status === 'pass' ? 'Invoice, purchase order and goods receipt reconcile with no material variance.'
+      : (status === 'fail' ? 'Quantity discrepancy detected — invoice 120 units vs PO 100 and goods receipt 100.'
+        : 'No purchase order was identified for this invoice — business-owner validation required.');
+
+    const matchCards = inv.match.map((c, i) => {
+      const t = T(c.tone);
+      return Object.assign({}, c, {
+        col: String(i * 2 + 1), topLine: t.fg, chipBg: t.bg, chipFg: t.fg, chipLine: t.line,
+        rows: c.rows.map(r => Object.assign({}, r, { color: r.tone ? T(r.tone).fg : 'var(--color-text)' }))
+      });
+    });
+
+    const discrepancy = inv.discrepancy ? Object.assign({}, inv.discrepancy, {
+      figures: inv.discrepancy.figures.map(f => {
+        const t = T(f.tone);
+        return { k: f.k, v: f.v, fg: f.tone === 'err' ? 'var(--err)' : 'var(--color-text)', bg: f.tone === 'err' ? 'var(--err-bg)' : 'transparent', line: f.tone === 'err' ? 'var(--err-line)' : 'var(--color-divider)' };
+      })
+    }) : null;
+
+    const exceptionOptions = [
+      { title: 'Park Invoice', badge: 'Recommended', tone: 'ok', reason: status === 'fail' ? 'Hold pending confirmation of the 20-unit excess.' : 'Await business approval and cost centre assignment.', cursor: 'pointer', opacity: '1', go: () => this.setState({ stage: 'submit', parkOpen: true, parkReason: status === 'fail' ? 'Amount discrepancy' : 'Missing PO' }) },
+      { title: 'Request Clarification', badge: 'Alternative', tone: 'info', reason: status === 'fail' ? 'Ask the vendor for a delivery challan or credit note.' : 'Ask the business owner for cost centre / approval evidence.', cursor: 'pointer', opacity: '1', go: () => this.setState({ stage: 'submit', clarifySent: true }) },
+      { title: 'Continue Processing', badge: 'Blocked', tone: 'plain', reason: status === 'fail' ? 'Available once the quantity variance is resolved.' : 'Available once cost centre and approval are supplied.', cursor: 'not-allowed', opacity: '.5', go: () => {} }
+    ].map(o => {
+      const t = T(o.tone);
+      return Object.assign({}, o, {
+        border: o.tone === 'ok' ? 'var(--ok-line)' : 'var(--color-divider)', leftLine: t.fg,
+        bg: o.tone === 'ok' ? 'var(--ok-bg)' : 'transparent', chipBg: t.bg, chipFg: t.fg, chipLine: t.line
+      });
+    });
+
+    const submitSummary = [
+      { k: 'Vendor', v: inv.vendor }, { k: 'Invoice number', v: inv.number },
+      { k: 'PO number', v: inv.po || 'Not referenced' }, { k: 'Total amount', v: inv.totalText },
+      { k: 'Match status', v: status === 'pass' ? '3-Way Match: Passed' : (status === 'fail' ? '3-Way Match: Failed' : 'No PO — exception'), color: vTone.fg },
+      { k: 'AI confidence', v: inv.matchConfidence },
+      { k: 'Exception status', v: status === 'pass' ? 'None' : (status === 'fail' ? 'Quantity variance (+20 units)' : 'Missing purchase order'), color: vTone.fg }
+    ];
+
+    const rowsAll = s.cases.concat(this.baseRows());
+    const q = s.q.trim().toLowerCase();
+    const rows = rowsAll.filter(r =>
+      (s.fStatus === 'All statuses' || r.status === s.fStatus) &&
+      (s.fType === 'All' || r.poType === s.fType) &&
+      (s.fCurrency === 'All' || r.currency === s.fCurrency) &&
+      (s.fException === 'All' || r.exception === s.fException) &&
+      (!q || (r.caseId + r.number + r.vendor + r.po).toLowerCase().includes(q))
+    ).map(r => {
+      const t = T(this.statusTone(r.status));
+      return Object.assign({}, r, {
+        pillBg: t.bg, pillFg: t.fg, pillLine: t.line,
+        matchColor: r.match.indexOf('⚠') === 0 ? 'var(--err)' : (r.match === 'In review' ? 'var(--warn)' : 'var(--ok)'),
+        bg: r.isNew ? 'var(--color-accent-100)' : 'transparent',
+        go: () => this.setState({ detail: r })
+      });
+    });
+
+    const count = (st) => rowsAll.filter(r => r.status === st).length;
+    const inboxKpis = [
+      { label: 'Total invoices', value: String(rowsAll.length), note: 'Current period', tone: 'info', icon: ICON.file },
+      { label: 'Processed / posted', value: String(count('Posted') + count('Processed') + count('Submitted')), note: 'Straight-through', tone: 'ok', icon: ICON.check },
+      { label: 'In progress', value: String(count('In Progress') + count('Validation Required')), note: 'Agent working', tone: 'info', icon: ICON.clock },
+      { label: 'Exceptions', value: String(count('Exception')), note: 'Business action', tone: 'err', icon: ICON.alert },
+      { label: 'Parked', value: String(count('Parked')), note: 'Awaiting information', tone: 'warn', icon: ICON.pause }
+    ].map(k => ({ label: k.label, value: k.value, note: k.note, iconPath: k.icon, line: T(k.tone).line, fg: T(k.tone).fg, chipBg: T(k.tone).bg }));
+
+    const detail = s.detail;
+    const detailRows = detail ? [
+      { k: 'Amount', v: detail.amountText }, { k: 'Currency', v: detail.currency },
+      { k: 'PO number', v: detail.po }, { k: 'PO type', v: detail.poType },
+      { k: 'AI confidence', v: detail.conf }, { k: 'Match', v: detail.match },
+      { k: 'Processing status', v: detail.status }, { k: 'Exception type', v: detail.exception }
+    ] : [];
+
+    const connDef = [
+      ['sap', 'SAP S/4HANA', 'Enterprise Resource Planning', 'AP module · Company code 1010'],
+      ['oracle', 'Oracle ERP', 'Enterprise Resource Planning', 'Payables · Ledger IN-01'],
+      ['coupa', 'Coupa', 'Procurement Platform', 'Procure-to-pay'],
+      ['ariba', 'Ariba', 'Procurement Platform', 'Supplier network'],
+      ['mailbox', 'AP Shared Mailbox', 'Invoice Intake', 'ap.invoices@aurora-mfg.in']
+    ];
+    const connectors = connDef.map(([key, name, category, meta]) => {
+      const isMail = key === 'mailbox';
+      const connected = isMail ? s.mailbox : s.erp === key;
+      const busy = s.connecting === key;
+      return {
+        name, category,
+        detail: busy ? 'Connecting…' : (connected ? meta + ' · Last synchronized: Just now' : meta),
+        statusColor: connected ? 'var(--ok)' : 'var(--color-neutral-600)',
+        mark: connected ? '✓' : '○', markColor: connected ? 'var(--ok)' : 'var(--color-neutral-500)',
+        line: connected ? 'var(--ok-line)' : 'var(--color-divider)',
+        leftLine: connected ? 'var(--ok)' : 'var(--color-divider)',
+        bg: connected ? 'var(--ok-bg)' : '#fff',
+        cta: busy ? 'Connecting…' : (connected ? 'Connected' : 'Connect'),
+        btnClass: connected ? 'btn-secondary' : 'btn-primary',
+        go: connected || busy ? () => {} : () => this.connect(key, name)
+      };
+    });
+
+    const chatKey = s.sel || 'bharat';
+    const log = s.chats[chatKey] || [{
+      role: 'Invoice Processing Agent',
+      text: 'I have read ' + inv.number + ' from ' + inv.vendor + ' and completed enterprise validation. Ask me about the extraction, the 3-way match or what should happen next.',
+      sources: 'Invoice · Purchase Order · Goods Receipt · Vendor master', recommendation: inv.recommendedAction + '.'
+    }];
+    const chatLog = log.map(m => {
+      const you = m.role === 'You';
+      return Object.assign({}, m, {
+        align: you ? 'flex-end' : 'flex-start',
+        bg: you ? 'var(--color-accent-100)' : '#fff',
+        line: you ? 'var(--color-accent-300)' : 'var(--color-divider)',
+        leftLine: you ? 'var(--color-accent-500)' : 'var(--color-accent-700)',
+        roleColor: you ? 'var(--color-accent-800)' : 'var(--color-accent-700)'
+      });
+    });
+    const chatPrompts = this.answers(inv).map(a => ({ text: a.p, go: () => this.ask(a.p) }));
+
+    return {
+      orgName, navItems, agentStatus,
+      connectedCount: (s.erp ? 2 : 1) + ' active',
+      agentDotColor: s.running ? 'var(--color-accent-700)' : 'var(--ok)',
+      agentDotAnim: s.running ? 'ipa-pulse 1s infinite' : 'none',
+      viewTitle: s.view === 'inbox' ? 'AP Processing Inbox' : (s.view === 'dashboard' ? 'Invoice Processing Agent — Executive Overview' : 'Invoice Processing'),
+      viewSub: s.view === 'inbox' ? 'Case management across every intake channel · ' + orgName
+        : (s.view === 'dashboard' ? 'AI-powered Accounts Payable performance · illustrative demo metrics' : 'From invoice intake to validation, exception handling and posting'),
+      isProcessing: s.view === 'processing', isInbox: s.view === 'inbox', isDashboard: s.view === 'dashboard',
+      openConnector: () => this.setState({ connectorOpen: true }),
+      closeConnector: () => this.setState({ connectorOpen: false, connectorToast: '', connectorMeta: '' }),
+      connectorOpen: s.connectorOpen, connectors,
+      connectorToast: s.connectorToast, connectorToastMeta: s.connectorMeta,
+      connectorToastLine: s.connecting ? 'var(--color-accent-300)' : 'var(--ok-line)',
+      connectorToastBg: s.connecting ? 'var(--color-accent-100)' : 'var(--ok-bg)',
+      connectorToastFg: s.connecting ? 'var(--color-accent-800)' : 'var(--ok)',
+      stop: (e) => e.stopPropagation(),
+
+      stepper,
+      showIntake: s.view === 'processing' && s.stage === 'intake',
+      showReview: s.view === 'processing' && s.stage === 'review',
+      showValidation: s.view === 'processing' && s.stage === 'validation',
+      showSubmit: s.view === 'processing' && s.stage === 'submit',
+      showDone: s.view === 'processing' && s.stage === 'done',
+
+      methods: [
+        ['upload', 'Channel 01', 'Upload Invoice', 'Drop a PDF, JPG, PNG or scanned invoice. The agent classifies and reads it directly.', 'PDF · JPG · PNG · TIFF', 'var(--color-neutral-600)', ICON.upload],
+        ['connector', 'Channel 02', 'Enterprise Connector', 'Pull invoices queued in SAP S/4HANA, Oracle ERP, Coupa or Ariba.', s.erp ? 'ERP connected' : 'No ERP connected', s.erp ? 'var(--ok)' : 'var(--warn)', ICON.db],
+        ['mailbox', 'Channel 03', 'AP Shared Mailbox', 'ap.invoices@aurora-mfg.in — invoices arriving by email are picked up automatically.', 'Connected · 3 new today', 'var(--ok)', ICON.mail]
+      ].map(([k, kicker, title, body, meta, metaColor, iconPath]) => ({
+        kicker, title, body, meta, metaColor, iconPath,
+        border: s.method === k ? 'var(--color-accent-700)' : 'var(--color-divider)',
+        topBorder: s.method === k ? 'var(--color-accent-700)' : 'var(--color-divider)',
+        bg: s.method === k ? 'var(--color-accent-100)' : '#fff',
+        go: k === 'connector' ? () => this.setState({ method: k, connectorOpen: true }) : () => this.setState({ method: k })
+      })),
+      intakeStats: [
+        { label: 'Received today', value: '38', note: '3 channels active', iconPath: ICON.inbox },
+        { label: 'Touchless so far', value: '31', note: '82% straight-through', iconPath: ICON.check },
+        { label: 'Awaiting business action', value: '4', note: 'Exceptions and parked', iconPath: ICON.alert },
+        { label: 'Avg. time to decision', value: '2.4 min', note: 'from 14 min baseline', iconPath: ICON.gauge }
+      ],
+      channelMix: [
+        { label: 'AP shared mailbox', value: '21', width: '100%', note: 'ap.invoices@aurora-mfg.in · 3 new' },
+        { label: 'Enterprise connector', value: '12', width: '57%', note: s.erp ? 'ERP queue synchronised just now' : 'Connect an ERP to enable' },
+        { label: 'Manual upload', value: '5', width: '24%', note: 'Scanned and emailed PDFs' }
+      ],
+      capabilities: [
+        { label: 'Document classification across invoice formats', meta: '99.2%' },
+        { label: 'GSTIN and vendor master validation', meta: '99.6%' },
+        { label: 'HSN / SAC and mixed GST rate interpretation', meta: '98.9%' },
+        { label: 'TDS computation under s. 194C / 194J', meta: 'Rule-based' },
+        { label: 'Duplicate invoice detection', meta: '99.5%' },
+        { label: '3-way match against PO and goods receipt', meta: '97.8%' },
+        { label: 'Exception reasoning and recommendation', meta: 'Agentic' },
+        { label: 'ERP posting with full audit trail', meta: 'SAP S/4HANA' }
+      ],
+      liveFeed: [
+        { time: '09:58', mark: '⚠', text: 'VCS/2026/0417 — no purchase order found, routed to business owner', color: 'var(--warn)' },
+        { time: '09:41', mark: '✓', text: 'INV/26-27/4310 posted to SAP S/4HANA — ₹6,82,400', color: 'var(--ok)' },
+        { time: '09:22', mark: '✓', text: 'Duplicate check cleared for 14 documents', color: 'var(--ok)' },
+        { time: '09:12', mark: '✓', text: 'INV-2026-08452 read from shared mailbox — 12 fields extracted', color: 'var(--ok)' },
+        { time: '08:54', mark: '⚠', text: 'AIS/26-27/1184 — quantity variance +20 units on line 4', color: 'var(--err)' },
+        { time: '08:41', mark: '✓', text: 'Three-page invoice merged and classified', color: 'var(--ok)' },
+        { time: '08:15', mark: '→', text: 'Connector sync — 12 documents fetched from ERP queue', color: 'var(--color-accent-700)' }
+      ],
+      showMailbox: s.method === 'mailbox',
+      showDrop: s.method !== 'mailbox',
+      mailboxItems: [
+        { vendor: all.apex.vendor, subject: 'Invoice AIS/26-27/1184 — PO 4500131207', total: all.apex.totalText, time: '08:41', attach: '3-page PDF', go: () => this.select('apex') },
+        { vendor: all.bharat.vendor, subject: 'Tax invoice INV-2026-08452 against PO 4500127845', total: all.bharat.totalText, time: '09:12', attach: '1-page PDF', go: () => this.select('bharat') },
+        { vendor: all.vertex.vendor, subject: 'Advisory fees — August 2026 (no PO)', total: all.vertex.totalText, time: '09:58', attach: '1-page PDF', go: () => this.select('vertex') }
+      ],
+      dropTitle: s.method === 'connector' ? (s.erp ? 'Fetch from connected ERP' : 'Connect an ERP to fetch invoices') : 'Drop invoice here',
+      dropSub: s.method === 'connector' ? '12 invoices queued — select a demo invoice to run the agent' : 'or select one of the three demo invoices to run the agent',
+      demoOptions: [all.bharat, all.apex, all.vertex].map(d => ({ id: d.id, name: d.vendor + ' — ' + d.kind })),
+      selValue: s.sel || '',
+      demoCards: [all.bharat, all.apex, all.vertex].map(d => {
+        const t = T(d.outcomeTone);
+        return {
+          vendor: d.vendor, kind: d.kind, desc: d.desc, totalText: d.totalText,
+          pagesText: d.pages + (d.pages > 1 ? ' pages' : ' page'), itemsText: d.items.length + ' line items',
+          outcome: d.outcome, outcomeColor: t.fg, chipBg: t.bg, chipFg: t.fg, chipLine: t.line,
+          border: s.sel === d.id ? 'var(--color-accent-700)' : 'var(--color-divider)',
+          leftBorder: s.sel === d.id ? 'var(--color-accent-700)' : 'var(--color-divider)',
+          bg: s.sel === d.id ? 'var(--color-accent-100)' : '#fff',
+          go: () => this.select(d.id)
+        };
+      }),
+      onSelectChange: (e) => { if (e.target.value) this.select(e.target.value); },
+
+      inv, tr, fields, allItems, pageItems, running: s.running,
+      traceHint: 'Hover or click a value to trace it to the extracted field.',
+      runningLabel: steps[Math.min(s.runIdx, steps.length - 1)],
+      runProgress: Math.min(100, Math.round((s.running ? s.runIdx + 1 : steps.length) / steps.length * 100)) + '%',
+      runDone: steps.slice(0, s.runIdx).map(t => t.replace('…', '')),
+      pipelineSub: s.running ? steps[Math.min(s.runIdx, steps.length - 1)] : 'Ten-stage document understanding and validation engine',
+      pipelineState: s.running ? 'Processing' : 'Processing complete',
+      pipeline: steps.map((label, i) => {
+        const done = !s.running || i < s.runIdx;
+        const active = s.running && i === s.runIdx;
+        return {
+          label: label.replace('…', ''), mark: done ? '✓' : (active ? '•' : '○'),
+          fg: done ? 'var(--ok)' : 'var(--color-accent-700)',
+          line: done ? 'var(--ok-line)' : (active ? 'var(--color-accent-400)' : 'var(--color-divider)'),
+          bg: done ? 'var(--ok-bg)' : (active ? 'var(--color-accent-100)' : 'transparent'),
+          textColor: done || active ? 'var(--color-text)' : 'var(--color-neutral-600)'
+        };
+      }),
+      analysisLabel: s.running ? 'AI analysis running' : 'AI analysis complete',
+      analysisColor: s.running ? 'var(--color-accent-700)' : 'var(--ok)',
+      actionCount: String(inv.actions.length),
+      itemCountText: inv.items.length + ' extracted',
+      correctedNote: Object.keys(s.edits).length ? Object.keys(s.edits).length + ' field(s) user corrected' : 'All fields agent-extracted',
+      multiPage: inv.pages > 1,
+      pageLabel: 'Page ' + s.page + ' of ' + inv.pages,
+      pageThumbs: Array.from({ length: inv.pages }, (_, i) => ({
+        n: String(i + 1), border: s.page === i + 1 ? 'var(--color-accent-700)' : 'var(--color-neutral-300)',
+        go: () => this.setState({ page: i + 1 })
+      })),
+      showTotals: inv.pages === 1 || s.page === inv.pages,
+      showContinued: inv.pages > 1 && s.page < inv.pages,
+      focusBadge, focusSource: focusKey ? 'Source: page ' + (focusIsItem ? ((inv.items[Number(focusKey.slice(4))] || {}).page || 1) : (pageOf[focusKey] || 1)) : '',
+      focusConfText: focusConf ? focusConf.toFixed(1) + '% confidence' : 'Traced from line item table',
+      timeline: inv.timeline.map(t => ({
+        time: t.time, text: t.text, mark: t.mark,
+        color: t.mark === '⚠' ? 'var(--err)' : (t.mark === '→' ? 'var(--color-accent-700)' : 'var(--ok)')
+      })),
+      activityOpen: s.activityOpen,
+      activityToggleLabel: s.activityOpen ? 'Hide timeline' : 'Show timeline',
+      toggleActivity: () => this.setState(st => ({ activityOpen: !st.activityOpen })),
+      toValidation: () => this.setState({ stage: 'validation' }),
+      backToIntake: () => this.setState({ stage: 'intake' }),
+
+      matchCards, matchVerdict, verdictReason,
+      verdictBg: vTone.bg, verdictFg: vTone.fg, verdictLine: vTone.line,
+      hasDiscrepancy: !!discrepancy,
+      riskColor: inv.riskLevel === 'Low' ? 'var(--ok)' : 'var(--warn)',
+      validationPanelTitle: status === 'pass' ? 'Validation Summary' : 'AI Validation Summary — Exception',
+      validationCta: status === 'pass' ? 'Continue to Decision' : 'Go to Decision',
+      needsAction: status !== 'pass',
+      exceptionOptions,
+      backToReview: () => this.setState({ stage: 'review' }),
+      toSubmit: () => this.setState({ stage: 'submit' }),
+
+      submitSummary, clarifySent: s.clarifySent,
+      decisionState: status === 'pass' ? 'Invoice ready for processing' : 'Action required',
+      openPark: () => this.setState({ parkOpen: true, parkReason: status === 'fail' ? 'Quantity discrepancy' : (status === 'exception' ? 'Missing PO' : 'Missing approval') }),
+      closePark: () => this.setState({ parkOpen: false }),
+      parkOpen: s.parkOpen, parkReason: s.parkReason,
+      parkReasons: ['Missing PO', 'Missing approval', 'Vendor mismatch', 'Amount discrepancy', 'Quantity discrepancy', 'Tax / GST discrepancy', 'Missing supporting document', 'Other'],
+      onParkReason: (e) => this.setState({ parkReason: e.target.value }),
+      doPark: () => {
+        const id = this.addCase('Parked', 'Parked by agent — ' + s.parkReason, s.parkReason);
+        this.setState({ parkOpen: false, stage: 'done', done: { type: 'park', id } });
+      },
+      doSubmit: () => {
+        const id = this.addCase('Posted', 'Submitted to SAP S/4HANA for posting', '—');
+        this.setState({ stage: 'done', done: { type: 'submit', id } });
+      },
+      doClarify: () => {
+        const id = this.addCase('Awaiting Approval', 'Clarification requested from business owner', 'Missing approval');
+        this.setState({ stage: 'done', done: { type: 'clarify', id } });
+      },
+      doneLine: s.done ? (s.done.type === 'submit' ? 'var(--ok)' : 'var(--warn)') : 'var(--color-accent-700)',
+      doneKicker: s.done ? ({ submit: 'Posted / Submitted to ERP', park: 'Parked — Awaiting Action', clarify: 'Awaiting Business Action' })[s.done.type] : '',
+      doneTitle: s.done ? ({
+        submit: 'Invoice ' + inv.number + ' successfully submitted',
+        park: 'Invoice ' + inv.number + ' has been parked successfully',
+        clarify: 'Clarification requested for ' + inv.number
+      })[s.done.type] : '',
+      doneBody: s.done ? ({
+        submit: 'The agent has posted the invoice to SAP S/4HANA with a complete audit trail. Payment will follow the ' + inv.terms + ' term.',
+        park: 'Reason recorded: ' + s.parkReason + '. The agent will notify the business owner and re-run validation once the missing information arrives.',
+        clarify: 'The business owner has been asked for cost centre and approval evidence. The case stays open in the AP Inbox.'
+      })[s.done.type] : '',
+      doneStats: s.done ? [{ k: 'Case ID', v: s.done.id }, { k: 'Amount', v: inv.totalText }, { k: 'Agent confidence', v: inv.matchConfidence }] : [],
+      navInboxFromDone: () => this.setState({ view: 'inbox' }),
+      resetFlow: () => this.setState({ stage: 'intake', sel: null, edits: {}, done: null, clarifySent: false, focus: null }),
+
+      rows, inboxKpis, rowCountText: rows.length + ' of ' + rowsAll.length + ' cases',
+      q: s.q, onSearch: (e) => this.setState({ q: e.target.value }),
+      fStatus: s.fStatus, onStatus: (e) => this.setState({ fStatus: e.target.value }),
+      statusOptions: ['All statuses', 'Posted', 'Processed', 'Submitted', 'In Progress', 'Validation Required', 'Exception', 'Parked', 'Awaiting Approval'],
+      fType: s.fType, onType: (e) => this.setState({ fType: e.target.value }), typeOptions: ['All', 'PO', 'Non-PO'],
+      fCurrency: s.fCurrency, onCurrency: (e) => this.setState({ fCurrency: e.target.value }), currencyOptions: ['All', 'INR', 'USD', 'EUR', 'GBP'],
+      fException: s.fException, onException: (e) => this.setState({ fException: e.target.value }),
+      exceptionOptionsList: ['All', 'Missing PO', 'Price variance', 'Quantity variance', 'GST mismatch', 'Duplicate suspected', 'Missing approval'],
+      clearFilters: () => this.setState({ q: '', fStatus: 'All statuses', fType: 'All', fCurrency: 'All', fException: 'All' }),
+      detail, detailRows, closeDetail: () => this.setState({ detail: null }),
+
+      showChat: s.view === 'processing' && s.stage !== 'intake' && s.stage !== 'done',
+      chatOpen: s.chatOpen, chatToggleMark: s.chatOpen ? '–' : '+',
+      chatSubtitle: 'Ask about ' + inv.number + ' or its validation.',
+      toggleChat: () => this.setState(st => ({ chatOpen: !st.chatOpen })),
+      chatLog, chatPrompts, chatDraft: s.chatDraft,
+      onChatDraft: (e) => this.setState({ chatDraft: e.target.value }),
+      onChatKey: (e) => { if (e.key === 'Enter' && e.target.value.trim()) this.ask(e.target.value.trim()); },
+      sendChat: () => { if (s.chatDraft.trim()) this.ask(s.chatDraft.trim()); },
+
+      kpis: [
+        { label: 'Invoices processed', value: '1,248', delta: '+8.4% vs last month', tone: 'ok', icon: ICON.file },
+        { label: 'Straight-through processing', value: '82%', delta: '+6 pts', tone: 'ok', icon: ICON.pulse },
+        { label: 'AI extraction accuracy', value: '99.2%', delta: 'Stable', tone: 'plain', icon: ICON.target },
+        { label: '3-way match rate', value: '91%', delta: '+3 pts', tone: 'ok', icon: ICON.layers },
+        { label: 'Exception rate', value: '6.8%', delta: '-2.1 pts', tone: 'ok', icon: ICON.alert },
+        { label: 'Avg. processing time', value: '2.4 min', delta: 'from 14 min baseline', tone: 'ok', icon: ICON.gauge }
+      ].map(k => ({ label: k.label, value: k.value, delta: k.delta, iconPath: k.icon, deltaColor: k.tone === 'ok' ? 'var(--ok)' : 'var(--color-neutral-700)' })),
+      exBars: [['Missing PO', 34], ['Quantity variance', 26], ['Price variance', 19], ['GST mismatch', 12], ['Duplicate suspected', 6], ['Missing approval', 18]]
+        .map(([label, v]) => ({ label, value: String(v), height: Math.round(v / 34 * 100) + '%', color: 'var(--color-accent-500)' })),
+      auditTrail: [
+        { when: '10 Sep 2026, 17:26', actor: 'invoice_agent', event: 'Invoice AIS/26-27/1184 — exception raised (quantity variance)' },
+        { when: '10 Sep 2026, 17:24', actor: 'invoice_agent', event: '3-way match executed against PO 4500131207 / GR 5001284471' },
+        { when: '10 Sep 2026, 16:58', actor: 'invoice_agent', event: 'Invoice INV-2026-08452 posted to SAP S/4HANA' },
+        { when: '10 Sep 2026, 16:41', actor: 'connector.sap', event: 'ERP synchronisation completed — 12 documents fetched' },
+        { when: '10 Sep 2026, 15:12', actor: 'invoice_agent', event: 'Invoice VCS/2026/0417 parked — missing purchase order' },
+        { when: '09 Sep 2026, 19:03', actor: 'gpo.review', event: 'Tolerance policy IN-04 confirmed at 2% for indirect materials' },
+        { when: '09 Sep 2026, 18:47', actor: 'invoice_agent', event: 'Duplicate check completed across 1,248 open documents' }
+      ],
+      funnel: [['Received', 1248], ['Extracted', 1236], ['Validated', 1188], ['Matched', 1082], ['Posted', 1023]]
+        .map(([label, v]) => ({ label, valueText: v.toLocaleString('en-IN'), width: (v / 1248 * 100).toFixed(1) + '%' })),
+      outcomes: (() => {
+        let acc = 0;
+        return [['Straight-through', 82, 'var(--color-accent-700)'], ['Exception', 7, 'var(--err)'], ['Parked', 6, 'var(--warn)'], ['Awaiting approval', 5, 'var(--color-accent-400)']]
+          .map(([label, pct, color]) => {
+            const o = { label, color, width: pct + '%', valueText: pct + '%', dash: pct + ' ' + (100 - pct), offset: String(-acc) };
+            acc += pct; return o;
+          });
+      })(),
+      aiPerf: [['Extraction accuracy', 99.2], ['Field-level confidence', 98.7], ['Duplicate detection', 99.5], ['Match accuracy', 97.8], ['GSTIN validation', 99.6]]
+        .map(([label, v]) => ({ label, value: v + '%', width: v + '%' })),
+      impact: [
+        { label: 'Manual touches avoided', value: '8,420', note: 'Rolling 12 months' },
+        { label: 'Processing hours saved', value: '1,960 hrs', note: '≈ 11 FTE-months' },
+        { label: 'Exception resolution', value: '31% faster', note: 'vs pre-agent baseline' },
+        { label: 'Early-payment discounts', value: '₹42.6 L', note: 'Captured, not forfeited' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>
