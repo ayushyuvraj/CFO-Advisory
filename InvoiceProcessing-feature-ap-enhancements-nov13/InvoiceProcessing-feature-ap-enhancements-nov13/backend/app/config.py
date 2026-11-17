@@ -11,7 +11,13 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=BACKEND_DIR / ".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=(
+            BACKEND_DIR / ".env",
+            BACKEND_DIR.parent / ".env",
+            BACKEND_DIR.parent.parent / ".env",
+        ),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     # ── App ──────────────────────────────────────────────────────────────────
