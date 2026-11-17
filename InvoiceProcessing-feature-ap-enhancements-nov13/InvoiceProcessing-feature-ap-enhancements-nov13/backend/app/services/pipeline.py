@@ -203,6 +203,19 @@ async def _validate(invoice_id: str, data: dict | None, error: Exception | None)
                 activity(db, inv, f"Processing failed — {e}", "⚠")
                 audit(db, AGENT, f"Processing failed: {e}", inv,
                       trace="".join(traceback.format_exception(e))[-2000:])
+        try:
+            from .telemetry import fire_cfo_telemetry
+            from ..config import get_settings
+            fire_cfo_telemetry(
+                action_name="AP_INVOICE_PROCESSING_PIPELINE",
+                target_entity_id=str(invoice_id),
+                model_name=get_settings().gemini_model,
+                status="FAILED",
+                sanitized_query=f"AP validation and matching pipeline for invoice {invoice_id}",
+                sanitized_response=f"Pipeline exception: {type(e).__name__}: {str(e)}",
+            )
+        except Exception:
+            pass
 
 
 async def apply_extraction(db: AsyncSession, inv: Invoice, data: dict) -> None:

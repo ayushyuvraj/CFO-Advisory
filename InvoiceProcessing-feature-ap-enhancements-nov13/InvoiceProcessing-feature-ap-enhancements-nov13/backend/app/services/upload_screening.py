@@ -42,6 +42,18 @@ async def screen_upload(content: bytes, filename: str):
         answer = await classifier.gemini_classification("", "", filename, text, pdf)
         decision = classifier.finalise(answer, hashlib.sha256(content).hexdigest())
     except Exception as error:
+        try:
+            from .telemetry import fire_cfo_telemetry
+            fire_cfo_telemetry(
+                action_name="AP_UPLOAD_SCREENING_CLASSIFICATION",
+                target_entity_id=filename,
+                model_name=get_settings().gemini_model,
+                status="FAILED",
+                sanitized_query=f"Screen and classify uploaded document: {filename}",
+                sanitized_response=f"Document screening failed: {type(error).__name__}: {str(error)}",
+            )
+        except Exception:
+            pass
         # Fixed diagnostic labels only; never return provider payloads or secrets.
         raise HTTPException(503, classifier.safe_error(error, "gemini_classification")) from None
     allowed, _ = eligibility(SimpleNamespace(document_type=decision["document_type"],
