@@ -3,6 +3,7 @@ import {
   createPersona,
   getCompanyById,
   getCompanyPersonas,
+  isValidEmail,
 } from "@/lib/governance/store";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,16 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON request body." },
+      { status: 400 }
+    );
+  }
+
   try {
     const { id: companyId } = await context.params;
     const company = getCompanyById(companyId);
@@ -46,7 +57,6 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
     const {
       name,
       roleTitle,
@@ -71,7 +81,7 @@ export async function POST(
       );
     }
 
-    if (!email || typeof email !== "string" || !email.includes("@")) {
+    if (!email || typeof email !== "string" || !isValidEmail(email)) {
       return NextResponse.json(
         { error: "A valid email address is required." },
         { status: 400 }
@@ -85,18 +95,24 @@ export async function POST(
       );
     }
 
+    const perms = (permissions && typeof permissions === "object"
+      ? permissions
+      : {}) as Record<string, unknown>;
+
     const persona = createPersona(companyId, {
       name,
       roleTitle,
       email,
       passcode,
       productAccessMode: productAccessMode === "custom" ? "custom" : "all",
-      allowedProductIds: Array.isArray(allowedProductIds) ? allowedProductIds : [],
+      allowedProductIds: Array.isArray(allowedProductIds)
+        ? allowedProductIds.filter((x): x is string => typeof x === "string")
+        : [],
       permissions: {
-        canLaunchProducts: Boolean(permissions?.canLaunchProducts),
-        canViewAudit: Boolean(permissions?.canViewAudit),
-        canManageDashboards: Boolean(permissions?.canManageDashboards),
-        canExportData: Boolean(permissions?.canExportData),
+        canLaunchProducts: Boolean(perms.canLaunchProducts),
+        canViewAudit: Boolean(perms.canViewAudit),
+        canManageDashboards: Boolean(perms.canManageDashboards),
+        canExportData: Boolean(perms.canExportData),
       },
     });
 

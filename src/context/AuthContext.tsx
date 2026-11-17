@@ -4,6 +4,7 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -16,9 +17,7 @@ import {
 } from "@/lib/governance/types";
 
 export type AuthMethod =
-  | "sso"
   | "credentials"
-  | "token"
   | "client_credentials"
   | "kpmg_preview";
 
@@ -43,11 +42,11 @@ interface AuthContextValue {
   isLoading: boolean;
   isLoginOpen: boolean;
   isPreviewMode: boolean;
+  sessionNotice: string | null;
+  clearSessionNotice: () => void;
   openLogin: () => void;
   closeLogin: () => void;
-  signInWithSSO: () => Promise<AuthUser>;
   signInWithCredentials: (email: string, passcode: string) => Promise<AuthUser>;
-  signInWithToken: (token: string) => Promise<AuthUser>;
   signInAsClient: (email: string, passcode: string) => Promise<AuthUser>;
   startPreviewAs: (
     company: CompanyProfile,
@@ -62,6 +61,14 @@ const SESSION_KEY = "kpmg_cfo_advisory_session_v1";
 const SESSION_CHANGE_EVENT = "kpmg-cfo-session-change";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+async function safeParseJson(res: Response): Promise<Record<string, unknown>> {
+  try {
+    return (await res.json()) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
 
 function readStoredUser(): AuthUser | null {
   if (typeof window === "undefined") return null;
@@ -116,6 +123,7 @@ function persistSession(nextUser: AuthUser | null) {
   try {
     if (nextUser) {
       const serialized = JSON.stringify(nextUser);
+      if (serialized === cachedRaw) return;
       window.sessionStorage.setItem(SESSION_KEY, serialized);
       cachedRaw = serialized;
       cachedUser = nextUser;
@@ -145,8 +153,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [sessionNotice, setSessionNotice] = useState<string | null>(null);
 
   const isPreviewMode = Boolean(user && user.method === "kpmg_preview");
+
+  const clearSessionNotice = useCallback(() => {
+    setSessionNotice(null);
+  }, []);
 
   const openLogin = useCallback(() => {
     setIsLoginOpen(true);
@@ -154,24 +167,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const closeLogin = useCallback(() => {
     setIsLoginOpen(false);
-  }, []);
-
-  const signInWithSSO = useCallback(async (): Promise<AuthUser> => {
-    setIsAuthenticating(true);
-    await new Promise((resolve) => setTimeout(resolve, 520));
-    const ssoUser: AuthUser = {
-      id: "usr-elena-vance",
-      name: "Elena Vance",
-      role: "Managing Director, CFO Advisory",
-      email: "elena.vance@kpmg-advisory.com",
-      method: "sso",
-      badge: "Entra ID SSO",
-      tenantType: "kpmg",
-    };
-    persistSession(ssoUser);
-    setIsAuthenticating(false);
-    setIsLoginOpen(false);
-    return ssoUser;
   }, []);
 
   const signInWithCredentials = useCallback(
@@ -184,60 +179,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setIsAuthenticating(true);
-      await new Promise((resolve) => setTimeout(resolve, 380));
+      try {
+        if (
+          cleanEmail !== KPMG_LEAD_USER.email.toLowerCase() ||
+          cleanPasscode !== KPMG_LEAD_USER.passcode
+        ) {
+          throw new Error(
+            "Invalid advisory credentials. Please verify your email and passcode."
+          );
+        }
 
-      if (
-        cleanEmail !== KPMG_LEAD_USER.email.toLowerCase() ||
-        cleanPasscode !== KPMG_LEAD_USER.passcode
-      ) {
+        const credUser: AuthUser = {
+          id: "usr-kpmg-lead",
+          name: KPMG_LEAD_USER.name,
+          role: KPMG_LEAD_USER.role,
+          email: KPMG_LEAD_USER.email,
+          method: "credentials",
+          badge: KPMG_LEAD_USER.badge,
+          tenantType: "kpmg",
+        };
+        setSessionNotice(null);
+        persistSession(credUser);
+        setIsLoginOpen(false);
+        return credUser;
+      } finally {
         setIsAuthenticating(false);
-        throw new Error(
-          "Invalid advisory credentials. Please verify your email and passcode."
-        );
       }
-
-      const credUser: AuthUser = {
-        id: "usr-kpmg-lead",
-        name: KPMG_LEAD_USER.name,
-        role: KPMG_LEAD_USER.role,
-        email: KPMG_LEAD_USER.email,
-        method: "credentials",
-        badge: KPMG_LEAD_USER.badge,
-        tenantType: "kpmg",
-      };
-      persistSession(credUser);
-      setIsAuthenticating(false);
-      setIsLoginOpen(false);
-      return credUser;
-    },
-    []
-  );
-
-  const signInWithToken = useCallback(
-    async (token: string): Promise<AuthUser> => {
-      const cleanToken = token.trim().toUpperCase();
-      if (!/^[A-Z0-9-]{8,}$/.test(cleanToken)) {
-        throw new Error(
-          "Enter a valid engagement token such as KPMG-CFO-2026."
-        );
-      }
-
-      setIsAuthenticating(true);
-      await new Promise((resolve) => setTimeout(resolve, 420));
-
-      const tokenUser: AuthUser = {
-        id: `usr-token-${cleanToken}`,
-        name: "Enterprise CFO Guest",
-        role: `Engagement ${cleanToken}`,
-        email: "cfo.guest@enterprise-client.com",
-        method: "token",
-        badge: "Engagement Token",
-        tenantType: "client",
-      };
-      persistSession(tokenUser);
-      setIsAuthenticating(false);
-      setIsLoginOpen(false);
-      return tokenUser;
     },
     []
   );
@@ -259,23 +226,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({ email: cleanEmail, passcode: cleanPasscode }),
         });
 
-        const data = await res.json();
+        const data = await safeParseJson(res);
         if (!res.ok) {
-          throw new Error(data.error || "Authentication failed.");
+          throw new Error(
+            typeof data.error === "string"
+              ? data.error
+              : "Authentication failed. Please check your credentials."
+          );
         }
 
-        const clientUser: AuthUser = data.user;
+        const clientUser = data.user as AuthUser;
+        setSessionNotice(null);
         persistSession(clientUser);
-        setIsAuthenticating(false);
         setIsLoginOpen(false);
         return clientUser;
-      } catch (err) {
+      } finally {
         setIsAuthenticating(false);
-        throw err;
       }
     },
     []
   );
+
+  // Live session sync for authenticated client personas so revocations, suspensions,
+  // and entitlement/permission toggles take effect immediately without requiring sign-out.
+  const clientCompanyId =
+    user?.method === "client_credentials" ? user.companyId : undefined;
+  const clientPersonaId =
+    user?.method === "client_credentials" ? user.personaId : undefined;
+
+  useEffect(() => {
+    if (!clientCompanyId || !clientPersonaId) return;
+    let cancelled = false;
+
+    const revalidate = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      try {
+        const res = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            companyId: clientCompanyId,
+            personaId: clientPersonaId,
+          }),
+          cache: "no-store",
+        });
+        if (cancelled) return;
+        const data = await safeParseJson(res);
+
+        if (res.status === 403 || res.status === 404 || data.active === false) {
+          setSessionNotice(
+            typeof data.reason === "string"
+              ? data.reason
+              : "Your access has been revoked or suspended by KPMG Advisory."
+          );
+          persistSession(null);
+          return;
+        }
+
+        if (res.ok && data.active === true && data.user) {
+          persistSession(data.user as AuthUser);
+        }
+      } catch {
+        // Ignore transient network hiccups during background sync
+      }
+    };
+
+    void revalidate();
+    const interval = setInterval(() => void revalidate(), 5000);
+    const onFocus = () => void revalidate();
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [clientCompanyId, clientPersonaId]);
 
   const startPreviewAs = useCallback(
     (
@@ -289,19 +315,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ? user.previewOriginalAdmin || user
           : user;
 
+      const effectiveAllowed =
+        company.status === "active" ? allowedProductIds : [];
+
       const previewUser: AuthUser = {
         id: persona.id,
         name: persona.name,
         role: persona.roleTitle,
         email: persona.email,
         method: "kpmg_preview",
-        badge: `Preview: ${company.name}`,
+        badge:
+          company.status === "active"
+            ? `Preview: ${company.name}`
+            : `Preview (Suspended): ${company.name}`,
         tenantType: "client",
         companyId: company.id,
         companyName: company.name,
         personaId: persona.id,
         permissions: persona.permissions,
-        allowedProductIds,
+        allowedProductIds: effectiveAllowed,
         previewOriginalAdmin: originalAdmin,
       };
 
@@ -325,11 +357,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading: !isHydrated || isAuthenticating,
       isLoginOpen,
       isPreviewMode,
+      sessionNotice,
+      clearSessionNotice,
       openLogin,
       closeLogin,
-      signInWithSSO,
       signInWithCredentials,
-      signInWithToken,
       signInAsClient,
       startPreviewAs,
       exitPreview,
@@ -341,11 +373,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticating,
       isLoginOpen,
       isPreviewMode,
+      sessionNotice,
+      clearSessionNotice,
       openLogin,
       closeLogin,
-      signInWithSSO,
       signInWithCredentials,
-      signInWithToken,
       signInAsClient,
       startPreviewAs,
       exitPreview,

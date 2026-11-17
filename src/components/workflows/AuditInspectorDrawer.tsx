@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   X,
@@ -19,6 +19,7 @@ import {
   ListChecks,
 } from "@phosphor-icons/react";
 import { TelemetryEvent } from "@/lib/telemetry/types";
+import { useDialogFocusTrap } from "@/hooks/useDialogFocusTrap";
 
 interface AuditInspectorDrawerProps {
   event: TelemetryEvent | null;
@@ -28,39 +29,13 @@ interface AuditInspectorDrawerProps {
 
 export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorDrawerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<"structured" | "raw">("structured");
   const [copied, setCopied] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useDialogFocusTrap(isOpen && Boolean(event), drawerRef, onClose);
 
-  // Lock body scroll and isolate keyboard/wheel interactions
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    const originalTouchAction = document.body.style.touchAction;
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.touchAction = originalTouchAction;
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen || !event || !mounted) return null;
+  if (!isOpen || !event || typeof document === "undefined") return null;
 
   const isSuccess = event.action_status === "SUCCESS";
 
@@ -72,15 +47,23 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex justify-end bg-[#0C233C]/40 backdrop-blur-xs transition-opacity duration-200"
-      onClick={onClose}
+      className="fixed inset-0 z-[95] flex justify-end"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Live Audit Telemetry Inspector"
       data-lenis-prevent="true"
       data-lenis-prevent-wheel="true"
       data-lenis-prevent-touch="true"
     >
       <div
-        className="relative flex h-full max-h-screen w-full max-w-3xl flex-col border-l border-[#D8DFE9] bg-white shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        onClick={onClose}
+        className="fixed inset-0 bg-[#0C233C]/40 backdrop-blur-xs transition-opacity duration-200"
+        aria-hidden="true"
+      />
+      <div
+        ref={drawerRef}
+        tabIndex={-1}
+        className="relative z-10 flex h-full max-h-screen w-full max-w-3xl flex-col border-l border-[#D8DFE9] bg-white shadow-2xl focus:outline-none"
         data-lenis-prevent="true"
         data-lenis-prevent-wheel="true"
         data-lenis-prevent-touch="true"

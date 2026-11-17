@@ -21,6 +21,19 @@ Every Browser QA + Output Alignment Review pass must verify all gates below:
 - [ ] **Emil Kowalski Micro-Physics:** Tactile press (`scale-[0.98]`), crisp `ease-out` curves, zero layout-thrashing width/height animations, zero `window.addEventListener('scroll')`.
 
 ## 4. Functional Auth & Workflows Hub (`/workflows`)
-- [ ] **Login Modal:** Opens cleanly, traps/focuses properly, validates empty/invalid email & passcode with inline WCAG-compliant errors, and authenticates via KPMG SSO, Email+Passcode, and Client Token.
-- [ ] **Workflows Hub:** Renders loading skeleton smoothly, displays 6 KPMG CFO Advisory workflows, supports search + pillar filter tabs + empty state, opens the Workflow Execution & Lineage Drawer, and signs out cleanly back to `/`.
+- [ ] **Login Modal:** Opens cleanly above Navbar (`createPortal` to `document.body`), auto-focuses `#auth-email` (never the `X` close button), resets credentials and errors on close, validates empty/invalid email & passcode with inline WCAG-compliant errors, and authenticates via KPMG Lead or Client Persona credentials.
+- [ ] **Workflows Hub:** Renders loading skeleton smoothly, displays physically registered connected platforms, supports Solution Catalog, Live Audit & Telemetry, and Client & Access Governance (KPMG Lead only), and signs out cleanly back to `/`.
 - [ ] **Zero Runtime Errors:** Zero uncaught page errors or console errors.
+
+## 5. Mandatory Modal, Drawer, Focus-Trap & Polling Regression Gates (NEVER VIOLATE)
+Every modal, drawer, and form dialog MUST pass ALL of these automated and manual gates before completion:
+- [ ] **Never Put `onClose` in `useDialogFocusTrap` Effect Dependencies:** Store `onClose` in a `useRef` inside `useDialogFocusTrap.ts`. Parent re-renders or polling ticks MUST NEVER tear down and re-run focus traps or steal focus mid-typing.
+- [ ] **Never Auto-Focus the `X` Close Button:** Initial focus MUST target `[data-autofocus]` or the first editable form input (`input`, `textarea`, `select`), and MUST skip `[data-dialog-close]`. Pressing `Space` or `Enter` after opening or while typing MUST NEVER accidentally dismiss a dialog.
+- [ ] **Multi-Second Mid-Typing Survival Test:** Open every modal/drawer, type a multi-word string containing spaces, backspace, and symbols across **>= 5 seconds** (spanning multiple background polling cycles), and assert that `document.activeElement` stays inside the typed input and the modal remains open.
+- [ ] **Portal Above Fixed Navbar:** All modals and drawers MUST render via `createPortal(..., document.body)` with `z-[90]+` (above Navbar `z-40`). Verify the top-right `X` and header action buttons are never obstructed by the Navbar (`elementFromPoint` check).
+- [ ] **Nested Dialog Stack & Scroll Lock:** Use ref-counted body scroll lock + shared dialog stack so pressing `Escape` closes ONLY the topmost modal (e.g. `CreatePersonaModal` closes without dismissing `CompanyDetailDrawer`) and scrolling is isolated with `data-lenis-prevent*`.
+- [ ] **No Unnecessary Polling Re-Renders:** Any polling `setInterval` MUST bail out of `setState` when data is unchanged, pause when `document.hidden` or unauthenticated, and avoid duplicate polling across sibling tabs.
+- [ ] **Clean State Reset on Close/Reopen:** Closing and reopening any modal (Create Company, Edit Company, Create/Edit Persona, Add Product, Login) MUST start with clean state (no stale plaintext passcodes, stale validation errors, or stuck completion screens).
+- [ ] **Keyboard-Accessible Switches & Controls:** Every On/Off toggle MUST be a real `<button type="button" role="switch" aria-checked={...}>` (never a `<div onClick>`). Every icon-only button MUST have an `aria-label`.
+- [ ] **Real End-to-End Automated Browser Simulation:** Before declaring any interactive UI task complete, run a headless Chrome E2E simulation covering full keyboard entry, CRUD lifecycles, ON/OFF toggles, Preview Mode, real Client Login, live revocation/suspension, and clean restoration to an empty slate.
+- [ ] **Dual-Worktree Sync & Server Restart:** Whenever updating `/workflows`, auth, or governance code, sync into `v2/`, verify `tsc --noEmit`, `eslint`, and `next build` on BOTH `master` and `V2`, restart BOTH Port 3000 and Port 3001 servers, and verify live HTTP responses on both ports.

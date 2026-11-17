@@ -7,10 +7,18 @@ export async function PUT(
   request: Request,
   context: { params: Promise<{ id: string; personaId: string }> }
 ) {
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON request body." },
+      { status: 400 }
+    );
+  }
+
   try {
     const { id: companyId, personaId } = await context.params;
-    const body = await request.json();
-
     const updated = updatePersona(companyId, personaId, body);
     if (!updated) {
       return NextResponse.json(
@@ -21,7 +29,6 @@ export async function PUT(
 
     return NextResponse.json({ persona: updated }, { status: 200 });
   } catch (err) {
-    console.error("[API /api/clients/[id]/personas/[personaId] PUT] Error:", err);
     return NextResponse.json(
       {
         error:

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   createCompany,
+  isValidEmail,
   readGovernanceData,
 } from "@/lib/governance/store";
 
@@ -20,8 +21,17 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  let body: Record<string, unknown>;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON request body." },
+      { status: 400 }
+    );
+  }
+
+  try {
     const { name, code, contactEmail, status, notes } = body || {};
 
     if (!name || typeof name !== "string" || !name.trim()) {
@@ -31,11 +41,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (
-      !contactEmail ||
-      typeof contactEmail !== "string" ||
-      !contactEmail.includes("@")
-    ) {
+    if (!contactEmail || typeof contactEmail !== "string" || !isValidEmail(contactEmail)) {
       return NextResponse.json(
         { error: "A valid primary contact email is required." },
         { status: 400 }
@@ -44,21 +50,21 @@ export async function POST(request: Request) {
 
     const company = createCompany({
       name,
-      code,
+      code: typeof code === "string" ? code : undefined,
       contactEmail,
       status: status === "suspended" ? "suspended" : "active",
-      notes,
+      notes: typeof notes === "string" ? notes : undefined,
     });
 
     return NextResponse.json({ company }, { status: 201 });
   } catch (err) {
-    console.error("[API /api/clients POST] Error:", err);
+    const message =
+      err instanceof Error ? err.message : "Failed to create company.";
+    const isClientError =
+      message.includes("required") || message.includes("already assigned");
     return NextResponse.json(
-      {
-        error:
-          err instanceof Error ? err.message : "Failed to create company.",
-      },
-      { status: 500 }
+      { error: message },
+      { status: isClientError ? 400 : 500 }
     );
   }
 }

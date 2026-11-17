@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Buildings,
   Cpu,
@@ -11,9 +11,11 @@ import {
   ToggleLeft,
   ToggleRight,
   UsersThree,
+  WarningCircle,
 } from "@phosphor-icons/react";
 import {
   ClientGovernanceData,
+  CompanyEntitlement,
   CompanyPersona,
   CompanyProfile,
 } from "@/lib/governance/types";
@@ -37,24 +39,38 @@ export function ClientAccessConsole({
     personas: [],
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
     null
   );
-  const [togglingKey, setTogglingKey] = useState<string | null>(null);
+  const [togglingKeys, setTogglingKeys] = useState<Set<string>>(
+    () => new Set()
+  );
 
   useEffect(() => {
     let cancelled = false;
     async function loadData() {
       try {
         const res = await fetch("/api/clients", { cache: "no-store" });
-        if (res.ok && !cancelled) {
-          const data = (await res.json()) as ClientGovernanceData;
+        if (!res.ok) {
+          throw new Error("Unable to load client governance registry.");
+        }
+        const data = (await res.json()) as ClientGovernanceData;
+        if (!cancelled) {
           setGovernanceData(data);
+          setLoadError(null);
         }
       } catch (err) {
-        console.error("[ClientAccessConsole] Failed to fetch governance data:", err);
+        if (!cancelled) {
+          setLoadError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load governance data."
+          );
+        }
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -67,59 +83,96 @@ export function ClientAccessConsole({
     };
   }, []);
 
-  const handleToggleEntitlement = async (
-    companyId: string,
-    productId: string,
-    enabled: boolean
-  ) => {
-    const key = `${companyId}:${productId}`;
-    setTogglingKey(key);
-    try {
-      const res = await fetch(`/api/clients/${companyId}/entitlements`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, enabled }),
-      });
+  const handleCloseCreateModal = useCallback(() => {
+    setIsCreateModalOpen(false);
+  }, []);
 
-      if (res.ok) {
-        const { entitlement } = await res.json();
+  const handleCloseDrawer = useCallback(() => {
+    setSelectedCompanyId(null);
+  }, []);
+
+  const handleToggleEntitlement = useCallback(
+    async (companyId: string, productId: string, enabled: boolean) => {
+      const key = `${companyId}:${productId}`;
+      setActionError(null);
+      setTogglingKeys((prev) => {
+        const next = new Set(prev);
+        next.add(key);
+        return next;
+      });
+      try {
+        const res = await fetch(`/api/clients/${companyId}/entitlements`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId, enabled }),
+        });
+
+        let payload: { entitlement?: CompanyEntitlement; error?: string } = {};
+        try {
+          payload = (await res.json()) as typeof payload;
+        } catch {
+          // non-JSON fallback
+        }
+
+        if (!res.ok || !payload.entitlement) {
+          throw new Error(
+            payload.error || "Failed to update product entitlement."
+          );
+        }
+
+        const updatedEntitlement = payload.entitlement;
         setGovernanceData((prev) => {
           const filtered = prev.entitlements.filter(
             (e) => !(e.companyId === companyId && e.productId === productId)
           );
           return {
             ...prev,
-            entitlements: [...filtered, entitlement],
+            entitlements: [...filtered, updatedEntitlement],
           };
         });
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Failed to toggle entitlement.";
+        setActionError(msg);
+        throw err;
+      } finally {
+        setTogglingKeys((prev) => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
+        });
       }
-    } catch (err) {
-      console.error("Failed to toggle entitlement:", err);
-    } finally {
-      setTogglingKey(null);
-    }
-  };
+    },
+    []
+  );
 
-  const handleCompanyCreated = (company: CompanyProfile) => {
+  const handleCompanyCreated = useCallback((company: CompanyProfile) => {
     setGovernanceData((prev) => ({
       ...prev,
       companies: [...prev.companies, company],
     }));
     setSelectedCompanyId(company.id);
-  };
+  }, []);
 
-  const handleCompanyDeleted = (companyId: string) => {
+  const handleCompanyUpdated = useCallback((updated: CompanyProfile) => {
+    setGovernanceData((prev) => ({
+      ...prev,
+      companies: prev.companies.map((c) =>
+        c.id === updated.id ? updated : c
+      ),
+    }));
+  }, []);
+
+  const handleCompanyDeleted = useCallback((companyId: string) => {
     setGovernanceData((prev) => ({
       companies: prev.companies.filter((c) => c.id !== companyId),
       entitlements: prev.entitlements.filter((e) => e.companyId !== companyId),
       personas: prev.personas.filter((p) => p.companyId !== companyId),
     }));
-    if (selectedCompanyId === companyId) {
-      setSelectedCompanyId(null);
-    }
-  };
+    setSelectedCompanyId((prev) => (prev === companyId ? null : prev));
+  }, []);
 
-  const handlePersonaSaved = (persona: CompanyPersona) => {
+  const handlePersonaSaved = useCallback((persona: CompanyPersona) => {
     setGovernanceData((prev) => {
       const exists = prev.personas.some((p) => p.id === persona.id);
       if (exists) {
@@ -135,14 +188,14 @@ export function ClientAccessConsole({
         personas: [...prev.personas, persona],
       };
     });
-  };
+  }, []);
 
-  const handlePersonaDeleted = (personaId: string) => {
+  const handlePersonaDeleted = useCallback((personaId: string) => {
     setGovernanceData((prev) => ({
       ...prev,
       personas: prev.personas.filter((p) => p.id !== personaId),
     }));
-  };
+  }, []);
 
   const selectedCompany =
     governanceData.companies.find((c) => c.id === selectedCompanyId) || null;
@@ -164,9 +217,35 @@ export function ClientAccessConsole({
       c.contactEmail.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const registeredProductIds = useMemo(
+    () => new Set(availableProducts.map((p) => p.id)),
+    [availableProducts]
+  );
+
+  const activeCompanyIds = useMemo(
+    () =>
+      new Set(
+        governanceData.companies
+          .filter((c) => c.status === "active")
+          .map((c) => c.id)
+      ),
+    [governanceData.companies]
+  );
+
   const totalActiveEntitlements = governanceData.entitlements.filter(
-    (e) => e.enabled
+    (e) =>
+      e.enabled &&
+      registeredProductIds.has(e.productId) &&
+      activeCompanyIds.has(e.companyId)
   ).length;
+
+  const handleDrawerToggleEntitlement = useCallback(
+    (productId: string, enabled: boolean) => {
+      if (!selectedCompanyId) return Promise.resolve();
+      return handleToggleEntitlement(selectedCompanyId, productId, enabled);
+    },
+    [selectedCompanyId, handleToggleEntitlement]
+  );
 
   return (
     <div className="mt-6 space-y-6">
@@ -183,7 +262,8 @@ export function ClientAccessConsole({
             {governanceData.companies.length}
           </p>
           <p className="mt-1 text-xs text-[#4B5563]">
-            Registered client tenants
+            {activeCompanyIds.size} active ·{" "}
+            {governanceData.companies.length - activeCompanyIds.size} suspended
           </p>
         </div>
 
@@ -198,7 +278,7 @@ export function ClientAccessConsole({
             {totalActiveEntitlements}
           </p>
           <p className="mt-1 text-xs text-[#4B5563]">
-            Granted company-to-product links
+            Granted active company-to-product links
           </p>
         </div>
 
@@ -221,10 +301,15 @@ export function ClientAccessConsole({
       {/* Control Bar: View Mode Switcher + Search + Onboard Company CTA */}
       <div className="flex flex-col justify-between gap-4 rounded-sm border border-[#D8DFE9] bg-white p-4 shadow-xs sm:flex-row sm:items-center">
         <div className="flex flex-wrap items-center gap-3">
-          {/* View Mode Segmented Switch */}
-          <div className="inline-flex rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-1 text-xs">
+          <div
+            role="tablist"
+            aria-label="Governance view mode"
+            className="inline-flex rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-1 text-xs"
+          >
             <button
               type="button"
+              role="tab"
+              aria-selected={viewMode === "by-company"}
               onClick={() => setViewMode("by-company")}
               className={`inline-flex items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition-all ${
                 viewMode === "by-company"
@@ -237,6 +322,8 @@ export function ClientAccessConsole({
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={viewMode === "by-product"}
               onClick={() => setViewMode("by-product")}
               className={`inline-flex items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition-all ${
                 viewMode === "by-product"
@@ -257,6 +344,7 @@ export function ClientAccessConsole({
               />
               <input
                 type="text"
+                aria-label="Search companies"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search companies..."
@@ -276,11 +364,41 @@ export function ClientAccessConsole({
         </button>
       </div>
 
+      {/* Inline Action Error Alert */}
+      {actionError && (
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-3 rounded-sm border border-[#B91C1C]/30 bg-[#B91C1C]/5 px-4 py-3 text-xs font-medium text-[#B91C1C]"
+        >
+          <div className="flex items-center gap-2">
+            <WarningCircle size={16} weight="bold" />
+            <span>{actionError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            className="underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Main Content Area */}
       {isLoading ? (
         <div className="h-48 animate-pulse rounded-sm border border-[#D8DFE9] bg-white" />
+      ) : loadError ? (
+        <div
+          role="alert"
+          className="rounded-sm border border-[#B91C1C]/30 bg-white px-6 py-12 text-center shadow-xs"
+        >
+          <WarningCircle size={28} className="mx-auto text-[#B91C1C]" />
+          <h3 className="mt-3 text-base font-bold text-[#0C233C]">
+            Unable to Load Governance Registry
+          </h3>
+          <p className="mt-1 text-xs text-[#4B5563]">{loadError}</p>
+        </div>
       ) : viewMode === "by-company" ? (
-        /* VIEW 1: BY COMPANY */
         governanceData.companies.length === 0 ? (
           <div className="rounded-sm border border-dashed border-[#D8DFE9] bg-white px-6 py-16 text-center shadow-xs">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
@@ -301,11 +419,27 @@ export function ClientAccessConsole({
               <span>Create First Company Profile</span>
             </button>
           </div>
+        ) : filteredCompanies.length === 0 ? (
+          <div className="rounded-sm border border-dashed border-[#D8DFE9] bg-white px-6 py-12 text-center shadow-xs">
+            <p className="text-sm font-semibold text-[#0C233C]">
+              No companies match &quot;{searchQuery}&quot;
+            </p>
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="mt-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-3.5 py-1.5 text-xs font-semibold text-[#00338D] hover:bg-[#F4F6FA]"
+            >
+              Clear Search
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {filteredCompanies.map((company) => {
               const enabledCount = governanceData.entitlements.filter(
-                (e) => e.companyId === company.id && e.enabled
+                (e) =>
+                  e.companyId === company.id &&
+                  e.enabled &&
+                  registeredProductIds.has(e.productId)
               ).length;
               const personaCount = governanceData.personas.filter(
                 (p) => p.companyId === company.id
@@ -393,7 +527,10 @@ export function ClientAccessConsole({
         <div className="space-y-5">
           {availableProducts.map((platform) => {
             const entitledCompaniesCount = governanceData.entitlements.filter(
-              (e) => e.productId === platform.id && e.enabled
+              (e) =>
+                e.productId === platform.id &&
+                e.enabled &&
+                activeCompanyIds.has(e.companyId)
             ).length;
 
             return (
@@ -416,7 +553,7 @@ export function ClientAccessConsole({
                     </div>
                   </div>
                   <div className="rounded-sm border border-[#D8DFE9] bg-white px-3 py-1.5 font-mono text-xs font-semibold text-[#00338D]">
-                    {entitledCompaniesCount} of {governanceData.companies.length}{" "}
+                    {entitledCompaniesCount} of {activeCompanyIds.size} Active
                     Companies Entitled
                   </div>
                 </div>
@@ -437,26 +574,34 @@ export function ClientAccessConsole({
                             e.productId === platform.id &&
                             e.enabled
                         );
-                        const isToggling =
-                          togglingKey === `${company.id}:${platform.id}`;
+                        const isToggling = togglingKeys.has(
+                          `${company.id}:${platform.id}`
+                        );
 
                         return (
                           <div
                             key={company.id}
                             className={`flex items-center justify-between rounded-sm border p-3.5 transition-all ${
-                              isEnabled
+                              company.status === "suspended"
+                                ? "border-[#B91C1C]/30 bg-[#B91C1C]/5"
+                                : isEnabled
                                 ? "border-[#009A44]/40 bg-[#009A44]/5"
                                 : "border-[#D8DFE9] bg-white"
                             }`}
                           >
                             <div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-sm font-bold text-[#0C233C]">
                                   {company.name}
                                 </span>
                                 <span className="font-mono text-[10px] text-[#4B5563]">
                                   ({company.code})
                                 </span>
+                                {company.status === "suspended" && (
+                                  <span className="rounded-xs bg-[#B91C1C]/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-[#B91C1C] uppercase">
+                                    SUSPENDED
+                                  </span>
+                                )}
                               </div>
                               <p className="text-[11px] text-[#4B5563]">
                                 {company.contactEmail}
@@ -465,15 +610,18 @@ export function ClientAccessConsole({
 
                             <button
                               type="button"
+                              role="switch"
+                              aria-checked={isEnabled}
+                              aria-label={`Toggle ${platform.title} for ${company.name}`}
                               disabled={isToggling}
                               onClick={() =>
-                                handleToggleEntitlement(
+                                void handleToggleEntitlement(
                                   company.id,
                                   platform.id,
                                   !isEnabled
-                                )
+                                ).catch(() => {})
                               }
-                              className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-semibold transition-all ${
+                              className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-semibold transition-all disabled:opacity-60 ${
                                 isEnabled
                                   ? "bg-[#009A44] text-white shadow-xs hover:bg-[#007A34]"
                                   : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:border-[#00338D] hover:text-[#00338D]"
@@ -486,7 +634,7 @@ export function ClientAccessConsole({
                                 </>
                               ) : (
                                 <>
-                                  <ToggleLeft size={17} />
+                                  <ToggleLeft size={17} weight="regular" />
                                   <span>OFF</span>
                                 </>
                               )}
@@ -506,24 +654,21 @@ export function ClientAccessConsole({
       {/* Modals & Drawers */}
       <CreateCompanyModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCompanyCreated={handleCompanyCreated}
+        onClose={handleCloseCreateModal}
+        onCompanySaved={handleCompanyCreated}
       />
 
       <CompanyDetailDrawer
         isOpen={Boolean(selectedCompany)}
-        onClose={() => setSelectedCompanyId(null)}
+        onClose={handleCloseDrawer}
         company={selectedCompany}
         entitlements={selectedCompanyEntitlements}
         personas={selectedCompanyPersonas}
         availableProducts={availableProducts}
-        onToggleEntitlement={(productId, enabled) =>
-          selectedCompany
-            ? handleToggleEntitlement(selectedCompany.id, productId, enabled)
-            : Promise.resolve()
-        }
+        onToggleEntitlement={handleDrawerToggleEntitlement}
         onPersonaSaved={handlePersonaSaved}
         onPersonaDeleted={handlePersonaDeleted}
+        onCompanyUpdated={handleCompanyUpdated}
         onCompanyDeleted={handleCompanyDeleted}
       />
     </div>

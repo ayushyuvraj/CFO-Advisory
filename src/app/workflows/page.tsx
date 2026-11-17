@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import {
   ArrowRight,
   ArrowSquareOut,
@@ -8,6 +8,7 @@ import {
   CheckCircle,
   Cpu,
   Database,
+  Eye,
   LockKey,
   ShieldCheck,
   Sparkle,
@@ -15,6 +16,7 @@ import {
   ChartLineUp,
   SquaresFour,
   Prohibit,
+  WarningCircle,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
 import { CONNECTED_PLATFORMS, type ConnectedPlatform } from "@/data/platforms";
@@ -37,7 +39,14 @@ function WorkflowsSkeleton() {
 }
 
 export default function WorkflowsPage() {
-  const { user, isLoading, openLogin } = useAuth();
+  const {
+    user,
+    isLoading,
+    isPreviewMode,
+    sessionNotice,
+    clearSessionNotice,
+    openLogin,
+  } = useAuth();
   const [activeTab, setActiveTab] = useState<"catalog" | "audit" | "governance">("catalog");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [products, setProducts] = useState<ConnectedPlatform[]>(CONNECTED_PLATFORMS);
@@ -59,8 +68,7 @@ export default function WorkflowsPage() {
       ? "catalog"
       : activeTab;
 
-  // Fetch dynamic registered products
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const res = await fetch("/api/products", { cache: "no-store" });
       if (res.ok) {
@@ -86,9 +94,10 @@ export default function WorkflowsPage() {
     } catch (err) {
       console.error("[Catalog] Error fetching products:", err);
     }
-  };
+  }, []);
 
-  const fetchTelemetrySummary = async () => {
+  const fetchTelemetrySummary = useCallback(async () => {
+    if (typeof document !== "undefined" && document.hidden) return;
     try {
       const res = await fetch("/api/telemetry?limit=1", {
         cache: "no-store",
@@ -96,30 +105,40 @@ export default function WorkflowsPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setTelemetrySummary({
-          total: data.total || 0,
-          latestEvent: data.events?.[0],
-          metrics: data.metrics || null,
+        const nextTotal = data.total || 0;
+        const nextLatest = data.events?.[0] as TelemetryEvent | undefined;
+        const nextMetrics = (data.metrics || null) as TelemetryMetrics | undefined;
+
+        // Bail out when unchanged so polling never triggers useless full-page re-renders
+        setTelemetrySummary((prev) => {
+          if (
+            prev &&
+            prev.total === nextTotal &&
+            prev.latestEvent?.id === nextLatest?.id
+          ) {
+            return prev;
+          }
+          return {
+            total: nextTotal,
+            latestEvent: nextLatest,
+            metrics: nextMetrics,
+          };
         });
       }
     } catch (err) {
       console.error("[Catalog] Error fetching telemetry summary:", err);
     }
-  };
+  }, []);
 
+  // Load products once signed in
   useEffect(() => {
+    if (!user) return;
     let cancelled = false;
-    async function initHubData() {
+    async function loadProductsOnce() {
       try {
-        const [prodRes, telRes] = await Promise.all([
-          fetch("/api/products", { cache: "no-store" }),
-          fetch("/api/telemetry?limit=1", {
-            cache: "no-store",
-            headers: { Pragma: "no-cache" },
-          }),
-        ]);
-        if (!cancelled && prodRes.ok) {
-          const data = await prodRes.json();
+        const res = await fetch("/api/products", { cache: "no-store" });
+        if (!cancelled && res.ok) {
+          const data = await res.json();
           if (data.products && data.products.length > 0) {
             const mapped: ConnectedPlatform[] = data.products.map((p: RegisteredProduct) => ({
               id: p.id,
@@ -138,33 +157,43 @@ export default function WorkflowsPage() {
             setProducts(mapped);
           }
         }
-        if (!cancelled && telRes.ok) {
-          const data = await telRes.json();
-          setTelemetrySummary({
-            total: data.total || 0,
-            latestEvent: data.events?.[0],
-            metrics: data.metrics || null,
-          });
-        }
       } catch (err) {
-        console.error("[Catalog] Error loading initial data:", err);
+        console.error("[Catalog] Error loading products:", err);
       }
     }
-
-    void initHubData();
-    const interval = setInterval(() => {
-      void fetchTelemetrySummary();
-    }, 3000);
+    void loadProductsOnce();
     return () => {
       cancelled = true;
+    };
+  }, [user]);
+
+  // Poll telemetry summary ONLY when signed in, allowed to view audit, and NOT already on the Audit tab
+  const shouldPollSummary = Boolean(
+    user && canViewAudit && effectiveActiveTab !== "audit"
+  );
+
+  useEffect(() => {
+    if (!shouldPollSummary) return;
+    const initialTimer = setTimeout(() => {
+      void fetchTelemetrySummary();
+    }, 0);
+    const interval = setInterval(() => {
+      void fetchTelemetrySummary();
+    }, 5000);
+    return () => {
+      clearTimeout(initialTimer);
       clearInterval(interval);
     };
+  }, [shouldPollSummary, fetchTelemetrySummary]);
+
+  const handleCloseAddModal = useCallback(() => {
+    setIsAddModalOpen(false);
   }, []);
 
-  const handleProductCreated = () => {
-    fetchProducts();
-    fetchTelemetrySummary();
-  };
+  const handleProductCreated = useCallback(() => {
+    void fetchProducts();
+    void fetchTelemetrySummary();
+  }, [fetchProducts, fetchTelemetrySummary]);
 
   // Filter products according to client company entitlements and persona scope
   const visibleProducts = useMemo(() => {
@@ -183,6 +212,25 @@ export default function WorkflowsPage() {
     return (
       <section className="flex min-h-[100dvh] items-center justify-center bg-[#F8FAFC] px-4 pt-24 pb-16">
         <div className="w-full max-w-lg rounded-sm border border-[#D8DFE9] bg-white p-8 shadow-lg sm:p-10">
+          {sessionNotice && (
+            <div
+              role="alert"
+              className="mb-5 flex items-start justify-between gap-3 rounded-sm border border-[#B91C1C]/30 bg-[#B91C1C]/5 p-3.5 text-xs text-[#991B1B]"
+            >
+              <div className="flex items-start gap-2">
+                <WarningCircle size={16} weight="bold" className="mt-0.5 shrink-0" />
+                <span>{sessionNotice}</span>
+              </div>
+              <button
+                type="button"
+                onClick={clearSessionNotice}
+                className="shrink-0 underline font-semibold"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
           <div className="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] text-[#00338D]">
             <LockKey size={20} weight="light" />
           </div>
@@ -220,7 +268,7 @@ export default function WorkflowsPage() {
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#009A44]/30 bg-[#009A44]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#009A44]">
                 <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" aria-hidden="true" />
-                SYSTEM ONLINE · {telemetrySummary && telemetrySummary.total > 0 ? `${telemetrySummary.total} AUDIT RUN${telemetrySummary.total > 1 ? "S" : ""} CAPTURED` : "100% OPERATIONAL"}
+                SYSTEM ONLINE · {canViewAudit && telemetrySummary && telemetrySummary.total > 0 ? `${telemetrySummary.total} AUDIT RUN${telemetrySummary.total > 1 ? "S" : ""} CAPTURED` : "100% OPERATIONAL"}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#00338D]">
                 <ShieldCheck size={14} weight="bold" />
@@ -237,6 +285,47 @@ export default function WorkflowsPage() {
               Active session for{" "}
               <span className="font-semibold text-[#0C233C]">{user.name}</span> · {user.role}
             </p>
+
+            {isClientUser && user.permissions && (
+              <div className="mt-2.5 flex flex-wrap gap-1.5 font-mono text-[10px]">
+                <span
+                  className={`rounded-xs px-2 py-0.5 ${
+                    user.permissions.canLaunchProducts
+                      ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
+                      : "bg-gray-100 text-[#6B7280]"
+                  }`}
+                >
+                  Launch: {user.permissions.canLaunchProducts ? "ON" : "OFF"}
+                </span>
+                <span
+                  className={`rounded-xs px-2 py-0.5 ${
+                    user.permissions.canViewAudit
+                      ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
+                      : "bg-gray-100 text-[#6B7280]"
+                  }`}
+                >
+                  Audit: {user.permissions.canViewAudit ? "ON" : "OFF"}
+                </span>
+                <span
+                  className={`rounded-xs px-2 py-0.5 ${
+                    user.permissions.canManageDashboards
+                      ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
+                      : "bg-gray-100 text-[#6B7280]"
+                  }`}
+                >
+                  Dashboards: {user.permissions.canManageDashboards ? "ON" : "OFF"}
+                </span>
+                <span
+                  className={`rounded-xs px-2 py-0.5 ${
+                    user.permissions.canExportData
+                      ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
+                      : "bg-gray-100 text-[#6B7280]"
+                  }`}
+                >
+                  Export: {user.permissions.canExportData ? "ON" : "OFF"}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -342,9 +431,23 @@ export default function WorkflowsPage() {
                   <div className="border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4 sm:px-8">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5">
-                        <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#009A44] animate-pulse" />
-                        <span className="font-mono text-xs font-semibold text-[#009A44] uppercase tracking-wider">
-                          Platform Live · Port {platform.portFrontend}
+                        <span
+                          className={`inline-flex h-2.5 w-2.5 rounded-full ${
+                            platform.status === "active"
+                              ? "bg-[#009A44] animate-pulse"
+                              : "bg-amber-500"
+                          }`}
+                        />
+                        <span
+                          className={`font-mono text-xs font-semibold uppercase tracking-wider ${
+                            platform.status === "active"
+                              ? "text-[#009A44]"
+                              : "text-amber-700"
+                          }`}
+                        >
+                          {platform.status === "active"
+                            ? `Platform Live · Port ${platform.portFrontend}`
+                            : `Maintenance · Port ${platform.portFrontend}`}
                         </span>
                         {platform.portBackend && (
                           <span className="rounded-sm border border-[#D8DFE9] bg-white px-2 py-0.5 font-mono text-[11px] text-[#4B5563]">
@@ -458,16 +561,37 @@ export default function WorkflowsPage() {
                       <div className="flex w-full shrink-0 flex-col gap-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-6 lg:w-72">
                         <div className="space-y-1">
                           <p className="font-mono text-xs font-semibold text-[#0C233C] uppercase tracking-wider">
-                            {canLaunchProducts ? "One-Click Access" : "Launch Restricted"}
+                            {isPreviewMode
+                              ? "Preview Perspective"
+                              : canLaunchProducts
+                              ? "One-Click Access"
+                              : "Launch Restricted"}
                           </p>
                           <p className="text-xs text-[#4B5563]">
-                            {canLaunchProducts
-                              ? "Launches the live platform directly in a new browser tab with session handoff."
+                            {isPreviewMode
+                              ? canLaunchProducts
+                                ? "This persona is entitled to launch this platform (disabled during read-only preview)."
+                                : "This persona does not have execution privileges to launch this platform."
+                              : canLaunchProducts
+                              ? "Opens the live connected platform directly in a new browser tab."
                               : "Your current persona does not have execution privileges to launch this platform."}
                           </p>
                         </div>
 
-                        {canLaunchProducts ? (
+                        {isPreviewMode ? (
+                          <button
+                            type="button"
+                            disabled
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-4 py-3 text-xs font-semibold text-[#00338D] cursor-not-allowed"
+                          >
+                            <Eye size={16} weight="bold" />
+                            <span>
+                              {canLaunchProducts
+                                ? "Launch Enabled (Preview Mode)"
+                                : "Launch Disabled by Role"}
+                            </span>
+                          </button>
+                        ) : canLaunchProducts ? (
                           <a
                             href={platform.launchUrl}
                             target="_blank"
@@ -488,7 +612,7 @@ export default function WorkflowsPage() {
                           </button>
                         )}
 
-                        {platform.portBackend && canLaunchProducts && (
+                        {platform.portBackend && canLaunchProducts && !isPreviewMode && (
                           <a
                             href={`http://localhost:${platform.portBackend}/docs`}
                             target="_blank"
@@ -531,7 +655,7 @@ export default function WorkflowsPage() {
       {isKpmgAdmin && (
         <AddProductModal
           isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
+          onClose={handleCloseAddModal}
           onProductCreated={handleProductCreated}
         />
       )}
