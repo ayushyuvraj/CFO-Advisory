@@ -53,7 +53,7 @@ const PILLARS: PillarItem[] = [
     title: "Treasury & Working Capital Management",
     subtitle: "Liquidity and Cash Precision",
     description:
-      "Real-time 13-week liquidity modeling, cash conversion cycle optimization across AR, AP, and inventory, FX exposure governance, and TMS modernization.",
+      "Real-time liquidity modeling, cash conversion cycle optimization across AR, AP, and inventory, FX exposure governance, and TMS modernization.",
     systems: ["Kyriba", "SAP Treasury", "Power BI"],
     image: "/images/pillar-treasury.jpg",
     alt: "Treasury and working capital precision structures",

@@ -13,7 +13,10 @@ export async function GET(req: NextRequest) {
 
     const product = getProductById(productId);
     if (!product) {
-      return NextResponse.json({ error: `Product '${productId}' not found in registry` }, { status: 404 });
+      return NextResponse.json(
+        { error: `404: Product '${productId}' does not exist. This application is under construction or not yet deployed.` },
+        { status: 404 }
+      );
     }
 
     // Mint session handoff token

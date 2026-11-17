@@ -87,7 +87,7 @@ export function UsdTreasuryChapter() {
                     CHAPTER 03 / 05 · USD MACRO DIVE
                   </p>
                   <h2 className="text-2xl font-semibold tracking-tight text-[#0C233C] sm:text-3xl">
-                    Treasury &amp; 13-Week Liquidity
+                    Treasury &amp; Liquidity Precision
                   </h2>
                 </div>
               </div>
@@ -179,7 +179,7 @@ export function UsdTreasuryChapter() {
               </div>
               <div className="rounded-sm border border-[#009A44]/25 bg-[#009A44]/8 p-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#009A44]">
-                  13-Week Headroom
+                  Liquidity Headroom
                 </p>
                 <p className="mt-1 inline-flex items-center gap-1.5 font-mono text-sm font-semibold tabular-nums text-[#009A44]">
                   <CheckCircle size={14} weight="light" />$

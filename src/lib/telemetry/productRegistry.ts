@@ -6,6 +6,8 @@ import { RegisteredProduct } from "./types";
 const DATA_DIR = path.join(process.cwd(), "data");
 const REGISTRY_FILE = path.join(DATA_DIR, "cfo_products_registry.json");
 
+// ONLY actual, physically existing products are seeded here.
+// No simulations, no mock products, no placeholder platforms.
 const SEED_PRODUCTS: RegisteredProduct[] = [
   {
     id: "invoice-processing-p2p",
@@ -34,48 +36,6 @@ const SEED_PRODUCTS: RegisteredProduct[] = [
     ],
     systemIntegration: "SAP S/4HANA · Zoho Books · Bank H2H Gateway",
     createdAt: "2026-11-12T14:00:00.000Z",
-  },
-  {
-    id: "liquidity-stress-test",
-    name: "13-Week Rolling Liquidity Stress Test",
-    shortName: "Liquidity Stress Test",
-    description:
-      "High-frequency treasury liquidity forecasting, cash conversion cycle optimization, and automated FX stress modeling bridging SAP S/4HANA and Kyriba.",
-    pillar: "TREASURY",
-    launchUrl: "http://localhost:3002",
-    portFrontend: 3002,
-    portBackend: 8002,
-    apiKey: "kpmg_sec_prod_liquidity_live",
-    status: "active",
-    tags: ["Treasury", "Kyriba", "13-Week Forecast", "Cash Flow"],
-    features: [
-      "Variance decomposition between direct cash and accounting balance",
-      "Dynamic liquidity buffer alerts under multi-currency shock scenarios",
-      "Autonomous working capital conversion cycle recommendations",
-    ],
-    systemIntegration: "SAP S/4HANA · Kyriba TMS · Bloomberg Terminal",
-    createdAt: "2026-11-13T10:00:00.000Z",
-  },
-  {
-    id: "intelligent-close-recon",
-    name: "Intelligent Close Intercompany Reconciliation",
-    shortName: "Close Reconciliation",
-    description:
-      "Continuous month-end close acceleration, multi-entity transaction matching, and discrepancy netting powered by GenAI narrative engines.",
-    pillar: "CLOSE_REPORT",
-    launchUrl: "http://localhost:3003",
-    portFrontend: 3003,
-    portBackend: 8003,
-    apiKey: "kpmg_sec_prod_close_live",
-    status: "active",
-    tags: ["Close-to-Report", "Workday", "BlackLine", "IFRS/GAAP"],
-    features: [
-      "Automated elimination entry drafting for intercompany balances",
-      "SOX-aligned audit trails with cryptographic approval logs",
-      "Flux and balance sheet variance auto-narration for CFO review",
-    ],
-    systemIntegration: "Workday Financials · BlackLine · Oracle Cloud ERP",
-    createdAt: "2026-11-14T11:30:00.000Z",
   },
 ];
 

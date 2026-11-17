@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "motion/react";
 const PERSPECTIVES = [
   {
     quote:
-      "“Moving our 13-week liquidity stress testing into governed workflows eliminated four days of manual reconciliation before every board committee review.”",
+      "“Deploying autonomous invoice processing and live P2P telemetry into governed workflows eliminated three days of manual reconciliation and audit prep across our operating entities.”",
     name: "Marcus Lindqvist",
     role: "Chief Financial Officer, Nordvik Industrial",
     featured: true,

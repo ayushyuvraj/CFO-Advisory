@@ -4,6 +4,7 @@ This repository houses the **KPMG CFO Advisory** executive showcase and post-log
 
 ## Non-Negotiable Boundaries
 - **Workspace Scope:** All installs, edits, Git commands, and builds stay strictly inside `d:\Projects\CFO Advisory`. Never edit, delete, or push anything outside this folder.
+- **Zero Simulation Invariant (Strict Rule):** Under no circumstances may any simulation, mock product, simulated workflow, synthetic seed event, or fake demo button be added to any part of the platform, database, catalog, or UI. Only physically existing and deployed projects (such as Product 1: AI Invoice Processing) may exist in registries, workflows, and catalogs. If a feature, product, or page does not physically exist, return an explicit 404 error or a clear "Under Construction / Not Deployed" state. Before concluding or declaring completion on any task, the agent MUST audit and verify that zero simulations exist anywhere in the code or data.
 - **Vendor Skills Are Read-Only:** `.agents/skills/` contains external design/QA skill packs (`emil-design-eng`, `animate`, `review-animations`, `improve-animations`, `impeccable`, `ui-ux-pro-max`, `unslop`, `design-taste-frontend`). Never edit files inside `.agents/skills/`.
 - **Anti-Context-Rot Rule:** Do NOT load every doc blindly. Read ONLY the modular `.md` playbook(s) mapped to your current task below.
 
