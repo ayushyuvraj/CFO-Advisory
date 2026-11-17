@@ -1,34 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   ArrowRight,
-  Clock,
+  ArrowSquareOut,
+  CheckCircle,
+  Cpu,
+  Database,
   LockKey,
-  MagnifyingGlass,
-  SlidersHorizontal,
+  ShieldCheck,
+  Sparkle,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
-import {
-  WORKFLOWS,
-  WORKFLOW_PILLARS,
-  type WorkflowItem,
-  type WorkflowPillar,
-} from "@/data/workflows";
-import { WorkflowDrawer } from "@/components/workflows/WorkflowDrawer";
+import { CONNECTED_PLATFORMS, type ConnectedPlatform } from "@/data/platforms";
 import { AmbientLedgerGridCanvas } from "@/components/three/AmbientLedgerGridCanvas";
 
 function WorkflowsSkeleton() {
   return (
     <div className="mx-auto max-w-[1400px] px-4 pt-28 pb-20 sm:px-6 lg:px-8">
-      <div className="h-24 w-full animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]" />
-      <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div
-            key={index}
-            className="h-64 animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]"
-          />
-        ))}
+      <div className="h-28 w-full animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]" />
+      <div className="mt-8 grid grid-cols-1 gap-6">
+        <div className="h-96 animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]" />
       </div>
     </div>
   );
@@ -36,28 +27,6 @@ function WorkflowsSkeleton() {
 
 export default function WorkflowsPage() {
   const { user, isLoading, openLogin } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activePillar, setActivePillar] = useState<"All" | WorkflowPillar>(
-    "All"
-  );
-  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowItem | null>(
-    null
-  );
-
-  const filteredWorkflows = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    return WORKFLOWS.filter((wf) => {
-      const matchesPillar =
-        activePillar === "All" || wf.pillar === activePillar;
-      const matchesQuery =
-        !query ||
-        wf.title.toLowerCase().includes(query) ||
-        wf.id.toLowerCase().includes(query) ||
-        wf.pillar.toLowerCase().includes(query) ||
-        wf.sourceSystems.some((s) => s.toLowerCase().includes(query));
-      return matchesPillar && matchesQuery;
-    });
-  }, [searchQuery, activePillar]);
 
   if (isLoading) {
     return <WorkflowsSkeleton />;
@@ -74,16 +43,15 @@ export default function WorkflowsPage() {
             Protected Advisory Workspace
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-[#4B5563]">
-            Authenticate with KPMG Enterprise SSO, your advisory email, or a
-            client engagement token to inspect live Workflow Studio blueprints
-            and lineage trails.
+            Authenticate with your designated KPMG Lead credentials to access the
+            CFO Advisory Connected Platforms and enterprise execution suites.
           </p>
           <button
             type="button"
             onClick={openLogin}
             className="mt-7 inline-flex items-center gap-2 rounded-sm bg-[#00338D] px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
           >
-            <span>Sign in to Workflows</span>
+            <span>Sign in as KPMG Lead</span>
             <ArrowRight size={16} weight="light" />
           </button>
         </div>
@@ -94,171 +62,178 @@ export default function WorkflowsPage() {
   return (
     <section className="relative min-h-[100dvh] bg-[#F8FAFC] px-4 pt-28 pb-20 sm:px-6 lg:px-8">
       <AmbientLedgerGridCanvas />
+
       <div className="relative z-10 mx-auto max-w-[1400px]">
-        <div className="flex flex-col justify-between gap-6 rounded-sm border border-[#D8DFE9] bg-white/90 p-6 shadow-sm backdrop-blur-xl sm:p-8 lg:flex-row lg:items-center">
+        {/* Executive Header Banner */}
+        <div className="flex flex-col justify-between gap-6 rounded-sm border border-[#D8DFE9] bg-white/95 p-6 shadow-sm backdrop-blur-xl sm:p-8 lg:flex-row lg:items-center">
           <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-sm border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#00338D]">
-                <span
-                  className="h-1.5 w-1.5 rounded-sm bg-[#1E49E2]"
-                  aria-hidden="true"
-                />
-                Synced with Workflow Studio
-              </span>
+            <div className="flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#009A44]/30 bg-[#009A44]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#009A44]">
-                <span
-                  className="h-1.5 w-1.5 rounded-full bg-[#009A44]"
-                  aria-hidden="true"
-                />
-                Δ 0.00 VERIFIED
+                <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" aria-hidden="true" />
+                SYSTEM ONLINE · 100% OPERATIONAL
               </span>
-              <span className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2.5 py-1 font-mono text-xs text-[#333940]">
+              <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#00338D]">
+                <ShieldCheck size={14} weight="bold" />
                 {user.badge}
               </span>
             </div>
 
-            <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#0C233C] sm:text-3xl">
-              CFO Advisory Workflows Hub
+            <h1 className="mt-4 text-2xl font-bold tracking-tight text-[#0C233C] sm:text-3xl">
+              CFO Advisory — Connected Platforms Hub
             </h1>
             <p className="mt-1.5 text-sm text-[#4B5563]">
               Active session for{" "}
-              <span className="font-medium text-[#0C233C]">{user.name}</span> (
-              {user.role})
+              <span className="font-semibold text-[#0C233C]">{user.name}</span> · {user.role}
             </p>
           </div>
 
-          <div className="w-full lg:max-w-xs">
-            <label
-              htmlFor="workflow-search"
-              className="mb-2 block text-xs font-medium text-[#333940]"
-            >
-              Search workflows or source systems
-            </label>
-            <div className="relative">
-              <MagnifyingGlass
-                size={16}
-                weight="light"
-                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
-              />
-              <input
-                id="workflow-search"
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="SAP, Kyriba, CSRD..."
-                className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2 pr-3 pl-9 text-sm text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
-              />
+          <div className="flex items-center gap-3">
+            <div className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-4 py-2.5 text-right">
+              <p className="font-mono text-xs font-semibold text-[#00338D]">
+                {CONNECTED_PLATFORMS.length} Connected Platform{CONNECTED_PLATFORMS.length > 1 ? "s" : ""}
+              </p>
+              <p className="text-[11px] text-[#4B5563]">1-Click Seamless Launch</p>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          <span className="mr-1 inline-flex items-center gap-1.5 text-xs text-[#4B5563]">
-            <SlidersHorizontal size={15} weight="light" />
-            <span>Pillar:</span>
-          </span>
-          {WORKFLOW_PILLARS.map((pillar) => {
-            const active = activePillar === pillar;
-            return (
-              <button
-                key={pillar}
-                type="button"
-                onClick={() => setActivePillar(pillar)}
-                className={`rounded-sm px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
-                  active
-                    ? "bg-[#00338D] text-white"
-                    : "border border-[#D8DFE9] bg-white text-[#333940] hover:border-[#00338D] hover:text-[#00338D]"
-                }`}
-              >
-                {pillar}
-              </button>
-            );
-          })}
+        {/* Section Heading */}
+        <div className="mt-10 flex items-center justify-between border-b border-[#D8DFE9] pb-4">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-[#0C233C]">
+              Enterprise Solution Catalog
+            </h2>
+            <p className="text-xs text-[#4B5563]">
+              Autonomous execution engines and advisory platforms attached to this CFO workspace.
+            </p>
+          </div>
         </div>
 
-        {filteredWorkflows.length === 0 ? (
-          <div className="mt-8 rounded-sm border border-[#D8DFE9] bg-white p-10 text-center">
-            <p className="text-base font-semibold text-[#0C233C]">
-              No matching workflows found
-            </p>
-            <p className="mt-2 text-sm text-[#4B5563]">
-              Adjust your search query or reset the active practice pillar
-              filter.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                setActivePillar("All");
-              }}
-              className="mt-5 rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-4 py-2 text-sm font-medium text-[#0C233C] transition-colors duration-150 hover:border-[#00338D] active:scale-[0.98]"
+        {/* Platforms Grid */}
+        <div className="mt-6 grid grid-cols-1 gap-6">
+          {CONNECTED_PLATFORMS.map((platform: ConnectedPlatform) => (
+            <div
+              key={platform.id}
+              className="relative overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-[#00338D] hover:shadow-md"
             >
-              Reset filters
-            </button>
-          </div>
-        ) : (
-          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {filteredWorkflows.map((wf) => (
-              <button
-                key={wf.id}
-                type="button"
-                onClick={() => setSelectedWorkflow(wf)}
-                className="group flex flex-col justify-between rounded-sm border border-[#D8DFE9] bg-white/95 p-6 text-left shadow-sm backdrop-blur-xl transition-[border-color,box-shadow,transform] duration-150 hover:border-[#1E49E2] hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-semibold text-[#1E49E2]">
-                      {wf.id}
+              <div className="border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4 sm:px-8">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#009A44] animate-pulse" />
+                    <span className="font-mono text-xs font-semibold text-[#009A44] uppercase tracking-wider">
+                      Platform Live · Port {platform.portFrontend}
                     </span>
-                    <span className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2 py-0.5 font-mono text-xs text-[#333940]">
-                      {wf.status}
-                    </span>
-                  </div>
-
-                  <h2 className="mt-4 text-lg font-semibold tracking-tight text-[#0C233C]">
-                    {wf.title}
-                  </h2>
-                  <p className="mt-1 text-xs font-medium text-[#4B5563]">
-                    {wf.pillar}
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-[#333940]">
-                    {wf.executiveSummary}
-                  </p>
-                </div>
-
-                <div className="mt-6 w-full border-t border-[#D8DFE9] pt-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    {wf.sourceSystems.map((sys) => (
-                      <span
-                        key={sys}
-                        className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2.5 py-1 font-mono text-[11px] text-[#333940]"
-                      >
-                        {sys}
+                    {platform.portBackend && (
+                      <span className="rounded-sm border border-[#D8DFE9] bg-white px-2 py-0.5 font-mono text-[11px] text-[#4B5563]">
+                        FastAPI :{platform.portBackend}
                       </span>
-                    ))}
+                    )}
+                  </div>
+                  <span className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-0.5 font-mono text-xs font-medium text-[#00338D]">
+                    {platform.category}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-6 sm:p-8">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="max-w-3xl space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="inline-flex h-11 w-11 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
+                        <Cpu size={24} weight="bold" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold tracking-tight text-[#0C233C] sm:text-2xl">
+                          {platform.title}
+                        </h3>
+                        <p className="font-mono text-xs text-[#1E49E2]">
+                          System Identifier: {platform.id}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm leading-relaxed text-[#333940]">
+                      {platform.description}
+                    </p>
+
+                    <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4">
+                      <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-[#0C233C] uppercase">
+                        <Sparkle size={14} weight="bold" className="text-[#00338D]" />
+                        Core Platform Capabilities
+                      </h4>
+                      <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                        {platform.features.map((feature, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-xs text-[#333940]">
+                            <CheckCircle size={15} weight="fill" className="mt-0.5 shrink-0 text-[#009A44]" />
+                            <span>{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1 text-xs text-[#4B5563]">
+                      <Database size={15} weight="bold" className="text-[#00338D]" />
+                      <span className="font-medium text-[#0C233C]">Integrated Systems:</span>
+                      <span className="font-mono">{platform.systemIntegration}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {platform.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2.5 py-1 font-mono text-[11px] text-[#333940]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between gap-2 text-xs text-[#4B5563]">
-                    <span className="inline-flex items-center gap-1.5 font-mono">
-                      <Clock size={14} weight="light" className="text-[#1E49E2]" />
-                      {wf.lastRunAt}
-                    </span>
-                    <span className="inline-flex items-center gap-1 font-medium text-[#00338D] transition-transform duration-150 group-hover:translate-x-0.5">
-                      <span>Inspect lineage</span>
-                      <ArrowRight size={14} weight="light" />
-                    </span>
+                  {/* 1-Click Launch Action Column */}
+                  <div className="flex w-full shrink-0 flex-col gap-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-6 lg:w-72">
+                    <div className="space-y-1">
+                      <p className="font-mono text-xs font-semibold text-[#0C233C] uppercase tracking-wider">
+                        One-Click Access
+                      </p>
+                      <p className="text-xs text-[#4B5563]">
+                        Launches the live platform directly in a new browser tab.
+                      </p>
+                    </div>
+
+                    <a
+                      href={platform.launchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2"
+                    >
+                      <span>Launch Platform</span>
+                      <ArrowSquareOut size={18} weight="bold" />
+                    </a>
+
+                    {platform.portBackend && (
+                      <a
+                        href={`http://localhost:${platform.portBackend}/docs`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-3 py-2 text-xs font-medium text-[#333940] transition-[border-color,color] duration-150 hover:border-[#00338D] hover:text-[#00338D]"
+                      >
+                        <span>Backend API Docs</span>
+                        <ArrowSquareOut size={13} weight="light" />
+                      </a>
+                    )}
+
+                    <div className="border-t border-[#D8DFE9] pt-3 text-center">
+                      <p className="font-mono text-[11px] text-[#4B5563]">
+                        Target: {platform.launchUrl}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </button>
-            ))}
-          </div>
-        )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-
-      <WorkflowDrawer
-        workflow={selectedWorkflow}
-        onClose={() => setSelectedWorkflow(null)}
-      />
     </section>
   );
 }

@@ -6,32 +6,25 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
   EnvelopeSimple,
-  Key,
+  Eye,
+  EyeSlash,
+  LockKey,
   ShieldCheck,
   X,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
 import { useDialogFocusTrap } from "@/hooks/useDialogFocusTrap";
 
-type LoginTab = "sso" | "credentials" | "token";
-
 export function LoginModal() {
   const router = useRouter();
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
-  const {
-    isLoginOpen,
-    closeLogin,
-    signInWithSSO,
-    signInWithCredentials,
-    signInWithToken,
-  } = useAuth();
+  const { isLoginOpen, closeLogin, signInWithCredentials } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<LoginTab>("sso");
   const [email, setEmail] = useState("");
   const [passcode, setPasscode] = useState("");
-  const [token, setToken] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -40,26 +33,6 @@ export function LoginModal() {
   const redirectToWorkflows = () => {
     if (pathname !== "/workflows") {
       router.push("/workflows");
-    }
-  };
-
-  const handleTabSwitch = (tab: LoginTab) => {
-    setActiveTab(tab);
-    setErrorMessage(null);
-  };
-
-  const handleSSO = async () => {
-    setErrorMessage(null);
-    setSubmitting(true);
-    try {
-      await signInWithSSO();
-      redirectToWorkflows();
-    } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : "Unable to complete Entra ID SSO."
-      );
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -74,23 +47,9 @@ export function LoginModal() {
       redirectToWorkflows();
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? err.message : "Invalid advisory credentials."
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleTokenSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setErrorMessage(null);
-    setSubmitting(true);
-    try {
-      await signInWithToken(token);
-      redirectToWorkflows();
-    } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : "Invalid engagement token."
+        err instanceof Error
+          ? err.message
+          : "Invalid advisory credentials. Please check your credentials."
       );
     } finally {
       setSubmitting(false);
@@ -103,9 +62,6 @@ export function LoginModal() {
   const passcodeDescribedBy = errorMessage
     ? "advisory-passcode-hint login-error-alert"
     : "advisory-passcode-hint";
-  const tokenDescribedBy = errorMessage
-    ? "engagement-token-hint login-error-alert"
-    : "engagement-token-hint";
 
   return (
     <AnimatePresence>
@@ -145,14 +101,18 @@ export function LoginModal() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
+                <div className="inline-flex items-center gap-1.5 rounded-sm border border-[#00338D]/20 bg-[#00338D]/5 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-[#00338D]">
+                  <ShieldCheck size={14} weight="bold" />
+                  <span>KPMG ADVISORY ACCESS</span>
+                </div>
                 <h2
                   id="login-modal-title"
-                  className="text-xl font-semibold tracking-tight text-[#0C233C]"
+                  className="mt-2 text-xl font-semibold tracking-tight text-[#0C233C]"
                 >
                   Sign in to Workflows
                 </h2>
                 <p className="mt-1 text-sm text-[#4B5563]">
-                  Access synchronized CFO Advisory workflows from Workflow Studio.
+                  Enter designated KPMG Lead credentials to access Connected Platforms.
                 </p>
               </div>
               <button
@@ -165,241 +125,106 @@ export function LoginModal() {
               </button>
             </div>
 
-            <div
-              role="tablist"
-              aria-label="Authentication methods"
-              className="mt-6 grid grid-cols-3 gap-1.5 rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-1"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "sso"}
-                onClick={() => handleTabSwitch("sso")}
-                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
-                  activeTab === "sso"
-                    ? "bg-[#00338D] text-white"
-                    : "text-[#333940] hover:text-[#00338D]"
-                }`}
-              >
-                KPMG SSO
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "credentials"}
-                onClick={() => handleTabSwitch("credentials")}
-                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
-                  activeTab === "credentials"
-                    ? "bg-[#00338D] text-white"
-                    : "text-[#333940] hover:text-[#00338D]"
-                }`}
-              >
-                Work Email
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "token"}
-                onClick={() => handleTabSwitch("token")}
-                className={`rounded-sm px-2.5 py-2 text-xs font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
-                  activeTab === "token"
-                    ? "bg-[#00338D] text-white"
-                    : "text-[#333940] hover:text-[#00338D]"
-                }`}
-              >
-                Client Token
-              </button>
-            </div>
-
-            {activeTab === "sso" && (
-              <div className="mt-6 space-y-5">
-                <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4">
-                  <div className="flex items-start gap-3">
-                    <ShieldCheck
-                      size={20}
-                      weight="light"
-                      className="mt-0.5 shrink-0 text-[#00338D]"
-                    />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-[#0C233C]">
-                        KPMG Enterprise Entra ID
-                      </p>
-                      <p className="text-xs leading-relaxed text-[#4B5563]">
-                        Single sign-on for advisory leadership and engagement architects. Demo session authenticates as Elena Vance, Managing Director.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {errorMessage && (
-                  <p
-                    id="login-error-alert"
-                    role="alert"
-                    className="text-xs font-medium text-[#B91C1C]"
-                  >
-                    {errorMessage}
-                  </p>
-                )}
-
-                <button
-                  type="button"
-                  onClick={handleSSO}
-                  disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            <form onSubmit={handleCredentialsSubmit} className="mt-6 space-y-4" noValidate>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="advisory-email"
+                  className="text-xs font-medium text-[#0C233C]"
                 >
-                  <span>
-                    {submitting
-                      ? "Verifying Entra ID session..."
-                      : "Continue with KPMG Entra ID"}
-                  </span>
-                  <ArrowRight size={16} weight="light" />
-                </button>
-              </div>
-            )}
-
-            {activeTab === "credentials" && (
-              <form onSubmit={handleCredentialsSubmit} className="mt-6 space-y-4" noValidate>
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="advisory-email"
-                    className="text-xs font-medium text-[#0C233C]"
-                  >
-                    Advisory work email
-                  </label>
-                  <div className="relative">
-                    <EnvelopeSimple
-                      size={16}
-                      weight="light"
-                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
-                    />
-                    <input
-                      id="advisory-email"
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@enterprise.com"
-                      aria-invalid={Boolean(errorMessage)}
-                      aria-describedby={emailDescribedBy}
-                      className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2.5 pr-3 pl-9 text-sm text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
-                    />
-                  </div>
-                  <p id="advisory-email-hint" className="text-xs text-[#4B5563]">
-                    Use your corporate finance or advisory domain email.
-                  </p>
+                  Advisory corporate email
+                </label>
+                <div className="relative">
+                  <EnvelopeSimple
+                    size={16}
+                    weight="light"
+                    className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
+                  />
+                  <input
+                    id="advisory-email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    placeholder="kpmg.lead@kpmg.com"
+                    aria-invalid={Boolean(errorMessage)}
+                    aria-describedby={emailDescribedBy}
+                    className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2.5 pr-3 pl-9 text-sm text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
+                  />
                 </div>
+                <p id="advisory-email-hint" className="text-[11px] text-[#4B5563]">
+                  Designated address for KPMG Advisory Leadership.
+                </p>
+              </div>
 
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="advisory-passcode"
-                    className="text-xs font-medium text-[#0C233C]"
-                  >
-                    Session passcode
-                  </label>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="advisory-passcode"
+                  className="text-xs font-medium text-[#0C233C]"
+                >
+                  Passcode
+                </label>
+                <div className="relative">
+                  <LockKey
+                    size={16}
+                    weight="light"
+                    className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
+                  />
                   <input
                     id="advisory-passcode"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     value={passcode}
-                    onChange={(e) => setPasscode(e.target.value)}
-                    placeholder="Minimum 6 characters"
+                    onChange={(e) => {
+                      setPasscode(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    placeholder="Enter session passcode"
                     aria-invalid={Boolean(errorMessage)}
                     aria-describedby={passcodeDescribedBy}
-                    className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
+                    className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2.5 pr-10 pl-9 text-sm text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
                   />
-                  <p id="advisory-passcode-hint" className="text-xs text-[#4B5563]">
-                    Protected under engagement governance policy.
-                  </p>
-                </div>
-
-                {errorMessage && (
-                  <p
-                    id="login-error-alert"
-                    role="alert"
-                    className="text-xs font-medium text-[#B91C1C]"
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? "Hide passcode" : "Show passcode"}
+                    className="absolute top-1/2 right-2.5 -translate-y-1/2 p-1 text-[#6B7280] transition-colors hover:text-[#0C233C]"
                   >
-                    {errorMessage}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                >
-                  <span>
-                    {submitting ? "Authenticating..." : "Authenticate Session"}
-                  </span>
-                  <ArrowRight size={16} weight="light" />
-                </button>
-              </form>
-            )}
-
-            {activeTab === "token" && (
-              <form onSubmit={handleTokenSubmit} className="mt-6 space-y-4" noValidate>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <label
-                      htmlFor="engagement-token"
-                      className="text-xs font-medium text-[#0C233C]"
-                    >
-                      Client engagement token
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setToken("KPMG-CFO-2026");
-                        setErrorMessage(null);
-                      }}
-                      className="text-xs font-mono text-[#1E49E2] underline underline-offset-4 transition-colors duration-150 hover:text-[#00338D] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1E49E2]"
-                    >
-                      Fill KPMG-CFO-2026
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Key
-                      size={16}
-                      weight="light"
-                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
-                    />
-                    <input
-                      id="engagement-token"
-                      type="text"
-                      value={token}
-                      onChange={(e) => setToken(e.target.value)}
-                      placeholder="KPMG-CFO-2026"
-                      aria-invalid={Boolean(errorMessage)}
-                      aria-describedby={tokenDescribedBy}
-                      className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2.5 pr-3 pl-9 font-mono text-sm uppercase text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
-                    />
-                  </div>
-                  <p id="engagement-token-hint" className="text-xs text-[#4B5563]">
-                    Issued by your KPMG engagement partner for boardroom read access. Sample token: KPMG-CFO-2026.
-                  </p>
+                    {showPassword ? (
+                      <EyeSlash size={16} weight="light" />
+                    ) : (
+                      <Eye size={16} weight="light" />
+                    )}
+                  </button>
                 </div>
+                <p id="advisory-passcode-hint" className="text-[11px] text-[#4B5563]">
+                  Protected engagement authentication token.
+                </p>
+              </div>
 
-                {errorMessage && (
-                  <p
-                    id="login-error-alert"
-                    role="alert"
-                    className="text-xs font-medium text-[#B91C1C]"
-                  >
-                    {errorMessage}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              {errorMessage && (
+                <div
+                  id="login-error-alert"
+                  role="alert"
+                  className="rounded-sm border border-[#B91C1C]/20 bg-[#B91C1C]/5 p-3 text-xs font-medium text-[#B91C1C]"
                 >
-                  <span>
-                    {submitting ? "Validating token..." : "Verify Engagement Token"}
-                  </span>
-                  <ArrowRight size={16} weight="light" />
-                </button>
-              </form>
-            )}
+                  {errorMessage}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              >
+                <span>
+                  {submitting ? "Verifying Credentials..." : "Sign In to Advisory Workflows"}
+                </span>
+                <ArrowRight size={16} weight="light" />
+              </button>
+            </form>
           </motion.div>
         </div>
       )}
