@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Cpu,
@@ -29,6 +30,11 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
   const scrollRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<"structured" | "raw">("structured");
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Lock body scroll and isolate keyboard/wheel interactions
   useEffect(() => {
@@ -54,7 +60,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !event) return null;
+  if (!isOpen || !event || !mounted) return null;
 
   const isSuccess = event.action_status === "SUCCESS";
 
@@ -64,9 +70,9 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
     setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex justify-end bg-[#0C233C]/40 backdrop-blur-xs transition-opacity duration-200"
+      className="fixed inset-0 z-[9999] flex justify-end bg-[#0C233C]/40 backdrop-blur-xs transition-opacity duration-200"
       onClick={onClose}
       data-lenis-prevent="true"
       data-lenis-prevent-wheel="true"
@@ -98,7 +104,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                   {event.product_name}
                 </span>
                 <span className="rounded-sm border border-[#00338D]/20 bg-[#00338D]/10 px-2 py-0.5 font-mono text-[10px] font-bold text-[#00338D]">
-                  48 AUDIT PARAMETERS CAPTURED
+                  AUDIT TELEMETRY CAPTURED
                 </span>
               </div>
               <h2 className="text-lg font-bold tracking-tight text-[#0C233C]">
@@ -132,7 +138,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                 }`}
               >
                 <ListChecks size={14} weight="bold" />
-                <span>48 Parameters Across 8 Dimensions</span>
+                <span>Audit Grid</span>
               </button>
               <button
                 type="button"
@@ -144,7 +150,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                 }`}
               >
                 <Code size={14} weight="bold" />
-                <span>Raw Immutable JSON</span>
+                <span>Raw JSON</span>
               </button>
             </div>
 
@@ -541,7 +547,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
         {/* Footer (pinned at bottom) */}
         <div className="shrink-0 flex items-center justify-between border-t border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4 text-xs">
           <span className="font-mono text-[#4B5563]">
-            Captured: {new Date(event.created_at).toLocaleString()} · 48 SOX Parameters Verified
+            Captured: {new Date(event.created_at).toLocaleString()} · SOX Telemetry Verified
           </span>
           <button
             type="button"
@@ -552,6 +558,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
