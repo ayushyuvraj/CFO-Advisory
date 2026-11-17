@@ -7,15 +7,13 @@ from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+PRODUCT_ROOT = BACKEND_DIR.parent
+ENV_FILE = PRODUCT_ROOT / ".env"
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(
-            BACKEND_DIR / ".env",
-            BACKEND_DIR.parent / ".env",
-            BACKEND_DIR.parent.parent / ".env",
-        ),
+        env_file=ENV_FILE,
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -80,6 +78,20 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
 
-@lru_cache
+_last_env_mtime: float = -1.0
+_cached_settings: Settings | None = None
+
+
 def get_settings() -> Settings:
-    return Settings()
+    """Return runtime settings, automatically refreshing from .env if the file was modified on disk."""
+    global _last_env_mtime, _cached_settings
+    try:
+        current_mtime = ENV_FILE.stat().st_mtime
+    except OSError:
+        current_mtime = 0.0
+
+    if _cached_settings is None or current_mtime != _last_env_mtime:
+        _cached_settings = Settings()
+        _last_env_mtime = current_mtime
+
+    return _cached_settings
