@@ -194,10 +194,8 @@ export function AuditConsole() {
               onChange={(e) => setSelectedProduct(e.target.value)}
               className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
             >
-              <option value="ALL">All Products</option>
-              <option value="invoice-processing-p2p">Invoice Processing (AP)</option>
-              <option value="liquidity-stress-test">13-Week Liquidity</option>
-              <option value="intelligent-close-recon">Close Reconciliation</option>
+              <option value="ALL">All Active Products</option>
+              <option value="invoice-processing-p2p">AI Invoice Processing & P2P Intelligence</option>
             </select>
 
             {/* Status Filter */}

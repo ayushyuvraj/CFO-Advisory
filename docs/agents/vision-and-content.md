@@ -23,7 +23,7 @@
    - Focus: KPMG Powered Finance target operating models across SAP, Oracle, Workday, and Dynamics, global business services (GBS) design, and GenAI digital finance teammates.
    - Image: `/images/pillar-ai.jpg`
 3. **03 · Treasury & Working Capital Management**
-   - Focus: Real-time 13-week liquidity modeling, cash conversion cycle optimization across AR, AP, and inventory, FX exposure governance, and TMS modernization.
+   - Focus: Real-time liquidity modeling, cash conversion cycle optimization across AR, AP, and inventory, FX exposure governance, and TMS modernization.
    - Image: `/images/pillar-treasury.jpg`
 4. **04 · Close-to-Report & ESG Assurance**
    - Focus: KPMG Intelligent Close cycle acceleration, IFRS and US GAAP technical accounting, capital markets and carve-out readiness, and audit-ready CSRD sustainability reporting.
@@ -35,21 +35,16 @@
 3. **03 · Live ERP & Ledger Sync:** Connectors bridge SAP S/4HANA, Workday, Oracle Cloud, and Anaplan without manual spreadsheet exports.
 4. **04 · Boardroom Delivery:** Signed-in leaders review executive variance briefs, liquidity stress outputs, and close readiness directly in the Workflows Hub.
 
-## Post-Login Sample Workflows (`/workflows`)
-Seed `src/data/workflows.ts` with 6 domain-authentic workflows across the 4 pillars:
-- `13-Week Rolling Liquidity Stress Test` (Treasury · Active · SAP S/4HANA + Kyriba)
-- `Intelligent Close Intercompany Recon` (Close-to-Report · Active · Workday + BlackLine)
-- `GenAI Flux & Variance Narrative Engine` (EPM / FP&A · Active · Anaplan + Snowflake)
-- `CSRD Scope 3 Carbon Ledger Rollup` (Close-to-Report · Review · SAP Sustainability + Azure)
-- `Powered Finance Target Operating Bridge` (Transformation & AI · Scheduled · Oracle Fusion + ServiceNow)
-- `Working Capital Cash Conversion Optimizer` (Treasury · Active · SAP S/4HANA + Power BI)
+## Post-Login Physical Products and Workflows (`/workflows`)
+Only physically deployed and running products are registered:
+- `AI Invoice Processing & P2P Intelligence` (`invoice-processing-p2p` · Transformation & AI · Active · Frontend Port 5173 · Backend Port 8000 · Zoho Books + SAP S/4HANA + Gemini 2.5 Flash)
+- Any non-existent or unconfigured product route returns an explicit 404 / "Under Construction" state. No simulated products or synthetic demo workflows are permitted.
 
 ## Platform Multi-Product & Telemetry Invariants (Strict)
+- **Zero Simulation Policy:** Never invent mock products, simulated workflows, fake seed entries, or synthetic test data. Only actual, physically existing projects (such as Product 1: AI Invoice Processing) are registered. If a product does not exist, return a 404 or an explicit "Under Construction" error.
 - **Single Persona Scope (MVP):** Do not apply role-based catalog filtering for this milestone. The KPMG Lead sees all registered products, workflows, and audit logs.
 - **Decoupled Telemetry Access:** Child products (e.g. AP Invoice Processing) must never connect directly to the central PostgreSQL database. All events must be emitted asynchronously via `POST /api/telemetry`.
 - **Telemetry Emission Responsibility:** The central platform provides the PostgreSQL store, ingestion gateway, audit UI, and client SDK. Child product folders must implement the thin telemetry emission contract to be observable.
 - **Local Dev Port Convention:**
   - Platform Hub: `localhost:3000` (Original) / `localhost:3001` (V2)
   - Product 1 (AP Invoice Processing): Frontend `5173`, Backend `8000`
-  - Product 2 (13-Week Liquidity): Frontend `3002`, Backend `8002`
-  - Product 3 (Close Reconciliation): Frontend `3003`, Backend `8003`

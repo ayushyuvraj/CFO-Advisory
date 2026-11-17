@@ -213,7 +213,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 13-Week Liquidity Stress Test"
+                    placeholder="e.g. Autonomous Treasury Reconciliation"
                     value={name}
                     onChange={(e) => handleNameChange(e.target.value)}
                     className="mt-1 w-full rounded-sm border border-[#D8DFE9] bg-white px-3 py-2 text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
