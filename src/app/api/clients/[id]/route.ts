@@ -43,10 +43,18 @@ export async function PUT(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON request body." },
+      { status: 400 }
+    );
+  }
+
   try {
     const { id } = await context.params;
-    const body = await request.json();
-
     const updated = updateCompany(id, body);
     if (!updated) {
       return NextResponse.json(
@@ -57,10 +65,16 @@ export async function PUT(
 
     return NextResponse.json({ company: updated }, { status: 200 });
   } catch (err) {
-    console.error("[API /api/clients/[id] PUT] Error:", err);
+    const message =
+      err instanceof Error ? err.message : "Failed to update company profile.";
+    const isClientError =
+      message.includes("required") ||
+      message.includes("cannot be empty") ||
+      message.includes("already assigned") ||
+      message.includes("Status must be");
     return NextResponse.json(
-      { error: "Failed to update company profile." },
-      { status: 500 }
+      { error: message },
+      { status: isClientError ? 400 : 500 }
     );
   }
 }

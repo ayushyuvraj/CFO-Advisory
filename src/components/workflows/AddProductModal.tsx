@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   PlusCircle,
@@ -12,6 +13,7 @@ import {
   TerminalWindow,
 } from "@phosphor-icons/react";
 import { RegisteredProduct } from "@/lib/telemetry/types";
+import { useDialogFocusTrap } from "@/hooks/useDialogFocusTrap";
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -19,7 +21,14 @@ interface AddProductModalProps {
   onProductCreated: (product: RegisteredProduct) => void;
 }
 
-export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProductModalProps) {
+function AddProductModalInner({
+  onClose,
+  onProductCreated,
+}: {
+  onClose: () => void;
+  onProductCreated: (product: RegisteredProduct) => void;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [pillar, setPillar] = useState<"TRANSFORMATION_AI" | "TREASURY" | "CLOSE_REPORT" | "EPM">(
@@ -37,7 +46,13 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedEndpoint, setCopiedEndpoint] = useState(false);
 
-  if (!isOpen) return null;
+  const handleSafeClose = useCallback(() => {
+    if (!isLoading) {
+      onClose();
+    }
+  }, [isLoading, onClose]);
+
+  useDialogFocusTrap(true, panelRef, handleSafeClose);
 
   const handleNameChange = (val: string) => {
     setName(val);
@@ -91,8 +106,26 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0C233C]/60 p-4 backdrop-blur-xs">
-      <div className="relative w-full max-w-2xl rounded-sm border border-[#D8DFE9] bg-white shadow-2xl">
+    <div
+      className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-product-modal-title"
+      data-lenis-prevent="true"
+      data-lenis-prevent-wheel="true"
+      data-lenis-prevent-touch="true"
+    >
+      <div
+        onClick={handleSafeClose}
+        className="fixed inset-0 bg-[#0C233C]/60 backdrop-blur-xs"
+        aria-hidden="true"
+      />
+      <div
+        ref={panelRef}
+        tabIndex={-1}
+        onWheel={(e) => e.stopPropagation()}
+        className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain rounded-sm border border-[#D8DFE9] bg-white shadow-2xl focus:outline-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4">
           <div className="flex items-center gap-2.5">
@@ -100,7 +133,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
               <PlusCircle size={20} weight="bold" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[#0C233C]">
+              <h2 id="add-product-modal-title" className="text-base font-bold text-[#0C233C]">
                 {createdProduct ? "Product Onboarding Complete" : "Register New Connected Product"}
               </h2>
               <p className="text-xs text-[#4B5563]">
@@ -112,8 +145,11 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
           </div>
           <button
             type="button"
-            onClick={onClose}
-            className="rounded-sm p-1.5 text-[#4B5563] transition-colors hover:bg-[#E2E8F0] hover:text-[#0C233C]"
+            data-dialog-close="true"
+            disabled={isLoading}
+            onClick={handleSafeClose}
+            aria-label="Close add product modal"
+            className="rounded-sm p-1.5 text-[#4B5563] transition-colors hover:bg-[#E2E8F0] hover:text-[#0C233C] disabled:opacity-50"
           >
             <X size={18} weight="bold" />
           </button>
@@ -322,8 +358,9 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#D8DFE9]">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="rounded-sm border border-[#D8DFE9] bg-white px-4 py-2 text-xs font-semibold text-[#333940] hover:bg-[#F8FAFC]"
+                  disabled={isLoading}
+                  onClick={handleSafeClose}
+                  className="rounded-sm border border-[#D8DFE9] bg-white px-4 py-2 text-xs font-semibold text-[#333940] hover:bg-[#F8FAFC] disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -340,5 +377,21 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
         </div>
       </div>
     </div>
+  );
+}
+
+export function AddProductModal({
+  isOpen,
+  onClose,
+  onProductCreated,
+}: AddProductModalProps) {
+  if (!isOpen || typeof document === "undefined") return null;
+
+  return createPortal(
+    <AddProductModalInner
+      onClose={onClose}
+      onProductCreated={onProductCreated}
+    />,
+    document.body
   );
 }
