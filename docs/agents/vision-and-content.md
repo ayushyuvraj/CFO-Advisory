@@ -43,3 +43,13 @@ Seed `src/data/workflows.ts` with 6 domain-authentic workflows across the 4 pill
 - `CSRD Scope 3 Carbon Ledger Rollup` (Close-to-Report · Review · SAP Sustainability + Azure)
 - `Powered Finance Target Operating Bridge` (Transformation & AI · Scheduled · Oracle Fusion + ServiceNow)
 - `Working Capital Cash Conversion Optimizer` (Treasury · Active · SAP S/4HANA + Power BI)
+
+## Platform Multi-Product & Telemetry Invariants (Strict)
+- **Single Persona Scope (MVP):** Do not apply role-based catalog filtering for this milestone. The KPMG Lead sees all registered products, workflows, and audit logs.
+- **Decoupled Telemetry Access:** Child products (e.g. AP Invoice Processing) must never connect directly to the central PostgreSQL database. All events must be emitted asynchronously via `POST /api/telemetry`.
+- **Telemetry Emission Responsibility:** The central platform provides the PostgreSQL store, ingestion gateway, audit UI, and client SDK. Child product folders must implement the thin telemetry emission contract to be observable.
+- **Local Dev Port Convention:**
+  - Platform Hub: `localhost:3000` (Original) / `localhost:3001` (V2)
+  - Product 1 (AP Invoice Processing): Frontend `5173`, Backend `8000`
+  - Product 2 (13-Week Liquidity): Frontend `3002`, Backend `8002`
+  - Product 3 (Close Reconciliation): Frontend `3003`, Backend `8003`

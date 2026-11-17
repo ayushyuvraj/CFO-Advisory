@@ -232,6 +232,7 @@ class GeminiExtractor:
 
         parts = [types.Part.from_bytes(data=img, mime_type="image/png") for img in images]
         prompt = PROMPT.format(pages=len(images), text_hint=text_hint)
+        t_start = asyncio.get_event_loop().time()
         resp = await with_retry(lambda: self.client.aio.models.generate_content(
             model=self.model,
             contents=[*parts, prompt],
@@ -241,8 +242,28 @@ class GeminiExtractor:
                 temperature=0,
             ),
         ))
+        duration_ms = int((asyncio.get_event_loop().time() - t_start) * 1000)
         invoice = (XInvoice.model_validate(resp.parsed) if resp.parsed is not None
                    else XInvoice.model_validate_json(resp.text))
+
+        # Emit non-blocking audit telemetry to CFO Advisory platform
+        try:
+            from .telemetry import fire_cfo_telemetry
+            inv_val = getattr(getattr(invoice, "invoice_number", None), "value", None) or "INV-UNKNOWN"
+            p_tokens = getattr(getattr(resp, "usage_metadata", None), "prompt_token_count", 0) or 0
+            c_tokens = getattr(getattr(resp, "usage_metadata", None), "candidates_token_count", 0) or 0
+            fire_cfo_telemetry(
+                action_name="GEMINI_INVOICE_VISION_EXTRACTION",
+                target_entity_id=str(inv_val),
+                model_name=self.model,
+                prompt_tokens=p_tokens,
+                completion_tokens=c_tokens,
+                duration_ms=duration_ms,
+                sanitized_query=f"Extract header and line-items for invoice: {inv_val}",
+                sanitized_response=f"Extracted GST fields successfully with model {self.model}",
+            )
+        except Exception:
+            pass
         # A second, independent small schema avoids Gemini's constraint-state
         # limit. Never send EnrichedInvoice as response_schema.
         bank_response = await with_retry(lambda: self.client.aio.models.generate_content(

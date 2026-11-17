@@ -1,0 +1,100 @@
+[
+  {
+    "id": "treasury-fx-opt-test",
+    "name": "Treasury FX Optimizer",
+    "shortName": "Treasury",
+    "description": "Automated FX exposure hedging test product",
+    "pillar": "TREASURY",
+    "launchUrl": "http://localhost:3005",
+    "apiKey": "kpmg_sec_prod_treasury-fx-opt-test_458dae611810d010ceac46a2cf1272f4",
+    "status": "active",
+    "tags": [
+      "Autonomous AI",
+      "Connected Platform"
+    ],
+    "features": [
+      "Autonomous multi-stage execution with enterprise governance",
+      "Real-time distributed telemetry streaming to CFO Advisory Hub",
+      "Integrated audit logging and compliance verification"
+    ],
+    "systemIntegration": "Enterprise ERP Gateway",
+    "createdAt": "2026-11-17T12:48:24.437Z"
+  },
+  {
+    "id": "invoice-processing-p2p",
+    "name": "AI Invoice Processing & P2P Intelligence",
+    "shortName": "Invoice Processing",
+    "description": "Autonomous GST tax invoice intake, multimodal Gemini document extraction, real-time 3-way variance reconciliation against Zoho Books and SAP S/4HANA, exception resolution, and payment release.",
+    "pillar": "TRANSFORMATION_AI",
+    "launchUrl": "http://localhost:5173",
+    "portFrontend": 5173,
+    "portBackend": 8000,
+    "apiKey": "kpmg_sec_prod_invoice_p2p_live",
+    "status": "active",
+    "tags": [
+      "Vite :5173",
+      "FastAPI :8000",
+      "GST Compliance",
+      "Zoho Books & SAP",
+      "P2P Control Flow"
+    ],
+    "features": [
+      "Multimodal 10-stage document extraction with visual bounding boxes",
+      "Line-item 3-way match across PO, GRN, and vendor tax invoices",
+      "Delegated authority (DOA) approvals and treasury payment release",
+      "End-to-end audit lineage tracking in Indian GST compliance context"
+    ],
+    "systemIntegration": "SAP S/4HANA · Zoho Books · Bank H2H Gateway",
+    "createdAt": "2026-11-12T14:00:00.000Z"
+  },
+  {
+    "id": "liquidity-stress-test",
+    "name": "13-Week Rolling Liquidity Stress Test",
+    "shortName": "Liquidity Stress Test",
+    "description": "High-frequency treasury liquidity forecasting, cash conversion cycle optimization, and automated FX stress modeling bridging SAP S/4HANA and Kyriba.",
+    "pillar": "TREASURY",
+    "launchUrl": "http://localhost:3002",
+    "portFrontend": 3002,
+    "portBackend": 8002,
+    "apiKey": "kpmg_sec_prod_liquidity_live",
+    "status": "active",
+    "tags": [
+      "Treasury",
+      "Kyriba",
+      "13-Week Forecast",
+      "Cash Flow"
+    ],
+    "features": [
+      "Variance decomposition between direct cash and accounting balance",
+      "Dynamic liquidity buffer alerts under multi-currency shock scenarios",
+      "Autonomous working capital conversion cycle recommendations"
+    ],
+    "systemIntegration": "SAP S/4HANA · Kyriba TMS · Bloomberg Terminal",
+    "createdAt": "2026-11-13T10:00:00.000Z"
+  },
+  {
+    "id": "intelligent-close-recon",
+    "name": "Intelligent Close Intercompany Reconciliation",
+    "shortName": "Close Reconciliation",
+    "description": "Continuous month-end close acceleration, multi-entity transaction matching, and discrepancy netting powered by GenAI narrative engines.",
+    "pillar": "CLOSE_REPORT",
+    "launchUrl": "http://localhost:3003",
+    "portFrontend": 3003,
+    "portBackend": 8003,
+    "apiKey": "kpmg_sec_prod_close_live",
+    "status": "active",
+    "tags": [
+      "Close-to-Report",
+      "Workday",
+      "BlackLine",
+      "IFRS/GAAP"
+    ],
+    "features": [
+      "Automated elimination entry drafting for intercompany balances",
+      "SOX-aligned audit trails with cryptographic approval logs",
+      "Flux and balance sheet variance auto-narration for CFO review"
+    ],
+    "systemIntegration": "Workday Financials · BlackLine · Oracle Cloud ERP",
+    "createdAt": "2026-11-14T11:30:00.000Z"
+  }
+]
