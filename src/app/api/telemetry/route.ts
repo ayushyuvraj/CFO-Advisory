@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { appendTelemetryEvent, getTelemetryEvents, getTelemetryMetrics } from "@/lib/telemetry/telemetryStore";
 import { getProductByApiKey } from "@/lib/telemetry/productRegistry";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization") || "";
@@ -52,12 +55,21 @@ export async function GET(req: NextRequest) {
     const { events, total } = getTelemetryEvents({ productId, status, search, limit, offset });
     const metrics = getTelemetryMetrics();
 
-    return NextResponse.json({
-      events,
-      total,
-      metrics,
-      lastUpdated: new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        events,
+        total,
+        metrics,
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "Internal query failure";
     return NextResponse.json(

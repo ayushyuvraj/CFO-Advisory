@@ -37,7 +37,10 @@ export function AuditConsole() {
       if (selectedStatus !== "ALL") params.set("status", selectedStatus);
       if (searchQuery.trim()) params.set("search", searchQuery.trim());
 
-      const res = await fetch(`/api/telemetry?${params.toString()}`);
+      const res = await fetch(`/api/telemetry?${params.toString()}`, {
+        cache: "no-store",
+        headers: { "Pragma": "no-cache" }
+      });
       if (res.ok) {
         const data = await res.json();
         setEvents(data.events || []);

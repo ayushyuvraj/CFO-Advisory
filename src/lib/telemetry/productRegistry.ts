@@ -3,7 +3,18 @@ import path from "path";
 import crypto from "crypto";
 import { RegisteredProduct } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+function getDataDir(): string {
+  if (process.env.CFO_DATA_DIR) {
+    return process.env.CFO_DATA_DIR;
+  }
+  const parentData = path.join(process.cwd(), "..", "data");
+  if (fs.existsSync(parentData) && fs.existsSync(path.join(parentData, "cfo_products_registry.json"))) {
+    return parentData;
+  }
+  return path.join(process.cwd(), "data");
+}
+
+const DATA_DIR = getDataDir();
 const REGISTRY_FILE = path.join(DATA_DIR, "cfo_products_registry.json");
 
 // ONLY actual, physically existing products are seeded here.

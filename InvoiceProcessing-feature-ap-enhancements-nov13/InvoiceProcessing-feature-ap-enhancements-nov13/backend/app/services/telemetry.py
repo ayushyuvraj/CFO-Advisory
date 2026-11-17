@@ -64,9 +64,21 @@ async def emit_cfo_telemetry_event(
             "signoff_status": "AUTO_APPROVED",
         }
 
+        target_urls = [TELEMETRY_ENDPOINT]
+        if "3000" in TELEMETRY_ENDPOINT:
+            target_urls.append(TELEMETRY_ENDPOINT.replace("3000", "3001"))
+        elif "3001" in TELEMETRY_ENDPOINT:
+            target_urls.append(TELEMETRY_ENDPOINT.replace("3001", "3000"))
+
         async with httpx.AsyncClient(timeout=2.0) as client:
             headers = {"Authorization": f"Bearer {PRODUCT_API_KEY}"} if PRODUCT_API_KEY else {}
-            await client.post(TELEMETRY_ENDPOINT, json=payload, headers=headers)
+            for url in target_urls:
+                try:
+                    res = await client.post(url, json=payload, headers=headers)
+                    if res.status_code in (200, 201, 202):
+                        break
+                except Exception:
+                    continue
     except Exception as exc:
         log.debug("[KPMG Telemetry Non-Fatal]: %s", exc)
 
