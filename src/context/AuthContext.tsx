@@ -9,8 +9,18 @@ import React, {
   useSyncExternalStore,
 } from "react";
 import { KPMG_LEAD_USER } from "@/config/authConfig";
+import {
+  CompanyPersona,
+  CompanyProfile,
+  PersonaPermissions,
+} from "@/lib/governance/types";
 
-export type AuthMethod = "sso" | "credentials" | "token";
+export type AuthMethod =
+  | "sso"
+  | "credentials"
+  | "token"
+  | "client_credentials"
+  | "kpmg_preview";
 
 export interface AuthUser {
   id: string;
@@ -19,17 +29,32 @@ export interface AuthUser {
   email: string;
   method: AuthMethod;
   badge: string;
+  tenantType?: "kpmg" | "client";
+  companyId?: string;
+  companyName?: string;
+  personaId?: string;
+  permissions?: PersonaPermissions;
+  allowedProductIds?: string[];
+  previewOriginalAdmin?: AuthUser | null;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   isLoginOpen: boolean;
+  isPreviewMode: boolean;
   openLogin: () => void;
   closeLogin: () => void;
   signInWithSSO: () => Promise<AuthUser>;
   signInWithCredentials: (email: string, passcode: string) => Promise<AuthUser>;
   signInWithToken: (token: string) => Promise<AuthUser>;
+  signInAsClient: (email: string, passcode: string) => Promise<AuthUser>;
+  startPreviewAs: (
+    company: CompanyProfile,
+    persona: CompanyPersona,
+    allowedProductIds: string[]
+  ) => void;
+  exitPreview: () => void;
   signOut: () => void;
 }
 
@@ -37,19 +62,6 @@ const SESSION_KEY = "kpmg_cfo_advisory_session_v1";
 const SESSION_CHANGE_EVENT = "kpmg-cfo-session-change";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function deriveNameFromEmail(email: string): string {
-  const local = email.split("@")[0] ?? "Advisor";
-  const parts = local
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .slice(0, 2);
-
-  if (parts.length === 0) return "Advisory Principal";
-  return parts
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join(" ");
-}
 
 function readStoredUser(): AuthUser | null {
   if (typeof window === "undefined") return null;
@@ -134,6 +146,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
+  const isPreviewMode = Boolean(user && user.method === "kpmg_preview");
+
   const openLogin = useCallback(() => {
     setIsLoginOpen(true);
   }, []);
@@ -152,6 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: "elena.vance@kpmg-advisory.com",
       method: "sso",
       badge: "Entra ID SSO",
+      tenantType: "kpmg",
     };
     persistSession(ssoUser);
     setIsAuthenticating(false);
@@ -188,6 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: KPMG_LEAD_USER.email,
         method: "credentials",
         badge: KPMG_LEAD_USER.badge,
+        tenantType: "kpmg",
       };
       persistSession(credUser);
       setIsAuthenticating(false);
@@ -216,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: "cfo.guest@enterprise-client.com",
         method: "token",
         badge: "Engagement Token",
+        tenantType: "client",
       };
       persistSession(tokenUser);
       setIsAuthenticating(false);
@@ -224,6 +241,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     []
   );
+
+  const signInAsClient = useCallback(
+    async (email: string, passcode: string): Promise<AuthUser> => {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanPasscode = passcode.trim();
+
+      if (!cleanEmail || !cleanPasscode) {
+        throw new Error("Please enter your client persona email and passcode.");
+      }
+
+      setIsAuthenticating(true);
+      try {
+        const res = await fetch("/api/auth/client-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: cleanEmail, passcode: cleanPasscode }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Authentication failed.");
+        }
+
+        const clientUser: AuthUser = data.user;
+        persistSession(clientUser);
+        setIsAuthenticating(false);
+        setIsLoginOpen(false);
+        return clientUser;
+      } catch (err) {
+        setIsAuthenticating(false);
+        throw err;
+      }
+    },
+    []
+  );
+
+  const startPreviewAs = useCallback(
+    (
+      company: CompanyProfile,
+      persona: CompanyPersona,
+      allowedProductIds: string[]
+    ) => {
+      if (!user) return;
+      const originalAdmin =
+        user.method === "kpmg_preview"
+          ? user.previewOriginalAdmin || user
+          : user;
+
+      const previewUser: AuthUser = {
+        id: persona.id,
+        name: persona.name,
+        role: persona.roleTitle,
+        email: persona.email,
+        method: "kpmg_preview",
+        badge: `Preview: ${company.name}`,
+        tenantType: "client",
+        companyId: company.id,
+        companyName: company.name,
+        personaId: persona.id,
+        permissions: persona.permissions,
+        allowedProductIds,
+        previewOriginalAdmin: originalAdmin,
+      };
+
+      persistSession(previewUser);
+    },
+    [user]
+  );
+
+  const exitPreview = useCallback(() => {
+    if (!user || !user.previewOriginalAdmin) return;
+    persistSession(user.previewOriginalAdmin);
+  }, [user]);
 
   const signOut = useCallback(() => {
     persistSession(null);
@@ -234,11 +324,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       isLoading: !isHydrated || isAuthenticating,
       isLoginOpen,
+      isPreviewMode,
       openLogin,
       closeLogin,
       signInWithSSO,
       signInWithCredentials,
       signInWithToken,
+      signInAsClient,
+      startPreviewAs,
+      exitPreview,
       signOut,
     }),
     [
@@ -246,11 +340,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isHydrated,
       isAuthenticating,
       isLoginOpen,
+      isPreviewMode,
       openLogin,
       closeLogin,
       signInWithSSO,
       signInWithCredentials,
       signInWithToken,
+      signInAsClient,
+      startPreviewAs,
+      exitPreview,
       signOut,
     ]
   );

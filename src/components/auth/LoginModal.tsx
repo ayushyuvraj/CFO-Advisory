@@ -5,11 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
+  Buildings,
   EnvelopeSimple,
   Eye,
   EyeSlash,
   LockKey,
   ShieldCheck,
+  User,
   X,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
@@ -20,8 +22,10 @@ export function LoginModal() {
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
-  const { isLoginOpen, closeLogin, signInWithCredentials } = useAuth();
+  const { isLoginOpen, closeLogin, signInWithCredentials, signInAsClient } =
+    useAuth();
 
+  const [authTab, setAuthTab] = useState<"kpmg" | "client">("kpmg");
   const [email, setEmail] = useState("");
   const [passcode, setPasscode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,20 +40,29 @@ export function LoginModal() {
     }
   };
 
-  const handleCredentialsSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleTabChange = (tab: "kpmg" | "client") => {
+    setAuthTab(tab);
+    setErrorMessage(null);
+    setEmail("");
+    setPasscode("");
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage(null);
     setSubmitting(true);
     try {
-      await signInWithCredentials(email, passcode);
+      if (authTab === "kpmg") {
+        await signInWithCredentials(email, passcode);
+      } else {
+        await signInAsClient(email, passcode);
+      }
       redirectToWorkflows();
     } catch (err) {
       setErrorMessage(
         err instanceof Error
           ? err.message
-          : "Invalid advisory credentials. Please check your credentials."
+          : "Authentication failed. Please verify your credentials."
       );
     } finally {
       setSubmitting(false);
@@ -57,11 +70,11 @@ export function LoginModal() {
   };
 
   const emailDescribedBy = errorMessage
-    ? "advisory-email-hint login-error-alert"
-    : "advisory-email-hint";
+    ? "auth-email-hint login-error-alert"
+    : "auth-email-hint";
   const passcodeDescribedBy = errorMessage
-    ? "advisory-passcode-hint login-error-alert"
-    : "advisory-passcode-hint";
+    ? "auth-passcode-hint login-error-alert"
+    : "auth-passcode-hint";
 
   return (
     <AnimatePresence>
@@ -103,7 +116,11 @@ export function LoginModal() {
               <div>
                 <div className="inline-flex items-center gap-1.5 rounded-sm border border-[#00338D]/20 bg-[#00338D]/5 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-[#00338D]">
                   <ShieldCheck size={14} weight="bold" />
-                  <span>KPMG ADVISORY ACCESS</span>
+                  <span>
+                    {authTab === "kpmg"
+                      ? "KPMG ADVISORY ACCESS"
+                      : "CLIENT ENTERPRISE ACCESS"}
+                  </span>
                 </div>
                 <h2
                   id="login-modal-title"
@@ -112,7 +129,9 @@ export function LoginModal() {
                   Sign in to Workflows
                 </h2>
                 <p className="mt-1 text-sm text-[#4B5563]">
-                  Enter designated KPMG Lead credentials to access Connected Platforms.
+                  {authTab === "kpmg"
+                    ? "Enter designated KPMG Lead credentials to access Connected Platforms."
+                    : "Enter your client persona email and passcode to access your assigned systems."}
                 </p>
               </div>
               <button
@@ -125,22 +144,61 @@ export function LoginModal() {
               </button>
             </div>
 
-            <form onSubmit={handleCredentialsSubmit} className="mt-6 space-y-4" noValidate>
+            {/* Segmented Sign-in Mode Switcher */}
+            <div className="mt-5 grid grid-cols-2 rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-1 text-xs">
+              <button
+                type="button"
+                onClick={() => handleTabChange("kpmg")}
+                className={`flex items-center justify-center gap-1.5 rounded-xs py-1.5 font-semibold transition-all ${
+                  authTab === "kpmg"
+                    ? "bg-[#00338D] text-white shadow-xs"
+                    : "text-[#4B5563] hover:text-[#0C233C]"
+                }`}
+              >
+                <ShieldCheck size={15} weight="bold" />
+                <span>KPMG Lead</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange("client")}
+                className={`flex items-center justify-center gap-1.5 rounded-xs py-1.5 font-semibold transition-all ${
+                  authTab === "client"
+                    ? "bg-[#00338D] text-white shadow-xs"
+                    : "text-[#4B5563] hover:text-[#0C233C]"
+                }`}
+              >
+                <Buildings size={15} weight="bold" />
+                <span>Client Persona</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
               <div className="flex flex-col gap-1.5">
                 <label
-                  htmlFor="advisory-email"
+                  htmlFor="auth-email"
                   className="text-xs font-medium text-[#0C233C]"
                 >
-                  Advisory corporate email
+                  {authTab === "kpmg"
+                    ? "Advisory corporate email"
+                    : "Client persona email"}
                 </label>
                 <div className="relative">
-                  <EnvelopeSimple
-                    size={16}
-                    weight="light"
-                    className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
-                  />
+                  {authTab === "kpmg" ? (
+                    <EnvelopeSimple
+                      size={16}
+                      weight="light"
+                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
+                    />
+                  ) : (
+                    <User
+                      size={16}
+                      weight="light"
+                      className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
+                    />
+                  )}
                   <input
-                    id="advisory-email"
+                    id="auth-email"
                     type="email"
                     autoComplete="email"
                     value={email}
@@ -148,20 +206,26 @@ export function LoginModal() {
                       setEmail(e.target.value);
                       if (errorMessage) setErrorMessage(null);
                     }}
-                    placeholder="kpmg.lead@kpmg.com"
+                    placeholder={
+                      authTab === "kpmg"
+                        ? "kpmg.lead@kpmg.com"
+                        : "name@clientcompany.com"
+                    }
                     aria-invalid={Boolean(errorMessage)}
                     aria-describedby={emailDescribedBy}
                     className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2.5 pr-3 pl-9 text-sm text-[#0C233C] placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
                   />
                 </div>
-                <p id="advisory-email-hint" className="text-[11px] text-[#4B5563]">
-                  Designated address for KPMG Advisory Leadership.
+                <p id="auth-email-hint" className="text-[11px] text-[#4B5563]">
+                  {authTab === "kpmg"
+                    ? "Designated address for KPMG Advisory Leadership."
+                    : "Registered persona address assigned by KPMG Lead."}
                 </p>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <label
-                  htmlFor="advisory-passcode"
+                  htmlFor="auth-passcode"
                   className="text-xs font-medium text-[#0C233C]"
                 >
                   Passcode
@@ -173,7 +237,7 @@ export function LoginModal() {
                     className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
                   />
                   <input
-                    id="advisory-passcode"
+                    id="auth-passcode"
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     value={passcode}
@@ -199,8 +263,10 @@ export function LoginModal() {
                     )}
                   </button>
                 </div>
-                <p id="advisory-passcode-hint" className="text-[11px] text-[#4B5563]">
-                  Protected engagement authentication token.
+                <p id="auth-passcode-hint" className="text-[11px] text-[#4B5563]">
+                  {authTab === "kpmg"
+                    ? "Protected engagement authentication token."
+                    : "Client session credential configured in governance."}
                 </p>
               </div>
 
@@ -220,7 +286,11 @@ export function LoginModal() {
                 className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 <span>
-                  {submitting ? "Verifying Credentials..." : "Sign In to Advisory Workflows"}
+                  {submitting
+                    ? "Verifying Credentials..."
+                    : authTab === "kpmg"
+                    ? "Sign In to Advisory Workflows"
+                    : "Sign In as Client Persona"}
                 </span>
                 <ArrowRight size={16} weight="light" />
               </button>

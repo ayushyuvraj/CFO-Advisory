@@ -1,0 +1,531 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  Buildings,
+  Cpu,
+  MagnifyingGlass,
+  PlusCircle,
+  ShieldCheck,
+  SlidersHorizontal,
+  ToggleLeft,
+  ToggleRight,
+  UsersThree,
+} from "@phosphor-icons/react";
+import {
+  ClientGovernanceData,
+  CompanyPersona,
+  CompanyProfile,
+} from "@/lib/governance/types";
+import { ConnectedPlatform } from "@/data/platforms";
+import { CreateCompanyModal } from "./CreateCompanyModal";
+import { CompanyDetailDrawer } from "./CompanyDetailDrawer";
+
+interface ClientAccessConsoleProps {
+  availableProducts: ConnectedPlatform[];
+}
+
+export function ClientAccessConsole({
+  availableProducts,
+}: ClientAccessConsoleProps) {
+  const [viewMode, setViewMode] = useState<"by-company" | "by-product">(
+    "by-company"
+  );
+  const [governanceData, setGovernanceData] = useState<ClientGovernanceData>({
+    companies: [],
+    entitlements: [],
+    personas: [],
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
+    null
+  );
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadData() {
+      try {
+        const res = await fetch("/api/clients", { cache: "no-store" });
+        if (res.ok && !cancelled) {
+          const data = (await res.json()) as ClientGovernanceData;
+          setGovernanceData(data);
+        }
+      } catch (err) {
+        console.error("[ClientAccessConsole] Failed to fetch governance data:", err);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+    void loadData();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleToggleEntitlement = async (
+    companyId: string,
+    productId: string,
+    enabled: boolean
+  ) => {
+    const key = `${companyId}:${productId}`;
+    setTogglingKey(key);
+    try {
+      const res = await fetch(`/api/clients/${companyId}/entitlements`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, enabled }),
+      });
+
+      if (res.ok) {
+        const { entitlement } = await res.json();
+        setGovernanceData((prev) => {
+          const filtered = prev.entitlements.filter(
+            (e) => !(e.companyId === companyId && e.productId === productId)
+          );
+          return {
+            ...prev,
+            entitlements: [...filtered, entitlement],
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Failed to toggle entitlement:", err);
+    } finally {
+      setTogglingKey(null);
+    }
+  };
+
+  const handleCompanyCreated = (company: CompanyProfile) => {
+    setGovernanceData((prev) => ({
+      ...prev,
+      companies: [...prev.companies, company],
+    }));
+    setSelectedCompanyId(company.id);
+  };
+
+  const handleCompanyDeleted = (companyId: string) => {
+    setGovernanceData((prev) => ({
+      companies: prev.companies.filter((c) => c.id !== companyId),
+      entitlements: prev.entitlements.filter((e) => e.companyId !== companyId),
+      personas: prev.personas.filter((p) => p.companyId !== companyId),
+    }));
+    if (selectedCompanyId === companyId) {
+      setSelectedCompanyId(null);
+    }
+  };
+
+  const handlePersonaSaved = (persona: CompanyPersona) => {
+    setGovernanceData((prev) => {
+      const exists = prev.personas.some((p) => p.id === persona.id);
+      if (exists) {
+        return {
+          ...prev,
+          personas: prev.personas.map((p) =>
+            p.id === persona.id ? persona : p
+          ),
+        };
+      }
+      return {
+        ...prev,
+        personas: [...prev.personas, persona],
+      };
+    });
+  };
+
+  const handlePersonaDeleted = (personaId: string) => {
+    setGovernanceData((prev) => ({
+      ...prev,
+      personas: prev.personas.filter((p) => p.id !== personaId),
+    }));
+  };
+
+  const selectedCompany =
+    governanceData.companies.find((c) => c.id === selectedCompanyId) || null;
+
+  const selectedCompanyEntitlements = selectedCompany
+    ? governanceData.entitlements.filter(
+        (e) => e.companyId === selectedCompany.id
+      )
+    : [];
+
+  const selectedCompanyPersonas = selectedCompany
+    ? governanceData.personas.filter((p) => p.companyId === selectedCompany.id)
+    : [];
+
+  const filteredCompanies = governanceData.companies.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.contactEmail.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalActiveEntitlements = governanceData.entitlements.filter(
+    (e) => e.enabled
+  ).length;
+
+  return (
+    <div className="mt-6 space-y-6">
+      {/* Executive Summary Metrics */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
+              Onboarded Companies
+            </p>
+            <Buildings size={20} className="text-[#00338D]" weight="bold" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-[#0C233C]">
+            {governanceData.companies.length}
+          </p>
+          <p className="mt-1 text-xs text-[#4B5563]">
+            Registered client tenants
+          </p>
+        </div>
+
+        <div className="rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
+              Active Entitlements
+            </p>
+            <ShieldCheck size={20} className="text-[#009A44]" weight="bold" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-[#0C233C]">
+            {totalActiveEntitlements}
+          </p>
+          <p className="mt-1 text-xs text-[#4B5563]">
+            Granted company-to-product links
+          </p>
+        </div>
+
+        <div className="rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
+              Configured Personas
+            </p>
+            <UsersThree size={20} className="text-[#1E49E2]" weight="bold" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-[#0C233C]">
+            {governanceData.personas.length}
+          </p>
+          <p className="mt-1 text-xs text-[#4B5563]">
+            Role profiles with active credentials
+          </p>
+        </div>
+      </div>
+
+      {/* Control Bar: View Mode Switcher + Search + Onboard Company CTA */}
+      <div className="flex flex-col justify-between gap-4 rounded-sm border border-[#D8DFE9] bg-white p-4 shadow-xs sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* View Mode Segmented Switch */}
+          <div className="inline-flex rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setViewMode("by-company")}
+              className={`inline-flex items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition-all ${
+                viewMode === "by-company"
+                  ? "bg-[#00338D] text-white shadow-xs"
+                  : "text-[#4B5563] hover:text-[#0C233C]"
+              }`}
+            >
+              <Buildings size={15} weight="bold" />
+              <span>By Company ({governanceData.companies.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("by-product")}
+              className={`inline-flex items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition-all ${
+                viewMode === "by-product"
+                  ? "bg-[#00338D] text-white shadow-xs"
+                  : "text-[#4B5563] hover:text-[#0C233C]"
+              }`}
+            >
+              <Cpu size={15} weight="bold" />
+              <span>By Product ({availableProducts.length})</span>
+            </button>
+          </div>
+
+          {viewMode === "by-company" && governanceData.companies.length > 0 && (
+            <div className="relative">
+              <MagnifyingGlass
+                size={15}
+                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search companies..."
+                className="w-56 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-1.5 pr-3 pl-9 text-xs text-[#0C233C] focus:border-[#1E49E2] focus:bg-white focus:outline-none"
+              />
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsCreateModalOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
+        >
+          <PlusCircle size={16} weight="bold" />
+          <span>Create Company Profile</span>
+        </button>
+      </div>
+
+      {/* Main Content Area */}
+      {isLoading ? (
+        <div className="h-48 animate-pulse rounded-sm border border-[#D8DFE9] bg-white" />
+      ) : viewMode === "by-company" ? (
+        /* VIEW 1: BY COMPANY */
+        governanceData.companies.length === 0 ? (
+          <div className="rounded-sm border border-dashed border-[#D8DFE9] bg-white px-6 py-16 text-center shadow-xs">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
+              <Buildings size={24} weight="bold" />
+            </div>
+            <h3 className="mt-4 text-base font-bold text-[#0C233C]">
+              No Client Companies Onboarded Yet
+            </h3>
+            <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-[#4B5563]">
+              Start by creating your first client company profile. Once onboarded, you can grant or revoke access to registered platforms with 1-click toggles and configure custom personas.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="mt-6 inline-flex items-center gap-2 rounded-sm bg-[#00338D] px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#1E49E2]"
+            >
+              <PlusCircle size={16} weight="bold" />
+              <span>Create First Company Profile</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {filteredCompanies.map((company) => {
+              const enabledCount = governanceData.entitlements.filter(
+                (e) => e.companyId === company.id && e.enabled
+              ).length;
+              const personaCount = governanceData.personas.filter(
+                (p) => p.companyId === company.id
+              ).length;
+
+              return (
+                <div
+                  key={company.id}
+                  className="flex flex-col justify-between rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs transition-all hover:border-[#00338D] hover:shadow-md"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
+                          <Buildings size={20} weight="bold" />
+                        </div>
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-base font-bold text-[#0C233C]">
+                              {company.name}
+                            </h3>
+                            <span className="rounded-xs border border-[#D8DFE9] bg-[#F8FAFC] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#00338D]">
+                              {company.code}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#4B5563]">
+                            {company.contactEmail}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`rounded-xs px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                          company.status === "active"
+                            ? "bg-[#009A44]/10 text-[#009A44]"
+                            : "bg-[#B91C1C]/10 text-[#B91C1C]"
+                        }`}
+                      >
+                        {company.status}
+                      </span>
+                    </div>
+
+                    {company.notes && (
+                      <p className="mt-3 text-xs text-[#4B5563] line-clamp-2">
+                        {company.notes}
+                      </p>
+                    )}
+
+                    <div className="mt-4 grid grid-cols-2 gap-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-3 text-xs">
+                      <div>
+                        <span className="text-[11px] text-[#4B5563]">
+                          Product Entitlements
+                        </span>
+                        <p className="font-mono font-bold text-[#0C233C]">
+                          {enabledCount} / {availableProducts.length} Active
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-[#4B5563]">
+                          Assigned Personas
+                        </span>
+                        <p className="font-mono font-bold text-[#0C233C]">
+                          {personaCount} Persona{personaCount !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-end border-t border-[#D8DFE9] pt-3.5">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCompanyId(company.id)}
+                      className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#1E49E2]"
+                    >
+                      <SlidersHorizontal size={14} weight="bold" />
+                      <span>Manage Access & Personas</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
+      ) : (
+        /* VIEW 2: BY PRODUCT (Direct 1-Click Company Matrix) */
+        <div className="space-y-5">
+          {availableProducts.map((platform) => {
+            const entitledCompaniesCount = governanceData.entitlements.filter(
+              (e) => e.productId === platform.id && e.enabled
+            ).length;
+
+            return (
+              <div
+                key={platform.id}
+                className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-[#00338D] text-white">
+                      <Cpu size={20} weight="bold" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-[#0C233C]">
+                        {platform.title}
+                      </h3>
+                      <p className="font-mono text-xs text-[#4B5563]">
+                        ID: {platform.id} · Frontend Port {platform.portFrontend}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="rounded-sm border border-[#D8DFE9] bg-white px-3 py-1.5 font-mono text-xs font-semibold text-[#00338D]">
+                    {entitledCompaniesCount} of {governanceData.companies.length}{" "}
+                    Companies Entitled
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  {governanceData.companies.length === 0 ? (
+                    <div className="rounded-sm border border-dashed border-[#D8DFE9] bg-[#F8FAFC] p-6 text-center">
+                      <p className="text-xs font-medium text-[#4B5563]">
+                        No client companies exist yet. Create a company profile first to toggle access to this platform.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {governanceData.companies.map((company) => {
+                        const isEnabled = governanceData.entitlements.some(
+                          (e) =>
+                            e.companyId === company.id &&
+                            e.productId === platform.id &&
+                            e.enabled
+                        );
+                        const isToggling =
+                          togglingKey === `${company.id}:${platform.id}`;
+
+                        return (
+                          <div
+                            key={company.id}
+                            className={`flex items-center justify-between rounded-sm border p-3.5 transition-all ${
+                              isEnabled
+                                ? "border-[#009A44]/40 bg-[#009A44]/5"
+                                : "border-[#D8DFE9] bg-white"
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-[#0C233C]">
+                                  {company.name}
+                                </span>
+                                <span className="font-mono text-[10px] text-[#4B5563]">
+                                  ({company.code})
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-[#4B5563]">
+                                {company.contactEmail}
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              disabled={isToggling}
+                              onClick={() =>
+                                handleToggleEntitlement(
+                                  company.id,
+                                  platform.id,
+                                  !isEnabled
+                                )
+                              }
+                              className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-semibold transition-all ${
+                                isEnabled
+                                  ? "bg-[#009A44] text-white shadow-xs hover:bg-[#007A34]"
+                                  : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:border-[#00338D] hover:text-[#00338D]"
+                              }`}
+                            >
+                              {isEnabled ? (
+                                <>
+                                  <ToggleRight size={17} weight="fill" />
+                                  <span>ON</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ToggleLeft size={17} />
+                                  <span>OFF</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modals & Drawers */}
+      <CreateCompanyModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCompanyCreated={handleCompanyCreated}
+      />
+
+      <CompanyDetailDrawer
+        isOpen={Boolean(selectedCompany)}
+        onClose={() => setSelectedCompanyId(null)}
+        company={selectedCompany}
+        entitlements={selectedCompanyEntitlements}
+        personas={selectedCompanyPersonas}
+        availableProducts={availableProducts}
+        onToggleEntitlement={(productId, enabled) =>
+          selectedCompany
+            ? handleToggleEntitlement(selectedCompany.id, productId, enabled)
+            : Promise.resolve()
+        }
+        onPersonaSaved={handlePersonaSaved}
+        onPersonaDeleted={handlePersonaDeleted}
+        onCompanyDeleted={handleCompanyDeleted}
+      />
+    </div>
+  );
+}
