@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import {
   X,
   Cpu,
@@ -21,15 +22,53 @@ interface AuditInspectorDrawerProps {
 }
 
 export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorDrawerProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Lock body scroll and isolate keyboard/wheel interactions
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen || !event) return null;
 
   const isSuccess = event.action_status === "SUCCESS";
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[#0C233C]/40 backdrop-blur-xs transition-opacity duration-200">
-      <div className="relative flex h-full w-full max-w-2xl flex-col border-l border-[#D8DFE9] bg-white shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-5">
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-[#0C233C]/40 backdrop-blur-xs transition-opacity duration-200"
+      onClick={onClose}
+      data-lenis-prevent="true"
+      data-lenis-prevent-wheel="true"
+      data-lenis-prevent-touch="true"
+    >
+      <div
+        className="relative flex h-full max-h-screen w-full max-w-2xl flex-col border-l border-[#D8DFE9] bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        data-lenis-prevent="true"
+        data-lenis-prevent-wheel="true"
+        data-lenis-prevent-touch="true"
+      >
+        {/* Header (fixed at top of drawer) */}
+        <div className="shrink-0 flex items-center justify-between border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-5">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span
@@ -55,13 +94,23 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
             type="button"
             onClick={onClose}
             className="rounded-sm p-1.5 text-[#4B5563] transition-colors hover:bg-[#E2E8F0] hover:text-[#0C233C]"
+            aria-label="Close Inspector"
           >
             <X size={20} weight="bold" />
           </button>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Scrollable Content (isolated with data-lenis-prevent & min-h-0) */}
+        <div
+          ref={scrollRef}
+          tabIndex={0}
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6 space-y-6 focus:outline-none"
+          data-lenis-prevent="true"
+          data-lenis-prevent-wheel="true"
+          data-lenis-prevent-touch="true"
+          onWheel={(e) => e.stopPropagation()}
+          style={{ overscrollBehavior: "contain" }}
+        >
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-4 gap-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-3 text-center">
             <div>
@@ -225,8 +274,8 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between border-t border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4 text-xs">
+        {/* Footer (fixed at bottom of drawer) */}
+        <div className="shrink-0 flex items-center justify-between border-t border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4 text-xs">
           <span className="font-mono text-[#4B5563]">
             Captured: {new Date(event.created_at).toLocaleString()}
           </span>
