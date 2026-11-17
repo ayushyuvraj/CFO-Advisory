@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   ArrowRight,
   ArrowSquareOut,
@@ -9,10 +10,16 @@ import {
   LockKey,
   ShieldCheck,
   Sparkle,
+  PlusCircle,
+  ChartLineUp,
+  SquaresFour,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
 import { CONNECTED_PLATFORMS, type ConnectedPlatform } from "@/data/platforms";
 import { AmbientLedgerGridCanvas } from "@/components/three/AmbientLedgerGridCanvas";
+import { AddProductModal } from "@/components/workflows/AddProductModal";
+import { AuditConsole } from "@/components/workflows/AuditConsole";
+import { RegisteredProduct } from "@/lib/telemetry/types";
 
 function WorkflowsSkeleton() {
   return (
@@ -27,6 +34,46 @@ function WorkflowsSkeleton() {
 
 export default function WorkflowsPage() {
   const { user, isLoading, openLogin } = useAuth();
+  const [activeTab, setActiveTab] = useState<"catalog" | "audit">("catalog");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [products, setProducts] = useState<ConnectedPlatform[]>(CONNECTED_PLATFORMS);
+
+  // Fetch dynamic registered products
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.products && data.products.length > 0) {
+          const mapped: ConnectedPlatform[] = data.products.map((p: RegisteredProduct) => ({
+            id: p.id,
+            title: p.name,
+            shortName: p.shortName,
+            category: p.pillar,
+            description: p.description,
+            launchUrl: p.launchUrl,
+            portFrontend: p.portFrontend || 5173,
+            portBackend: p.portBackend,
+            status: p.status === "active" ? "active" : "maintenance",
+            tags: p.tags,
+            features: p.features,
+            systemIntegration: p.systemIntegration,
+          }));
+          setProducts(mapped);
+        }
+      }
+    } catch (err) {
+      console.error("[Catalog] Error fetching products:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const handleProductCreated = () => {
+    fetchProducts();
+  };
 
   if (isLoading) {
     return <WorkflowsSkeleton />;
@@ -87,153 +134,198 @@ export default function WorkflowsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-4 py-2.5 text-right">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
+            >
+              <PlusCircle size={16} weight="bold" />
+              <span>Add Product</span>
+            </button>
+
+            <div className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-4 py-2 text-right">
               <p className="font-mono text-xs font-semibold text-[#00338D]">
-                {CONNECTED_PLATFORMS.length} Connected Platform{CONNECTED_PLATFORMS.length > 1 ? "s" : ""}
+                {products.length} Connected Platform{products.length > 1 ? "s" : ""}
               </p>
               <p className="text-[11px] text-[#4B5563]">1-Click Seamless Launch</p>
             </div>
           </div>
         </div>
 
-        {/* Section Heading */}
-        <div className="mt-10 flex items-center justify-between border-b border-[#D8DFE9] pb-4">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight text-[#0C233C]">
-              Enterprise Solution Catalog
-            </h2>
-            <p className="text-xs text-[#4B5563]">
-              Autonomous execution engines and advisory platforms attached to this CFO workspace.
-            </p>
+        {/* View Switcher Tabs: Catalog vs Audit */}
+        <div className="mt-8 flex items-center justify-between border-b border-[#D8DFE9] pb-4">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab("catalog")}
+              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
+                activeTab === "catalog"
+                  ? "bg-[#00338D] text-white shadow-xs"
+                  : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
+              }`}
+            >
+              <SquaresFour size={16} weight={activeTab === "catalog" ? "bold" : "regular"} />
+              <span>Solution Catalog ({products.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("audit")}
+              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
+                activeTab === "audit"
+                  ? "bg-[#00338D] text-white shadow-xs"
+                  : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
+              }`}
+            >
+              <ChartLineUp size={16} weight={activeTab === "audit" ? "bold" : "regular"} />
+              <span>Live Audit & Telemetry</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse" />
+            </button>
           </div>
         </div>
 
-        {/* Platforms Grid */}
-        <div className="mt-6 grid grid-cols-1 gap-6">
-          {CONNECTED_PLATFORMS.map((platform: ConnectedPlatform) => (
-            <div
-              key={platform.id}
-              className="relative overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-[#00338D] hover:shadow-md"
-            >
-              <div className="border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4 sm:px-8">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#009A44] animate-pulse" />
-                    <span className="font-mono text-xs font-semibold text-[#009A44] uppercase tracking-wider">
-                      Platform Live · Port {platform.portFrontend}
-                    </span>
-                    {platform.portBackend && (
-                      <span className="rounded-sm border border-[#D8DFE9] bg-white px-2 py-0.5 font-mono text-[11px] text-[#4B5563]">
-                        FastAPI :{platform.portBackend}
+        {/* Tab 1: Solution Catalog View */}
+        {activeTab === "catalog" && (
+          <div className="mt-6 grid grid-cols-1 gap-6">
+            {products.map((platform: ConnectedPlatform) => (
+              <div
+                key={platform.id}
+                className="relative overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-[#00338D] hover:shadow-md"
+              >
+                <div className="border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4 sm:px-8">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#009A44] animate-pulse" />
+                      <span className="font-mono text-xs font-semibold text-[#009A44] uppercase tracking-wider">
+                        Platform Live · Port {platform.portFrontend}
                       </span>
-                    )}
-                  </div>
-                  <span className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-0.5 font-mono text-xs font-medium text-[#00338D]">
-                    {platform.category}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6 sm:p-8">
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="max-w-3xl space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="inline-flex h-11 w-11 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
-                        <Cpu size={24} weight="bold" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold tracking-tight text-[#0C233C] sm:text-2xl">
-                          {platform.title}
-                        </h3>
-                        <p className="font-mono text-xs text-[#1E49E2]">
-                          System Identifier: {platform.id}
-                        </p>
-                      </div>
+                      {platform.portBackend && (
+                        <span className="rounded-sm border border-[#D8DFE9] bg-white px-2 py-0.5 font-mono text-[11px] text-[#4B5563]">
+                          Backend :{platform.portBackend}
+                        </span>
+                      )}
                     </div>
+                    <span className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-0.5 font-mono text-xs font-medium text-[#00338D]">
+                      {platform.category}
+                    </span>
+                  </div>
+                </div>
 
-                    <p className="text-sm leading-relaxed text-[#333940]">
-                      {platform.description}
-                    </p>
+                <div className="p-6 sm:p-8">
+                  <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="max-w-3xl space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="inline-flex h-11 w-11 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
+                          <Cpu size={24} weight="bold" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold tracking-tight text-[#0C233C] sm:text-2xl">
+                            {platform.title}
+                          </h3>
+                          <p className="font-mono text-xs text-[#1E49E2]">
+                            System Identifier: {platform.id}
+                          </p>
+                        </div>
+                      </div>
 
-                    <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4">
-                      <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-[#0C233C] uppercase">
-                        <Sparkle size={14} weight="bold" className="text-[#00338D]" />
-                        Core Platform Capabilities
-                      </h4>
-                      <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                        {platform.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-xs text-[#333940]">
-                            <CheckCircle size={15} weight="fill" className="mt-0.5 shrink-0 text-[#009A44]" />
-                            <span>{feature}</span>
-                          </div>
+                      <p className="text-sm leading-relaxed text-[#333940]">
+                        {platform.description}
+                      </p>
+
+                      <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4">
+                        <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-[#0C233C] uppercase">
+                          <Sparkle size={14} weight="bold" className="text-[#00338D]" />
+                          Core Platform Capabilities
+                        </h4>
+                        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                          {platform.features.map((feature, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-xs text-[#333940]">
+                              <CheckCircle size={15} weight="fill" className="mt-0.5 shrink-0 text-[#009A44]" />
+                              <span>{feature}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1 text-xs text-[#4B5563]">
+                        <Database size={15} weight="bold" className="text-[#00338D]" />
+                        <span className="font-medium text-[#0C233C]">Integrated Systems:</span>
+                        <span className="font-mono">{platform.systemIntegration}</span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {platform.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2.5 py-1 font-mono text-[11px] text-[#333940]"
+                          >
+                            {tag}
+                          </span>
                         ))}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-1 text-xs text-[#4B5563]">
-                      <Database size={15} weight="bold" className="text-[#00338D]" />
-                      <span className="font-medium text-[#0C233C]">Integrated Systems:</span>
-                      <span className="font-mono">{platform.systemIntegration}</span>
-                    </div>
+                    {/* 1-Click Launch Action Column */}
+                    <div className="flex w-full shrink-0 flex-col gap-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-6 lg:w-72">
+                      <div className="space-y-1">
+                        <p className="font-mono text-xs font-semibold text-[#0C233C] uppercase tracking-wider">
+                          One-Click Access
+                        </p>
+                        <p className="text-xs text-[#4B5563]">
+                          Launches the live platform directly in a new browser tab with session handoff.
+                        </p>
+                      </div>
 
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {platform.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2.5 py-1 font-mono text-[11px] text-[#333940]"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 1-Click Launch Action Column */}
-                  <div className="flex w-full shrink-0 flex-col gap-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-6 lg:w-72">
-                    <div className="space-y-1">
-                      <p className="font-mono text-xs font-semibold text-[#0C233C] uppercase tracking-wider">
-                        One-Click Access
-                      </p>
-                      <p className="text-xs text-[#4B5563]">
-                        Launches the live platform directly in a new browser tab.
-                      </p>
-                    </div>
-
-                    <a
-                      href={platform.launchUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2"
-                    >
-                      <span>Launch Platform</span>
-                      <ArrowSquareOut size={18} weight="bold" />
-                    </a>
-
-                    {platform.portBackend && (
                       <a
-                        href={`http://localhost:${platform.portBackend}/docs`}
+                        href={platform.launchUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-3 py-2 text-xs font-medium text-[#333940] transition-[border-color,color] duration-150 hover:border-[#00338D] hover:text-[#00338D]"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2"
                       >
-                        <span>Backend API Docs</span>
-                        <ArrowSquareOut size={13} weight="light" />
+                        <span>Launch Platform</span>
+                        <ArrowSquareOut size={18} weight="bold" />
                       </a>
-                    )}
 
-                    <div className="border-t border-[#D8DFE9] pt-3 text-center">
-                      <p className="font-mono text-[11px] text-[#4B5563]">
-                        Target: {platform.launchUrl}
-                      </p>
+                      {platform.portBackend && (
+                        <a
+                          href={`http://localhost:${platform.portBackend}/docs`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-3 py-2 text-xs font-medium text-[#333940] transition-[border-color,color] duration-150 hover:border-[#00338D] hover:text-[#00338D]"
+                        >
+                          <span>Backend API Docs</span>
+                          <ArrowSquareOut size={13} weight="light" />
+                        </a>
+                      )}
+
+                      <div className="border-t border-[#D8DFE9] pt-3 text-center">
+                        <p className="font-mono text-[11px] text-[#4B5563]">
+                          Target: {platform.launchUrl}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+
+        {/* Tab 2: Live Audit & Observability Console View */}
+        {activeTab === "audit" && (
+          <div className="mt-6">
+            <AuditConsole />
+          </div>
+        )}
       </div>
+
+      {/* Add Product Modal */}
+      <AddProductModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onProductCreated={handleProductCreated}
+      />
     </section>
   );
 }
