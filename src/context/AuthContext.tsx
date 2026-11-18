@@ -36,6 +36,11 @@ export interface AuthUser {
   previewOriginalAdmin?: AuthUser | null;
 }
 
+export interface SignInOptions {
+  onVerified?: () => void;
+  commitDelayMs?: number;
+}
+
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
@@ -45,8 +50,16 @@ interface AuthContextValue {
   clearSessionNotice: () => void;
   openLogin: () => void;
   closeLogin: () => void;
-  signInWithCredentials: (email: string, passcode: string) => Promise<AuthUser>;
-  signInAsClient: (email: string, passcode: string) => Promise<AuthUser>;
+  signInWithCredentials: (
+    email: string,
+    passcode: string,
+    options?: SignInOptions
+  ) => Promise<AuthUser>;
+  signInAsClient: (
+    email: string,
+    passcode: string,
+    options?: SignInOptions
+  ) => Promise<AuthUser>;
   startPreviewAs: (
     company: CompanyProfile,
     persona: CompanyPersona,
@@ -151,7 +164,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const [isServerSynced, setIsServerSynced] = useState(false);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [sessionNotice, setSessionNotice] = useState<string | null>(null);
 
@@ -204,7 +216,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithCredentials = useCallback(
-    async (email: string, passcode: string): Promise<AuthUser> => {
+    async (
+      email: string,
+      passcode: string,
+      options?: SignInOptions
+    ): Promise<AuthUser> => {
       const cleanEmail = email.trim().toLowerCase();
       const cleanPasscode = passcode.trim();
 
@@ -212,38 +228,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Please enter your KPMG advisory email and passcode.");
       }
 
-      setIsAuthenticating(true);
-      try {
-        const res = await fetch("/api/auth/kpmg-login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({ email: cleanEmail, passcode: cleanPasscode }),
-        });
+      const res = await fetch("/api/auth/kpmg-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: cleanEmail, passcode: cleanPasscode }),
+      });
 
-        const data = await safeParseJson(res);
-        if (!res.ok || !data.user) {
-          throw new Error(
-            typeof data.error === "string"
-              ? data.error
-              : "Invalid advisory credentials. Please verify your email and passcode."
-          );
-        }
-
-        const credUser = data.user as AuthUser;
-        setSessionNotice(null);
-        persistSession(credUser);
-        setIsLoginOpen(false);
-        return credUser;
-      } finally {
-        setIsAuthenticating(false);
+      const data = await safeParseJson(res);
+      if (!res.ok || !data.user) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Invalid advisory credentials. Please verify your email and passcode."
+        );
       }
+
+      const credUser = data.user as AuthUser;
+      options?.onVerified?.();
+      if (options?.commitDelayMs && options.commitDelayMs > 0) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, options.commitDelayMs)
+        );
+      }
+      setSessionNotice(null);
+      persistSession(credUser);
+      setIsLoginOpen(false);
+      return credUser;
     },
     []
   );
 
   const signInAsClient = useCallback(
-    async (email: string, passcode: string): Promise<AuthUser> => {
+    async (
+      email: string,
+      passcode: string,
+      options?: SignInOptions
+    ): Promise<AuthUser> => {
       const cleanEmail = email.trim().toLowerCase();
       const cleanPasscode = passcode.trim();
 
@@ -251,32 +272,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Please enter your client persona email and passcode.");
       }
 
-      setIsAuthenticating(true);
-      try {
-        const res = await fetch("/api/auth/client-login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({ email: cleanEmail, passcode: cleanPasscode }),
-        });
+      const res = await fetch("/api/auth/client-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: cleanEmail, passcode: cleanPasscode }),
+      });
 
-        const data = await safeParseJson(res);
-        if (!res.ok || !data.user) {
-          throw new Error(
-            typeof data.error === "string"
-              ? data.error
-              : "Authentication failed. Please check your credentials."
-          );
-        }
-
-        const clientUser = data.user as AuthUser;
-        setSessionNotice(null);
-        persistSession(clientUser);
-        setIsLoginOpen(false);
-        return clientUser;
-      } finally {
-        setIsAuthenticating(false);
+      const data = await safeParseJson(res);
+      if (!res.ok || !data.user) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Authentication failed. Please check your credentials."
+        );
       }
+
+      const clientUser = data.user as AuthUser;
+      options?.onVerified?.();
+      if (options?.commitDelayMs && options.commitDelayMs > 0) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, options.commitDelayMs)
+        );
+      }
+      setSessionNotice(null);
+      persistSession(clientUser);
+      setIsLoginOpen(false);
+      return clientUser;
     },
     []
   );
@@ -395,7 +417,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      isLoading: !isHydrated || !isServerSynced || isAuthenticating,
+      isLoading: !isHydrated || !isServerSynced,
       isLoginOpen,
       isPreviewMode,
       sessionNotice,
@@ -412,7 +434,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       isHydrated,
       isServerSynced,
-      isAuthenticating,
       isLoginOpen,
       isPreviewMode,
       sessionNotice,

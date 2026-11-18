@@ -2,7 +2,6 @@
 
 import { useCallback, useState, useEffect, useMemo } from "react";
 import {
-  ArrowRight,
   ArrowSquareOut,
   Buildings,
   CheckCircle,
@@ -10,16 +9,15 @@ import {
   Database,
   Eye,
   LockKey,
-  ShieldCheck,
   Sparkle,
-  PlusCircle,
   ChartLineUp,
   SquaresFour,
   PresentationChart,
   Prohibit,
-  WarningCircle,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
+import { SignInCard } from "@/components/auth/SignInCard";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { CONNECTED_PLATFORMS, type ConnectedPlatform } from "@/data/platforms";
 import { AmbientLedgerGridCanvas } from "@/components/three/AmbientLedgerGridCanvas";
 import { AddProductModal } from "@/components/workflows/AddProductModal";
@@ -51,9 +49,13 @@ function isValidPort(port: unknown): port is number {
 
 function WorkflowsSkeleton() {
   return (
-    <div className="mx-auto max-w-[1400px] px-4 pt-28 pb-20 sm:px-6 lg:px-8">
-      <div className="h-28 w-full animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]" />
-      <div className="mt-8 grid grid-cols-1 gap-6">
+    <div className="mx-auto max-w-[1400px] px-4 pt-24 pb-20 sm:px-6 lg:px-8">
+      <div className="flex items-center gap-2 border-b border-[#D8DFE9] pb-4">
+        <div className="h-9 w-36 animate-pulse rounded-sm bg-[#F4F6FA]" />
+        <div className="h-9 w-40 animate-pulse rounded-sm bg-[#F4F6FA]" />
+        <div className="h-9 w-28 animate-pulse rounded-sm bg-[#F4F6FA]" />
+      </div>
+      <div className="mt-6 grid grid-cols-1 gap-6">
         <div className="h-96 animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]" />
       </div>
     </div>
@@ -67,7 +69,6 @@ export default function WorkflowsPage() {
     isPreviewMode,
     sessionNotice,
     clearSessionNotice,
-    openLogin,
   } = useAuth();
   const [activeTab, setActiveTab] = useState<
     "catalog" | "audit" | "dashboards" | "governance"
@@ -285,148 +286,31 @@ export default function WorkflowsPage() {
   if (!user) {
     return (
       <section className="flex min-h-[100dvh] items-center justify-center bg-[#F8FAFC] px-4 pt-24 pb-16">
-        <div className="w-full max-w-lg rounded-sm border border-[#D8DFE9] bg-white p-8 shadow-lg sm:p-10">
-          {sessionNotice && (
-            <div
-              role="alert"
-              className="mb-5 flex items-start justify-between gap-3 rounded-sm border border-[#B91C1C]/30 bg-[#B91C1C]/5 p-3.5 text-xs text-[#991B1B]"
-            >
-              <div className="flex items-start gap-2">
-                <WarningCircle size={16} weight="bold" className="mt-0.5 shrink-0" />
-                <span>{sessionNotice}</span>
-              </div>
-              <button
-                type="button"
-                onClick={clearSessionNotice}
-                className="shrink-0 underline font-semibold"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] text-[#00338D]">
-            <LockKey size={20} weight="light" />
-          </div>
-          <h1 className="mt-5 text-2xl font-semibold tracking-tight text-[#0C233C]">
-            Protected Advisory Workspace
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-[#4B5563]">
-            Authenticate with your designated KPMG Lead or Client Persona credentials to access the
-            CFO Advisory Connected Platforms and enterprise execution suites.
-          </p>
-          <button
-            type="button"
-            onClick={openLogin}
-            className="mt-7 inline-flex items-center gap-2 rounded-sm bg-[#00338D] px-5 py-2.5 text-sm font-medium text-white whitespace-nowrap transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
-          >
-            <span>Sign in to Workflows</span>
-            <ArrowRight size={16} weight="light" />
-          </button>
-        </div>
+        <SignInCard
+          variant="page"
+          sessionNotice={sessionNotice}
+          onDismissNotice={clearSessionNotice}
+        />
       </section>
     );
   }
 
   return (
-    <section className="relative min-h-[100dvh] bg-[#F8FAFC] px-4 pt-28 pb-20 sm:px-6 lg:px-8">
+    <section className="relative min-h-[100dvh] bg-[#F8FAFC] px-4 pt-24 pb-20 sm:px-6 lg:px-8">
       <AmbientLedgerGridCanvas />
 
       <div className="relative z-10 mx-auto max-w-[1400px]">
+        <h1 className="sr-only">
+          {isClientUser && user.companyName
+            ? `${user.companyName} Workflows Hub`
+            : "KPMG CFO Advisory Workflows Hub"}
+        </h1>
+
         {/* KPMG Instant Preview Banner */}
         <PreviewBanner />
 
-        {/* Executive Header Banner */}
-        <div className="flex flex-col justify-between gap-6 rounded-sm border border-[#D8DFE9] bg-white/95 p-6 shadow-sm backdrop-blur-xl sm:p-8 lg:flex-row lg:items-center">
-          <div>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#009A44]/30 bg-[#009A44]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#009A44]">
-                <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" aria-hidden="true" />
-                SYSTEM ONLINE · {canViewAudit && telemetrySummary && telemetrySummary.total > 0 ? `${telemetrySummary.total} AUDIT RUN${telemetrySummary.total > 1 ? "S" : ""} CAPTURED` : "100% OPERATIONAL"}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-2.5 py-1 font-mono text-xs font-medium text-[#00338D]">
-                <ShieldCheck size={14} weight="bold" />
-                {user.badge}
-              </span>
-            </div>
-
-            <h1 className="mt-4 text-2xl font-bold tracking-tight text-[#0C233C] sm:text-3xl">
-              {isClientUser && user.companyName
-                ? `${user.companyName}: Connected Platforms Hub`
-                : "CFO Advisory: Connected Platforms Hub"}
-            </h1>
-            <p className="mt-1.5 text-sm text-[#4B5563]">
-              Active session for{" "}
-              <span className="font-semibold text-[#0C233C]">{user.name}</span> · {user.role}
-            </p>
-
-            {isClientUser && user.permissions && (
-              <div className="mt-2.5 flex flex-wrap gap-1.5 font-mono text-[10px]">
-                <span
-                  className={`rounded-xs px-2 py-0.5 ${
-                    user.permissions.canLaunchProducts
-                      ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
-                      : "bg-gray-100 text-[#6B7280]"
-                  }`}
-                >
-                  Launch: {user.permissions.canLaunchProducts ? "ON" : "OFF"}
-                </span>
-                <span
-                  className={`rounded-xs px-2 py-0.5 ${
-                    user.permissions.canViewAudit
-                      ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
-                      : "bg-gray-100 text-[#6B7280]"
-                  }`}
-                >
-                  Audit: {user.permissions.canViewAudit ? "ON" : "OFF"}
-                </span>
-                <span
-                  className={`rounded-xs px-2 py-0.5 ${
-                    user.permissions.canManageDashboards
-                      ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
-                      : "bg-gray-100 text-[#6B7280]"
-                  }`}
-                >
-                  Dashboards: {user.permissions.canManageDashboards ? "Author" : "View Only"}
-                </span>
-                <span
-                  className={`rounded-xs px-2 py-0.5 ${
-                    user.permissions.canExportData
-                      ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
-                      : "bg-gray-100 text-[#6B7280]"
-                  }`}
-                >
-                  Export: {user.permissions.canExportData ? "ON" : "OFF"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {isKpmgAdmin && (
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
-              >
-                <PlusCircle size={16} weight="bold" />
-                <span>Add Product</span>
-              </button>
-            )}
-
-            <div className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-4 py-2 text-right">
-              <p className="font-mono text-xs font-semibold text-[#00338D]">
-                {visibleProducts.length} Entitled Platform{visibleProducts.length !== 1 ? "s" : ""}
-              </p>
-              <p className="text-[11px] text-[#4B5563]">
-                {isKpmgAdmin ? "Full KPMG Admin Scope" : "Role-Scoped Access"}
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* View Switcher Tabs: Catalog, Live Audit, Dashboards, Client Governance */}
-        <div className="mt-8 flex items-center justify-between border-b border-[#D8DFE9] pb-4">
+        <div className="flex items-center justify-between border-b border-[#D8DFE9] pb-4">
           <div
             role="tablist"
             aria-label="Workflows Hub views"
@@ -437,7 +321,7 @@ export default function WorkflowsPage() {
               role="tab"
               aria-selected={effectiveActiveTab === "catalog"}
               onClick={() => setActiveTab("catalog")}
-              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
                 effectiveActiveTab === "catalog"
                   ? "bg-[#00338D] text-white shadow-xs"
                   : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
@@ -453,7 +337,7 @@ export default function WorkflowsPage() {
                 role="tab"
                 aria-selected={effectiveActiveTab === "audit"}
                 onClick={() => setActiveTab("audit")}
-                className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
+                className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
                   effectiveActiveTab === "audit"
                     ? "bg-[#00338D] text-white shadow-xs"
                     : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
@@ -475,7 +359,7 @@ export default function WorkflowsPage() {
               role="tab"
               aria-selected={effectiveActiveTab === "dashboards"}
               onClick={() => setActiveTab("dashboards")}
-              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
                 effectiveActiveTab === "dashboards"
                   ? "bg-[#00338D] text-white shadow-xs"
                   : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
@@ -505,7 +389,7 @@ export default function WorkflowsPage() {
                 role="tab"
                 aria-selected={effectiveActiveTab === "governance"}
                 onClick={() => setActiveTab("governance")}
-                className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
+                className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
                   effectiveActiveTab === "governance"
                     ? "bg-[#00338D] text-white shadow-xs"
                     : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
@@ -520,7 +404,21 @@ export default function WorkflowsPage() {
 
         {/* Tab 1: Solution Catalog View */}
         {effectiveActiveTab === "catalog" && (
-          <div className="mt-6 grid grid-cols-1 gap-6">
+          <div className="mt-6 space-y-5">
+            {isKpmgAdmin && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-xs font-medium text-[#526075]">
+                  {visibleProducts.length} connected platform
+                  {visibleProducts.length !== 1 ? "s" : ""}
+                </p>
+                <InteractiveHoverButton
+                  text="Add Product"
+                  onClick={() => setIsAddModalOpen(true)}
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-6">
             {visibleProducts.length === 0 ? (
               <div className="rounded-sm border border-[#D8DFE9] bg-white px-6 py-16 text-center shadow-sm">
                 <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-sm bg-[#F4F6FA] text-[#4B5563]">
@@ -752,6 +650,7 @@ export default function WorkflowsPage() {
                 </div>
               ))
             )}
+            </div>
           </div>
         )}
 
