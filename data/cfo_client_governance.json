@@ -1,5 +1,53 @@
 {
-  "companies": [],
-  "entitlements": [],
-  "personas": []
+  "companies": [
+    {
+      "id": "cmp_3dbae4d64eef",
+      "name": "ABC Ltd",
+      "code": "ABC-LTD",
+      "contactEmail": "admin@abcl.com",
+      "status": "active",
+      "notes": "test1",
+      "createdAt": "2026-11-18T05:09:40.392Z",
+      "updatedAt": "2026-11-18T05:09:40.392Z"
+    },
+    {
+      "id": "cmp_5cddd97be7cc",
+      "name": "Apex Global",
+      "code": "APEX-GLOBAL",
+      "contactEmail": "team@apexglobal.com",
+      "status": "active",
+      "notes": "test2",
+      "createdAt": "2026-11-18T05:52:31.604Z",
+      "updatedAt": "2026-11-18T05:52:31.604Z"
+    }
+  ],
+  "entitlements": [
+    {
+      "companyId": "cmp_3dbae4d64eef",
+      "productId": "invoice-processing-p2p",
+      "enabled": true,
+      "grantedAt": "2026-11-18T05:21:08.754Z",
+      "grantedBy": "KPMG Lead"
+    }
+  ],
+  "personas": [
+    {
+      "id": "prs_e08d7724958f",
+      "companyId": "cmp_3dbae4d64eef",
+      "name": "abcl_cfo",
+      "roleTitle": "CFO",
+      "email": "abcl.cfo@abcl.com",
+      "passcode": "ABCL@123",
+      "productAccessMode": "all",
+      "allowedProductIds": [],
+      "permissions": {
+        "canLaunchProducts": true,
+        "canViewAudit": false,
+        "canManageDashboards": false,
+        "canExportData": true
+      },
+      "createdAt": "2026-11-18T05:17:44.928Z",
+      "updatedAt": "2026-11-18T05:17:44.928Z"
+    }
+  ]
 }

@@ -34,4 +34,7 @@ __pycache__/
 *.pyc
 *.db
 *.sqlite*
+data/.session_secret
+data/*.bak
+data/*.lock
 

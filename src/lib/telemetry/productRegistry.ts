@@ -1,21 +1,15 @@
-import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import {
+  mutateJsonFile,
+  readJsonStrict,
+  resolveDataDir,
+} from "@/lib/storage/jsonFileStore";
 import { RegisteredProduct } from "./types";
 
-function getDataDir(): string {
-  if (process.env.CFO_DATA_DIR) {
-    return process.env.CFO_DATA_DIR;
-  }
-  const parentData = path.join(process.cwd(), "..", "data");
-  if (fs.existsSync(parentData) && fs.existsSync(path.join(parentData, "cfo_products_registry.json"))) {
-    return parentData;
-  }
-  return path.join(process.cwd(), "data");
+function getRegistryFile(): string {
+  return path.join(resolveDataDir(), "cfo_products_registry.json");
 }
-
-const DATA_DIR = getDataDir();
-const REGISTRY_FILE = path.join(DATA_DIR, "cfo_products_registry.json");
 
 // ONLY actual, physically existing products are seeded here.
 // No simulations, no mock products, no placeholder platforms.
@@ -30,7 +24,8 @@ const SEED_PRODUCTS: RegisteredProduct[] = [
     launchUrl: "http://localhost:5173",
     portFrontend: 5173,
     portBackend: 8000,
-    apiKey: "kpmg_sec_prod_invoice_p2p_live",
+    apiKey:
+      process.env.INVOICE_P2P_API_KEY || "kpmg_sec_prod_invoice_p2p_live",
     status: "active",
     tags: [
       "Vite :5173",
@@ -50,36 +45,81 @@ const SEED_PRODUCTS: RegisteredProduct[] = [
   },
 ];
 
-function ensureDirectoryExists(): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+const VALID_PILLARS = new Set<RegisteredProduct["pillar"]>([
+  "TRANSFORMATION_AI",
+  "TREASURY",
+  "CLOSE_REPORT",
+  "EPM",
+]);
+
+function validateProductsArray(raw: unknown): RegisteredProduct[] {
+  if (!Array.isArray(raw)) {
+    throw new Error("Product registry file is corrupted.");
   }
+  return raw.length > 0 ? (raw as RegisteredProduct[]) : [...SEED_PRODUCTS];
+}
+
+export function isSafeLaunchUrl(urlStr: string): boolean {
+  if (typeof urlStr !== "string") return false;
+  const trimmed = urlStr.trim();
+  if (!trimmed || trimmed.length > 1000) return false;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.username || parsed.password) return false;
+    if (parsed.protocol === "https:") return true;
+    if (
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
+    ) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+export function sanitizePort(val: unknown): number | undefined {
+  if (val === undefined || val === null || val === "") return undefined;
+  const num = typeof val === "number" ? val : Number(val);
+  if (!Number.isInteger(num) || num < 1 || num > 65535) {
+    throw new Error("Port numbers must be integers between 1 and 65535.");
+  }
+  return num;
 }
 
 export function getAllProducts(): RegisteredProduct[] {
-  try {
-    ensureDirectoryExists();
-    if (!fs.existsSync(REGISTRY_FILE)) {
-      fs.writeFileSync(REGISTRY_FILE, JSON.stringify(SEED_PRODUCTS, null, 2), "utf8");
-      return SEED_PRODUCTS;
-    }
-    const data = fs.readFileSync(REGISTRY_FILE, "utf8");
-    const parsed = JSON.parse(data) as RegisteredProduct[];
-    return parsed.length > 0 ? parsed : SEED_PRODUCTS;
-  } catch (err) {
-    console.error("[Product Registry] Error reading registry file:", err);
-    return SEED_PRODUCTS;
-  }
+  return readJsonStrict(
+    getRegistryFile(),
+    () => [...SEED_PRODUCTS],
+    validateProductsArray
+  );
+}
+
+export function getPublicProducts(): Omit<RegisteredProduct, "apiKey">[] {
+  return getAllProducts().map((p) => {
+    const { apiKey: _stripped, ...rest } = p;
+    void _stripped;
+    return rest;
+  });
 }
 
 export function getProductById(id: string): RegisteredProduct | undefined {
-  const products = getAllProducts();
-  return products.find((p) => p.id === id);
+  return getAllProducts().find((p) => p.id === id);
 }
 
 export function getProductByApiKey(apiKey: string): RegisteredProduct | undefined {
+  if (typeof apiKey !== "string" || !apiKey.trim()) return undefined;
+  const candidateHash = crypto.createHash("sha256").update(apiKey.trim()).digest();
   const products = getAllProducts();
-  return products.find((p) => p.apiKey === apiKey);
+  for (const p of products) {
+    if (!p.apiKey) continue;
+    const storedHash = crypto.createHash("sha256").update(p.apiKey).digest();
+    if (crypto.timingSafeEqual(candidateHash, storedHash)) {
+      return p;
+    }
+  }
+  return undefined;
 }
 
 export interface RegisterProductInput {
@@ -97,43 +137,100 @@ export interface RegisterProductInput {
 }
 
 export function registerProduct(input: RegisterProductInput): RegisteredProduct {
-  ensureDirectoryExists();
-  const products = getAllProducts();
-  
-  const slug = input.slug
-    ? input.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-")
-    : input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-
-  const existing = products.find((p) => p.id === slug);
-  if (existing) {
-    throw new Error(`A product with the identifier '${slug}' is already registered.`);
+  const cleanName = typeof input.name === "string" ? input.name.trim().slice(0, 120) : "";
+  if (!cleanName) {
+    throw new Error("Product name is required.");
+  }
+  const cleanDesc =
+    typeof input.description === "string" ? input.description.trim().slice(0, 1000) : "";
+  if (!cleanDesc) {
+    throw new Error("Product description is required.");
+  }
+  if (!VALID_PILLARS.has(input.pillar)) {
+    throw new Error(
+      "Pillar must be one of TRANSFORMATION_AI, TREASURY, CLOSE_REPORT, or EPM."
+    );
+  }
+  const cleanUrl = typeof input.launchUrl === "string" ? input.launchUrl.trim() : "";
+  if (!isSafeLaunchUrl(cleanUrl)) {
+    throw new Error(
+      "launchUrl must be a valid https:// URL (or http://localhost for local platforms)."
+    );
   }
 
-  const randomSecret = crypto.randomBytes(16).toString("hex");
-  const apiKey = `kpmg_sec_prod_${slug}_${randomSecret}`;
+  const portFrontend = sanitizePort(input.portFrontend);
+  const portBackend = sanitizePort(input.portBackend);
 
-  const newProduct: RegisteredProduct = {
-    id: slug,
-    name: input.name,
-    shortName: input.shortName || input.name.split(" ")[0],
-    description: input.description,
-    pillar: input.pillar,
-    launchUrl: input.launchUrl,
-    portFrontend: input.portFrontend,
-    portBackend: input.portBackend,
-    apiKey,
-    status: "active",
-    tags: input.tags && input.tags.length > 0 ? input.tags : ["Autonomous AI", "Connected Platform"],
-    features: input.features && input.features.length > 0 ? input.features : [
-      "Autonomous multi-stage execution with enterprise governance",
-      "Real-time distributed telemetry streaming to CFO Advisory Hub",
-      "Integrated audit logging and compliance verification",
-    ],
-    systemIntegration: input.systemIntegration || "Enterprise ERP Gateway",
-    createdAt: new Date().toISOString(),
-  };
+  const rawSlug =
+    typeof input.slug === "string" && input.slug.trim()
+      ? input.slug.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-")
+      : cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const slug = rawSlug.replace(/^-+|-+$/g, "").slice(0, 64);
+  if (!slug) {
+    throw new Error("A valid alphanumeric product slug is required.");
+  }
 
-  const updated = [newProduct, ...products];
-  fs.writeFileSync(REGISTRY_FILE, JSON.stringify(updated, null, 2), "utf8");
-  return newProduct;
+  return mutateJsonFile(
+    getRegistryFile(),
+    () => [...SEED_PRODUCTS],
+    validateProductsArray,
+    (products) => {
+      if (products.some((p) => p.id === slug)) {
+        throw new Error(
+          `A product with the identifier '${slug}' is already registered.`
+        );
+      }
+
+      const randomSecret = crypto.randomBytes(20).toString("hex");
+      const apiKey = `kpmg_sec_prod_${slug}_${randomSecret}`;
+
+      const cleanTags = Array.isArray(input.tags)
+        ? input.tags
+            .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
+            .map((t) => t.trim().slice(0, 48))
+            .slice(0, 12)
+        : [];
+      const cleanFeatures = Array.isArray(input.features)
+        ? input.features
+            .filter((f): f is string => typeof f === "string" && f.trim().length > 0)
+            .map((f) => f.trim().slice(0, 200))
+            .slice(0, 12)
+        : [];
+
+      const newProduct: RegisteredProduct = {
+        id: slug,
+        name: cleanName,
+        shortName:
+          typeof input.shortName === "string" && input.shortName.trim()
+            ? input.shortName.trim().slice(0, 40)
+            : cleanName.split(" ")[0].slice(0, 40),
+        description: cleanDesc,
+        pillar: input.pillar,
+        launchUrl: cleanUrl,
+        portFrontend,
+        portBackend,
+        apiKey,
+        status: "active",
+        tags: cleanTags.length > 0 ? cleanTags : ["Autonomous AI", "Connected Platform"],
+        features:
+          cleanFeatures.length > 0
+            ? cleanFeatures
+            : [
+                "Autonomous multi-stage execution with enterprise governance",
+                "Real-time distributed telemetry streaming to CFO Advisory Hub",
+                "Integrated audit logging and compliance verification",
+              ],
+        systemIntegration:
+          typeof input.systemIntegration === "string" && input.systemIntegration.trim()
+            ? input.systemIntegration.trim().slice(0, 180)
+            : "Enterprise ERP Gateway",
+        createdAt: new Date().toISOString(),
+      };
+
+      return {
+        next: [newProduct, ...products],
+        result: newProduct,
+      };
+    }
+  );
 }

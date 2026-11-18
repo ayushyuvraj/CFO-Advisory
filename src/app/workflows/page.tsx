@@ -15,6 +15,7 @@ import {
   PlusCircle,
   ChartLineUp,
   SquaresFour,
+  PresentationChart,
   Prohibit,
   WarningCircle,
 } from "@phosphor-icons/react";
@@ -25,7 +26,28 @@ import { AddProductModal } from "@/components/workflows/AddProductModal";
 import { AuditConsole } from "@/components/workflows/AuditConsole";
 import { ClientAccessConsole } from "@/components/governance/ClientAccessConsole";
 import { PreviewBanner } from "@/components/governance/PreviewBanner";
+import { DashboardsConsole } from "@/components/dashboards/DashboardsConsole";
 import { RegisteredProduct, TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
+
+function isSafeClientLaunchUrl(rawUrl: string): boolean {
+  try {
+    const parsed = new URL(rawUrl);
+    if (parsed.protocol === "https:") return true;
+    if (
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
+    ) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function isValidPort(port: unknown): port is number {
+  return typeof port === "number" && Number.isInteger(port) && port >= 1 && port <= 65535;
+}
 
 function WorkflowsSkeleton() {
   return (
@@ -47,7 +69,10 @@ export default function WorkflowsPage() {
     clearSessionNotice,
     openLogin,
   } = useAuth();
-  const [activeTab, setActiveTab] = useState<"catalog" | "audit" | "governance">("catalog");
+  const [activeTab, setActiveTab] = useState<
+    "catalog" | "audit" | "dashboards" | "governance"
+  >("catalog");
+  const [dashboardCount, setDashboardCount] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [products, setProducts] = useState<ConnectedPlatform[]>(CONNECTED_PLATFORMS);
   const [telemetrySummary, setTelemetrySummary] = useState<{
@@ -62,7 +87,7 @@ export default function WorkflowsPage() {
   const canLaunchProducts = isKpmgAdmin || Boolean(user?.permissions?.canLaunchProducts);
 
   // Derive effective tab cleanly based on current role permissions
-  const effectiveActiveTab: "catalog" | "audit" | "governance" =
+  const effectiveActiveTab: "catalog" | "audit" | "dashboards" | "governance" =
     (isClientUser && activeTab === "governance") ||
     (isClientUser && !canViewAudit && activeTab === "audit")
       ? "catalog"
@@ -70,7 +95,10 @@ export default function WorkflowsPage() {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch("/api/products", { cache: "no-store" });
+      const res = await fetch("/api/products", {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.products && data.products.length > 0) {
@@ -101,6 +129,7 @@ export default function WorkflowsPage() {
     try {
       const res = await fetch("/api/telemetry?limit=1", {
         cache: "no-store",
+        credentials: "same-origin",
         headers: { Pragma: "no-cache" },
       });
       if (res.ok) {
@@ -130,13 +159,16 @@ export default function WorkflowsPage() {
     }
   }, []);
 
-  // Load products once signed in
+  // Load products once signed in or when perspective changes
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     async function loadProductsOnce() {
       try {
-        const res = await fetch("/api/products", { cache: "no-store" });
+        const res = await fetch("/api/products", {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
         if (!cancelled && res.ok) {
           const data = await res.json();
           if (data.products && data.products.length > 0) {
@@ -167,12 +199,54 @@ export default function WorkflowsPage() {
     };
   }, [user]);
 
-  // Poll telemetry summary ONLY when signed in, allowed to view audit, and NOT already on the Audit tab
+  // Hydrate dashboard count whenever active actor or Preview Mode changes
+  useEffect(() => {
+    let cancelled = false;
+    const resetTimer = setTimeout(() => {
+      if (!cancelled) setDashboardCount(null);
+    }, 0);
+
+    if (!user) {
+      return () => {
+        cancelled = true;
+        clearTimeout(resetTimer);
+      };
+    }
+
+    async function loadDashboardCount() {
+      try {
+        const res = await fetch("/api/dashboards", {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
+        if (!cancelled && res.ok) {
+          const data = (await res.json()) as { dashboards?: unknown[] };
+          if (Array.isArray(data.dashboards)) {
+            setDashboardCount(data.dashboards.length);
+          }
+        }
+      } catch {
+        // Non-fatal badge hydration failure
+      }
+    }
+
+    void loadDashboardCount();
+    return () => {
+      cancelled = true;
+      clearTimeout(resetTimer);
+    };
+  }, [user, user?.id, user?.companyId, user?.personaId, isPreviewMode]);
+
+  // Poll telemetry summary ONLY when signed in, allowed to view audit, and on the Catalog tab
   const shouldPollSummary = Boolean(
-    user && canViewAudit && effectiveActiveTab !== "audit"
+    user && canViewAudit && effectiveActiveTab === "catalog"
   );
 
   useEffect(() => {
+    if (!user || !canViewAudit) {
+      const clearTimer = setTimeout(() => setTelemetrySummary(null), 0);
+      return () => clearTimeout(clearTimer);
+    }
     if (!shouldPollSummary) return;
     const initialTimer = setTimeout(() => {
       void fetchTelemetrySummary();
@@ -184,7 +258,7 @@ export default function WorkflowsPage() {
       clearTimeout(initialTimer);
       clearInterval(interval);
     };
-  }, [shouldPollSummary, fetchTelemetrySummary]);
+  }, [user, canViewAudit, shouldPollSummary, fetchTelemetrySummary]);
 
   const handleCloseAddModal = useCallback(() => {
     setIsAddModalOpen(false);
@@ -313,7 +387,7 @@ export default function WorkflowsPage() {
                       : "bg-gray-100 text-[#6B7280]"
                   }`}
                 >
-                  Dashboards: {user.permissions.canManageDashboards ? "ON" : "OFF"}
+                  Dashboards: {user.permissions.canManageDashboards ? "Author" : "View Only"}
                 </span>
                 <span
                   className={`rounded-xs px-2 py-0.5 ${
@@ -351,11 +425,17 @@ export default function WorkflowsPage() {
           </div>
         </div>
 
-        {/* View Switcher Tabs: Catalog vs Audit vs Client Governance */}
+        {/* View Switcher Tabs: Catalog, Live Audit, Dashboards, Client Governance */}
         <div className="mt-8 flex items-center justify-between border-b border-[#D8DFE9] pb-4">
-          <div className="flex flex-wrap items-center gap-2">
+          <div
+            role="tablist"
+            aria-label="Workflows Hub views"
+            className="flex flex-wrap items-center gap-2"
+          >
             <button
               type="button"
+              role="tab"
+              aria-selected={effectiveActiveTab === "catalog"}
               onClick={() => setActiveTab("catalog")}
               className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
                 effectiveActiveTab === "catalog"
@@ -370,6 +450,8 @@ export default function WorkflowsPage() {
             {canViewAudit && (
               <button
                 type="button"
+                role="tab"
+                aria-selected={effectiveActiveTab === "audit"}
                 onClick={() => setActiveTab("audit")}
                 className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
                   effectiveActiveTab === "audit"
@@ -388,9 +470,40 @@ export default function WorkflowsPage() {
               </button>
             )}
 
+            <button
+              type="button"
+              role="tab"
+              aria-selected={effectiveActiveTab === "dashboards"}
+              onClick={() => setActiveTab("dashboards")}
+              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
+                effectiveActiveTab === "dashboards"
+                  ? "bg-[#00338D] text-white shadow-xs"
+                  : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
+              }`}
+            >
+              <PresentationChart
+                size={16}
+                weight={effectiveActiveTab === "dashboards" ? "bold" : "regular"}
+              />
+              <span>Dashboards</span>
+              {dashboardCount !== null && dashboardCount > 0 && (
+                <span
+                  className={`rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none ${
+                    effectiveActiveTab === "dashboards"
+                      ? "bg-white/20 text-white"
+                      : "bg-[#00338D]/10 text-[#00338D]"
+                  }`}
+                >
+                  {dashboardCount}
+                </span>
+              )}
+            </button>
+
             {isKpmgAdmin && (
               <button
                 type="button"
+                role="tab"
+                aria-selected={effectiveActiveTab === "governance"}
                 onClick={() => setActiveTab("governance")}
                 className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-all ${
                   effectiveActiveTab === "governance"
@@ -591,7 +704,7 @@ export default function WorkflowsPage() {
                                 : "Launch Disabled by Role"}
                             </span>
                           </button>
-                        ) : canLaunchProducts ? (
+                        ) : canLaunchProducts && isSafeClientLaunchUrl(platform.launchUrl) ? (
                           <a
                             href={platform.launchUrl}
                             target="_blank"
@@ -608,11 +721,15 @@ export default function WorkflowsPage() {
                             className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#D8DFE9] bg-gray-100 px-4 py-3 text-xs font-semibold text-[#6B7280] cursor-not-allowed"
                           >
                             <Prohibit size={16} weight="bold" />
-                            <span>Launch Disabled by Role</span>
+                            <span>
+                              {canLaunchProducts
+                                ? "Invalid Launch URL"
+                                : "Launch Disabled by Role"}
+                            </span>
                           </button>
                         )}
 
-                        {platform.portBackend && canLaunchProducts && !isPreviewMode && (
+                        {isValidPort(platform.portBackend) && canLaunchProducts && !isPreviewMode && (
                           <a
                             href={`http://localhost:${platform.portBackend}/docs`}
                             target="_blank"
@@ -641,11 +758,16 @@ export default function WorkflowsPage() {
         {/* Tab 2: Live Audit & Observability Console View */}
         {effectiveActiveTab === "audit" && canViewAudit && (
           <div className="mt-6">
-            <AuditConsole />
+            <AuditConsole availableProducts={visibleProducts} />
           </div>
         )}
 
-        {/* Tab 3: Client & Access Governance (KPMG Lead Exclusive) */}
+        {/* Tab 3: Drag-and-Drop Executive Dashboards Studio & Viewer */}
+        {effectiveActiveTab === "dashboards" && (
+          <DashboardsConsole onDashboardCountChange={setDashboardCount} />
+        )}
+
+        {/* Tab 4: Client & Access Governance (KPMG Lead Exclusive) */}
         {effectiveActiveTab === "governance" && isKpmgAdmin && (
           <ClientAccessConsole availableProducts={products} />
         )}

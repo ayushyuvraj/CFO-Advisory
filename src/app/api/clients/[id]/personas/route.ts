@@ -1,18 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   createPersona,
   getCompanyById,
   getCompanyPersonas,
   isValidEmail,
 } from "@/lib/governance/store";
+import { requireKpmgAdmin, SessionAuthError } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    requireKpmgAdmin(request);
     const { id: companyId } = await context.params;
     const company = getCompanyById(companyId);
     if (!company) {
@@ -25,6 +27,9 @@ export async function GET(
     const personas = getCompanyPersonas(companyId);
     return NextResponse.json({ personas }, { status: 200 });
   } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error("[API /api/clients/[id]/personas GET] Error:", err);
     return NextResponse.json(
       { error: "Failed to fetch company personas." },
@@ -34,12 +39,28 @@ export async function GET(
 }
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  try {
+    requireKpmgAdmin(request);
+  } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   let body: Record<string, unknown>;
   try {
-    body = await request.json();
+    const parsed = await request.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return NextResponse.json(
+        { error: "Invalid JSON request body." },
+        { status: 400 }
+      );
+    }
+    body = parsed as Record<string, unknown>;
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON request body." },
@@ -65,7 +86,7 @@ export async function POST(
       productAccessMode,
       allowedProductIds,
       permissions,
-    } = body || {};
+    } = body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(

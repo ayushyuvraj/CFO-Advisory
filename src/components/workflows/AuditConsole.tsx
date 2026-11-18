@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
-  ShieldCheck,
   Cpu,
   Clock,
   CurrencyDollar,
@@ -18,59 +17,129 @@ import {
 import { TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
 import { AuditInspectorDrawer } from "./AuditInspectorDrawer";
 
-export function AuditConsole() {
+interface AuditConsoleProps {
+  availableProducts?: Array<{ id: string; title: string }>;
+}
+
+export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
   const [events, setEvents] = useState<TelemetryEvent[]>([]);
   const [metrics, setMetrics] = useState<TelemetryMetrics | null>(null);
   const [selectedProduct, setSelectedProduct] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeEvent, setActiveEvent] = useState<TelemetryEvent | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const lastFingerprintRef = useRef<string>("");
 
-  const fetchTelemetry = useCallback(async () => {
+  const buildQueryString = useCallback(() => {
+    const params = new URLSearchParams();
+    if (selectedProduct !== "ALL") params.set("productId", selectedProduct);
+    if (selectedStatus !== "ALL") params.set("status", selectedStatus);
+    if (searchQuery.trim()) params.set("search", searchQuery.trim());
+    return params.toString();
+  }, [selectedProduct, selectedStatus, searchQuery]);
+
+  const applyTelemetryPayload = useCallback(
+    (nextEvents: TelemetryEvent[], nextMetrics: TelemetryMetrics | null) => {
+      const fp = `${nextEvents.length}:${nextEvents[0]?.id ?? ""}:${
+        nextMetrics?.totalEventsCount ?? 0
+      }:${nextMetrics?.totalTokens ?? 0}:${nextMetrics?.totalCostUsd ?? 0}`;
+      if (fp === lastFingerprintRef.current) return;
+      lastFingerprintRef.current = fp;
+      setEvents(nextEvents);
+      setMetrics(nextMetrics);
+    },
+    []
+  );
+
+  const handleManualRefresh = useCallback(async () => {
     try {
       setIsRefreshing(true);
-      const params = new URLSearchParams();
-      if (selectedProduct !== "ALL") params.set("productId", selectedProduct);
-      if (selectedStatus !== "ALL") params.set("status", selectedStatus);
-      if (searchQuery.trim()) params.set("search", searchQuery.trim());
-
-      const res = await fetch(`/api/telemetry?${params.toString()}`, {
+      const res = await fetch(`/api/telemetry?${buildQueryString()}`, {
         cache: "no-store",
-        headers: { "Pragma": "no-cache" }
+        credentials: "same-origin",
+        headers: { Pragma: "no-cache" },
       });
       if (res.ok) {
-        const data = await res.json();
-        setEvents(data.events || []);
-        setMetrics(data.metrics || null);
+        const data = (await res.json()) as {
+          events?: TelemetryEvent[];
+          metrics?: TelemetryMetrics | null;
+        };
+        lastFingerprintRef.current = "";
+        applyTelemetryPayload(data.events || [], data.metrics || null);
       }
     } catch (err) {
       console.error("[Audit Console] Fetch error:", err);
     } finally {
-      setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedProduct, selectedStatus, searchQuery]);
+  }, [buildQueryString, applyTelemetryPayload]);
 
-  // Initial load
+  // Initial load + 3s smart polling (skips hidden tabs and unchanged payloads)
   useEffect(() => {
-    fetchTelemetry();
-  }, [fetchTelemetry]);
+    let cancelled = false;
+    lastFingerprintRef.current = "";
 
-  // SWR Smart Auto-Polling every 3 seconds
-  useEffect(() => {
+    const loadTelemetry = async (isPoll: boolean) => {
+      if (isPoll && typeof document !== "undefined" && document.hidden) return;
+      try {
+        const res = await fetch(`/api/telemetry?${buildQueryString()}`, {
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { Pragma: "no-cache" },
+        });
+        if (!cancelled && res.ok) {
+          const data = (await res.json()) as {
+            events?: TelemetryEvent[];
+            metrics?: TelemetryMetrics | null;
+          };
+          applyTelemetryPayload(data.events || [], data.metrics || null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("[Audit Console] Fetch error:", err);
+        }
+      }
+    };
+
+    const initialTimer = setTimeout(() => {
+      void loadTelemetry(false);
+    }, 0);
     const interval = setInterval(() => {
-      fetchTelemetry();
+      void loadTelemetry(true);
     }, 3000);
-    return () => clearInterval(interval);
-  }, [fetchTelemetry]);
 
-  const handleInspect = (event: TelemetryEvent) => {
+    return () => {
+      cancelled = true;
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [buildQueryString, applyTelemetryPayload]);
+
+  const productFilterOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    if (availableProducts) {
+      for (const p of availableProducts) {
+        map.set(p.id, p.title);
+      }
+    }
+    for (const evt of events) {
+      if (evt.product_id && !map.has(evt.product_id)) {
+        map.set(evt.product_id, evt.product_name || evt.product_id);
+      }
+    }
+    return Array.from(map.entries()).map(([id, title]) => ({ id, title }));
+  }, [availableProducts, events]);
+
+  const handleInspect = useCallback((event: TelemetryEvent) => {
     setActiveEvent(event);
     setDrawerOpen(true);
-  };
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerOpen(false);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -97,7 +166,7 @@ export function AuditConsole() {
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             type="button"
-            onClick={fetchTelemetry}
+            onClick={() => void handleManualRefresh()}
             className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-3 py-2 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#E2E8F0]"
           >
             <ArrowsClockwise size={15} weight="bold" className={isRefreshing ? "animate-spin text-[#00338D]" : ""} />
@@ -193,16 +262,22 @@ export function AuditConsole() {
 
             {/* Product Filter */}
             <select
+              aria-label="Filter telemetry by product"
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
               className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
             >
               <option value="ALL">All Active Products</option>
-              <option value="invoice-processing-p2p">AI Invoice Processing & P2P Intelligence</option>
+              {productFilterOptions.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.title}
+                </option>
+              ))}
             </select>
 
             {/* Status Filter */}
             <select
+              aria-label="Filter telemetry by status"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
@@ -328,7 +403,7 @@ export function AuditConsole() {
       <AuditInspectorDrawer
         event={activeEvent}
         isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={handleCloseDrawer}
       />
     </div>
   );

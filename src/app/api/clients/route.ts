@@ -1,17 +1,22 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   createCompany,
   isValidEmail,
   readGovernanceData,
 } from "@/lib/governance/store";
+import { requireKpmgAdmin, SessionAuthError } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    requireKpmgAdmin(request);
     const data = readGovernanceData();
     return NextResponse.json(data, { status: 200 });
   } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error("[API /api/clients GET] Error:", err);
     return NextResponse.json(
       { error: "Failed to load client governance records." },
@@ -20,10 +25,26 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  try {
+    requireKpmgAdmin(request);
+  } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   let body: Record<string, unknown>;
   try {
-    body = await request.json();
+    const parsed = await request.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return NextResponse.json(
+        { error: "Invalid JSON request body." },
+        { status: 400 }
+      );
+    }
+    body = parsed as Record<string, unknown>;
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON request body." },
@@ -32,7 +53,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { name, code, contactEmail, status, notes } = body || {};
+    const { name, code, contactEmail, status, notes } = body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
@@ -41,7 +62,11 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!contactEmail || typeof contactEmail !== "string" || !isValidEmail(contactEmail)) {
+    if (
+      !contactEmail ||
+      typeof contactEmail !== "string" ||
+      !isValidEmail(contactEmail)
+    ) {
       return NextResponse.json(
         { error: "A valid primary contact email is required." },
         { status: 400 }
@@ -63,7 +88,7 @@ export async function POST(request: Request) {
     const isClientError =
       message.includes("required") || message.includes("already assigned");
     return NextResponse.json(
-      { error: message },
+      { error: isClientError ? message : "Failed to create company." },
       { status: isClientError ? 400 : 500 }
     );
   }
