@@ -198,7 +198,8 @@ function DrawerInner({
     .filter((e) => e.enabled && registeredIds.has(e.productId))
     .map((e) => e.productId);
 
-  const handlePreviewAsPersona = (persona: CompanyPersona) => {
+  const handlePreviewAsPersona = async (persona: CompanyPersona) => {
+    setActionError(null);
     const allowed =
       company.status !== "active"
         ? []
@@ -208,8 +209,14 @@ function DrawerInner({
             persona.allowedProductIds.includes(pid)
           );
 
-    startPreviewAs(company, persona, allowed);
-    onClose();
+    try {
+      await startPreviewAs(company, persona, allowed);
+      onClose();
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : "Failed to start live preview."
+      );
+    }
   };
 
   return (

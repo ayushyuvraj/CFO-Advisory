@@ -1,19 +1,38 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   getCompanyById,
   toggleProductEntitlement,
 } from "@/lib/governance/store";
 import { getProductById } from "@/lib/telemetry/productRegistry";
+import { requireKpmgAdmin, SessionAuthError } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  let adminName = "KPMG Lead";
+  try {
+    const { actor } = requireKpmgAdmin(request);
+    adminName = actor.userName || "KPMG Lead";
+  } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   let body: Record<string, unknown>;
   try {
-    body = await request.json();
+    const parsed = await request.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return NextResponse.json(
+        { error: "Invalid JSON request body." },
+        { status: 400 }
+      );
+    }
+    body = parsed as Record<string, unknown>;
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON request body." },
@@ -31,7 +50,7 @@ export async function POST(
       );
     }
 
-    const { productId, enabled, grantedBy } = body || {};
+    const { productId, enabled } = body;
 
     if (!productId || typeof productId !== "string" || !productId.trim()) {
       return NextResponse.json(
@@ -55,11 +74,12 @@ export async function POST(
       );
     }
 
+    // Derive grantedBy strictly from the verified KPMG admin session
     const entitlement = toggleProductEntitlement(
       companyId,
       productId.trim(),
       enabled,
-      typeof grantedBy === "string" && grantedBy.trim() ? grantedBy.trim() : "KPMG Lead"
+      adminName
     );
 
     return NextResponse.json({ entitlement }, { status: 200 });

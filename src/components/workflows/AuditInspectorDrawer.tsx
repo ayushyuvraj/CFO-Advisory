@@ -28,26 +28,48 @@ interface AuditInspectorDrawerProps {
 }
 
 export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorDrawerProps) {
+  if (!isOpen || !event || typeof document === "undefined") return null;
+
+  return (
+    <AuditInspectorDrawerInner
+      key={event.id}
+      event={event}
+      onClose={onClose}
+    />
+  );
+}
+
+function AuditInspectorDrawerInner({
+  event,
+  onClose,
+}: {
+  event: TelemetryEvent;
+  onClose: () => void;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<"structured" | "raw">("structured");
   const [copied, setCopied] = useState(false);
 
-  useDialogFocusTrap(isOpen && Boolean(event), drawerRef, onClose);
-
-  if (!isOpen || !event || typeof document === "undefined") return null;
+  useDialogFocusTrap(true, drawerRef, onClose);
 
   const isSuccess = event.action_status === "SUCCESS";
+  const httpStatus = event.http_status_code;
+  const isHttpOk = typeof httpStatus === "number" && httpStatus >= 200 && httpStatus < 300;
 
-  const handleCopyJson = () => {
-    navigator.clipboard.writeText(JSON.stringify(event, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyJson = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(event, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API may be unavailable in non-HTTPS or restricted contexts
+    }
   };
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[95] flex justify-end"
+      className="fixed inset-0 z-[105] flex justify-end"
       role="dialog"
       aria-modal="true"
       aria-label="Live Audit Telemetry Inspector"
@@ -100,6 +122,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
 
             <button
               type="button"
+              data-dialog-close="true"
               onClick={onClose}
               className="rounded-sm p-1.5 text-[#4B5563] transition-colors hover:bg-[#E2E8F0] hover:text-[#0C233C]"
               aria-label="Close Inspector"
@@ -113,6 +136,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
             <div className="flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white p-1">
               <button
                 type="button"
+                data-autofocus="true"
                 onClick={() => setViewMode("structured")}
                 className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1 font-mono text-xs font-semibold transition-all ${
                   viewMode === "structured"
@@ -139,7 +163,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
 
             <button
               type="button"
-              onClick={handleCopyJson}
+              onClick={() => void handleCopyJson()}
               className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-3 py-1.5 font-mono text-xs font-semibold text-[#00338D] transition-colors hover:bg-[#F4F6FA]"
             >
               {copied ? <Check size={14} weight="bold" className="text-[#009A44]" /> : <Copy size={14} weight="bold" />}
@@ -212,7 +236,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                     Dimension 1: Identity, Tenancy & Governance
                   </h3>
                   <span className="font-mono text-[10px] font-semibold text-[#00338D]">
-                    Parameters #01 – #07
+                    Parameters #01 - #07
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 rounded-sm border border-[#D8DFE9] bg-white p-4 text-xs">
@@ -238,11 +262,11 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#06 client_ip</span>
-                    <p className="font-mono text-[#0C233C]">{event.client_ip || "127.0.0.1 (Loopback Gateway)"}</p>
+                    <p className="font-mono text-[#0C233C]">{event.client_ip || "Not recorded"}</p>
                   </div>
                   <div className="sm:col-span-2">
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#07 user_agent</span>
-                    <p className="font-mono text-[#4B5563] text-[11px] truncate">{event.user_agent || "KPMG CFO Advisory Client Agent"}</p>
+                    <p className="font-mono text-[#4B5563] text-[11px] truncate">{event.user_agent || "Not recorded"}</p>
                   </div>
                 </div>
               </div>
@@ -255,41 +279,41 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                     Dimension 2: Distributed Trace & Context Hierarchy
                   </h3>
                   <span className="font-mono text-[10px] font-semibold text-[#00338D]">
-                    Parameters #08 – #15
+                    Parameters #08 - #15
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 rounded-sm border border-[#D8DFE9] bg-white p-4 text-xs">
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#08 product_id</span>
-                    <p className="font-mono text-[#0C233C]">{event.product_id}</p>
+                    <p className="font-mono text-[#0C233C]">{event.product_id || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#09 product_name</span>
-                    <p className="font-mono text-[#0C233C] font-semibold">{event.product_name}</p>
+                    <p className="font-mono text-[#0C233C] font-semibold">{event.product_name || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#10 product_version</span>
-                    <p className="font-mono text-[#0C233C]">{event.product_version || "v1.4.2"}</p>
+                    <p className="font-mono text-[#0C233C]">{event.product_version || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#11 environment</span>
-                    <p className="font-mono text-emerald-700 font-semibold">{event.environment || "production"}</p>
+                    <p className="font-mono text-emerald-700 font-semibold">{event.environment || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#12 session_id</span>
-                    <p className="font-mono text-[#4B5563] text-[11px] truncate">{event.session_id}</p>
+                    <p className="font-mono text-[#4B5563] text-[11px] truncate">{event.session_id || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#13 trace_id (W3C standard)</span>
-                    <p className="font-mono text-[#1E49E2] text-[11px] truncate">{event.trace_id}</p>
+                    <p className="font-mono text-[#1E49E2] text-[11px] truncate">{event.trace_id || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#14 span_id</span>
-                    <p className="font-mono text-[#4B5563] text-[11px]">{event.span_id}</p>
+                    <p className="font-mono text-[#4B5563] text-[11px]">{event.span_id || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#15 parent_span_id</span>
-                    <p className="font-mono text-[#4B5563] text-[11px]">{event.parent_span_id || "Root Span (00000000)"}</p>
+                    <p className="font-mono text-[#4B5563] text-[11px]">{event.parent_span_id || "Root span (none)"}</p>
                   </div>
                 </div>
               </div>
@@ -302,45 +326,53 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                     Dimension 3: Business Intent & Workflow Orchestration
                   </h3>
                   <span className="font-mono text-[10px] font-semibold text-[#00338D]">
-                    Parameters #16 – #24
+                    Parameters #16 - #24
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 rounded-sm border border-[#D8DFE9] bg-white p-4 text-xs">
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#16 workflow_id</span>
-                    <p className="font-mono text-[#0C233C]">{event.workflow_id}</p>
+                    <p className="font-mono text-[#0C233C]">{event.workflow_id || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#17 workflow_name</span>
-                    <p className="font-mono text-[#0C233C] font-semibold">{event.workflow_name}</p>
+                    <p className="font-mono text-[#0C233C] font-semibold">{event.workflow_name || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#18 step_name</span>
-                    <p className="font-mono text-[#0C233C] font-semibold">{event.step_name}</p>
+                    <p className="font-mono text-[#0C233C] font-semibold">{event.step_name || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#19 step_sequence</span>
-                    <p className="font-mono text-[#00338D] font-bold">Step #{event.step_sequence}</p>
+                    <p className="font-mono text-[#00338D] font-bold">
+                      {typeof event.step_sequence === "number" ? `Step #${event.step_sequence}` : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#20 action_name</span>
-                    <p className="font-mono text-[#0C233C] font-bold">{event.action_name}</p>
+                    <p className="font-mono text-[#0C233C] font-bold">{event.action_name || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#21 action_status</span>
-                    <p className="font-mono text-emerald-700 font-bold">{event.action_status}</p>
+                    <p className={`font-mono font-bold ${isSuccess ? "text-emerald-700" : "text-rose-700"}`}>
+                      {event.action_status}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#22 target_entity_type</span>
-                    <p className="font-mono text-[#0C233C]">{event.target_entity_type}</p>
+                    <p className="font-mono text-[#0C233C]">{event.target_entity_type || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#23 target_entity_id</span>
-                    <p className="font-mono text-[#1E49E2] font-bold">{event.target_entity_id}</p>
+                    <p className="font-mono text-[#1E49E2] font-bold">{event.target_entity_id || "Not recorded"}</p>
                   </div>
                   <div className="sm:col-span-2">
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#24 document_pages</span>
-                    <p className="font-mono text-[#0C233C]">{event.document_pages ? `${event.document_pages} page(s)` : "1 page"}</p>
+                    <p className="font-mono text-[#0C233C]">
+                      {typeof event.document_pages === "number" && event.document_pages > 0
+                        ? `${event.document_pages} page(s)`
+                        : "Not recorded"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -353,45 +385,55 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                     Dimension 4: AI Model & Compute Telemetry
                   </h3>
                   <span className="font-mono text-[10px] font-semibold text-[#00338D]">
-                    Parameters #25 – #33
+                    Parameters #25 - #33
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 rounded-sm border border-[#D8DFE9] bg-white p-4 text-xs">
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#25 ai_provider</span>
-                    <p className="font-mono text-[#0C233C]">{event.ai_provider}</p>
+                    <p className="font-mono text-[#0C233C]">{event.ai_provider || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#26 model_name</span>
-                    <p className="font-mono text-[#1E49E2] font-bold">{event.model_name}</p>
+                    <p className="font-mono text-[#1E49E2] font-bold">{event.model_name || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#27 model_version</span>
-                    <p className="font-mono text-[#0C233C]">{event.model_version || "2.5-flash-preview-2026"}</p>
+                    <p className="font-mono text-[#0C233C]">{event.model_version || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#28 prompt_tokens</span>
-                    <p className="font-mono text-[#0C233C] font-semibold">{event.prompt_tokens?.toLocaleString()}</p>
+                    <p className="font-mono text-[#0C233C] font-semibold">
+                      {typeof event.prompt_tokens === "number" ? event.prompt_tokens.toLocaleString() : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#29 completion_tokens</span>
-                    <p className="font-mono text-[#0C233C] font-semibold">{event.completion_tokens?.toLocaleString()}</p>
+                    <p className="font-mono text-[#0C233C] font-semibold">
+                      {typeof event.completion_tokens === "number" ? event.completion_tokens.toLocaleString() : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#30 reasoning_tokens</span>
-                    <p className="font-mono text-[#4B5563]">{event.reasoning_tokens ? event.reasoning_tokens.toLocaleString() : "0 (Standard Vision)"}</p>
+                    <p className="font-mono text-[#4B5563]">
+                      {typeof event.reasoning_tokens === "number" ? event.reasoning_tokens.toLocaleString() : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#31 total_tokens</span>
-                    <p className="font-mono text-[#00338D] font-bold text-sm">{event.total_tokens?.toLocaleString()}</p>
+                    <p className="font-mono text-[#00338D] font-bold text-sm">
+                      {typeof event.total_tokens === "number" ? event.total_tokens.toLocaleString() : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#32 temperature</span>
-                    <p className="font-mono text-[#0C233C]">{event.temperature}</p>
+                    <p className="font-mono text-[#0C233C]">
+                      {typeof event.temperature === "number" ? event.temperature : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#33 finish_reason</span>
-                    <p className="font-mono text-emerald-700 font-semibold">{event.finish_reason || "stop"}</p>
+                    <p className="font-mono text-emerald-700 font-semibold">{event.finish_reason || "Not recorded"}</p>
                   </div>
                 </div>
               </div>
@@ -404,21 +446,27 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                     Dimension 5: Cost, Financial Impact & Confidence
                   </h3>
                   <span className="font-mono text-[10px] font-semibold text-[#00338D]">
-                    Parameters #34 – #36
+                    Parameters #34 - #36
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 rounded-sm border border-[#D8DFE9] bg-white p-4 text-xs">
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#34 estimated_cost_usd</span>
-                    <p className="font-mono text-[#009A44] font-bold text-sm">${event.estimated_cost_usd}</p>
+                    <p className="font-mono text-[#009A44] font-bold text-sm">
+                      {typeof event.estimated_cost_usd === "number" ? `$${event.estimated_cost_usd}` : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#35 confidence_score</span>
-                    <p className="font-mono text-emerald-700 font-bold">{event.confidence_score ? `${(event.confidence_score * 100).toFixed(1)}%` : "99.0%"}</p>
+                    <p className="font-mono text-emerald-700 font-bold">
+                      {typeof event.confidence_score === "number"
+                        ? `${(event.confidence_score * 100).toFixed(1)}%`
+                        : "Not recorded"}
+                    </p>
                   </div>
                   <div>
-                    <span className="font-mono text-[10px] text-[#00338D] font-bold">#36 cost_allocation_tier</span>
-                    <p className="font-mono text-[#0C233C]">Tier 1 Advisory Compute</p>
+                    <span className="font-mono text-[10px] text-[#00338D] font-bold">#36 tool_name</span>
+                    <p className="font-mono text-[#0C233C]">{event.tool_name || "Not recorded"}</p>
                   </div>
                 </div>
               </div>
@@ -431,29 +479,39 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                     Dimension 6: Latency & Performance Timers
                   </h3>
                   <span className="font-mono text-[10px] font-semibold text-[#00338D]">
-                    Parameters #37 – #41
+                    Parameters #37 - #41
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 rounded-sm border border-[#D8DFE9] bg-white p-4 text-xs">
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#37 timestamp_start</span>
-                    <p className="font-mono text-[#0C233C] text-[11px] truncate">{event.timestamp_start || event.created_at}</p>
+                    <p className="font-mono text-[#0C233C] text-[11px] truncate">{event.timestamp_start || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#38 timestamp_end</span>
-                    <p className="font-mono text-[#0C233C] text-[11px] truncate">{event.timestamp_end || event.created_at}</p>
+                    <p className="font-mono text-[#0C233C] text-[11px] truncate">{event.timestamp_end || "Not recorded"}</p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#39 duration_ms</span>
-                    <p className="font-mono text-[#00338D] font-bold">{event.duration_ms} ms ({(event.duration_ms / 1000).toFixed(1)}s)</p>
+                    <p className="font-mono text-[#00338D] font-bold">
+                      {typeof event.duration_ms === "number"
+                        ? `${event.duration_ms} ms (${(event.duration_ms / 1000).toFixed(1)}s)`
+                        : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#40 time_to_first_token_ms</span>
-                    <p className="font-mono text-[#4B5563]">{event.time_to_first_token_ms ? `${event.time_to_first_token_ms} ms` : "412 ms"}</p>
+                    <p className="font-mono text-[#4B5563]">
+                      {typeof event.time_to_first_token_ms === "number"
+                        ? `${event.time_to_first_token_ms} ms`
+                        : "Not recorded"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-mono text-[10px] text-[#00338D] font-bold">#41 http_status_code</span>
-                    <p className="font-mono text-emerald-700 font-bold">{event.http_status_code || 200} OK</p>
+                    <p className={`font-mono font-bold ${httpStatus === undefined ? "text-[#4B5563]" : isHttpOk ? "text-emerald-700" : "text-rose-700"}`}>
+                      {typeof httpStatus === "number" ? String(httpStatus) : "Not recorded"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -466,7 +524,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                     Dimension 7: Data Protection & Sanitized Payloads
                   </h3>
                   <span className="font-mono text-[10px] font-semibold text-[#00338D]">
-                    Parameters #42 – #45
+                    Parameters #42 - #45
                   </span>
                 </div>
                 <div className="space-y-3">
@@ -487,11 +545,13 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                   <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 rounded-sm border border-[#D8DFE9] bg-white p-3 text-xs">
                     <div>
                       <span className="font-mono text-[10px] text-[#00338D] font-bold">#44 pii_masked_flag</span>
-                      <p className="font-mono text-emerald-700 font-bold">{event.pii_masked_flag ? "TRUE (Masked & Redacted)" : "FALSE (Zero PII Leaked)"}</p>
+                      <p className="font-mono text-emerald-700 font-bold">
+                        {event.pii_masked_flag ? "TRUE (Masked & Redacted)" : "FALSE (No PII Detected)"}
+                      </p>
                     </div>
                     <div>
-                      <span className="font-mono text-[10px] text-[#00338D] font-bold">#45 data_hash (Audit Integrity)</span>
-                      <p className="font-mono text-[#4B5563] text-[11px] truncate">sha256:{event.id.replace(/[^a-f0-9]/gi, "").padEnd(64, "0")}</p>
+                      <span className="font-mono text-[10px] text-[#00338D] font-bold">#45 event_id (Record Identifier)</span>
+                      <p className="font-mono text-[#4B5563] text-[11px] truncate">{event.id}</p>
                     </div>
                   </div>
                 </div>
@@ -505,7 +565,7 @@ export function AuditInspectorDrawer({ event, isOpen, onClose }: AuditInspectorD
                     Dimension 8: SOX Compliance & Delegated Authority
                   </h3>
                   <span className="font-mono text-[10px] font-semibold text-[#00338D]">
-                    Parameters #46 – #48
+                    Parameters #46 - #48
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 rounded-sm border border-[#D8DFE9] bg-white p-4 text-xs">

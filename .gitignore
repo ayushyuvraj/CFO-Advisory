@@ -27,3 +27,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python & local data
+.venv/
+__pycache__/
+*.pyc
+*.db
+*.sqlite*
+data/.session_secret
+data/*.bak
+data/*.lock
+

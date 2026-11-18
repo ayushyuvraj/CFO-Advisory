@@ -1,15 +1,32 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { deletePersona, updatePersona } from "@/lib/governance/store";
+import { requireKpmgAdmin, SessionAuthError } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string; personaId: string }> }
 ) {
+  try {
+    requireKpmgAdmin(request);
+  } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   let body: Record<string, unknown>;
   try {
-    body = await request.json();
+    const parsed = await request.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return NextResponse.json(
+        { error: "Invalid JSON request body." },
+        { status: 400 }
+      );
+    }
+    body = parsed as Record<string, unknown>;
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON request body." },
@@ -40,10 +57,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string; personaId: string }> }
 ) {
   try {
+    requireKpmgAdmin(request);
     const { id: companyId, personaId } = await context.params;
     const deleted = deletePersona(companyId, personaId);
     if (!deleted) {
@@ -58,6 +76,9 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error("[API /api/clients/[id]/personas/[personaId] DELETE] Error:", err);
     return NextResponse.json(
       { error: "Failed to delete persona." },

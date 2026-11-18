@@ -1,26 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
-import { appendTelemetryEvent, getTelemetryEvents, getTelemetryMetrics } from "@/lib/telemetry/telemetryStore";
+import {
+  appendTelemetryEvent,
+  getTelemetryEvents,
+  getTelemetryMetrics,
+} from "@/lib/telemetry/telemetryStore";
 import { getProductByApiKey } from "@/lib/telemetry/productRegistry";
+import { resolveVerifiedActor, SessionAuthError } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function POST(req: NextRequest) {
+  const authHeader = req.headers.get("authorization") || "";
+  const apiKey = authHeader.replace(/^Bearer\s+/i, "").trim();
+
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "Unauthorized: Bearer product API key is required." },
+      { status: 401 }
+    );
+  }
+
+  const product = getProductByApiKey(apiKey);
+  if (!product) {
+    return NextResponse.json(
+      { error: "Unauthorized: invalid product API key." },
+      { status: 401 }
+    );
+  }
+
+  let body: Record<string, unknown>;
   try {
-    const authHeader = req.headers.get("authorization") || "";
-    const apiKey = authHeader.replace(/^Bearer\s+/i, "").trim();
-
-    // In local dev/demo, if no API key is supplied or invalid, we allow graceful fallback for testing
-    // but check if a valid product key was provided
-    const product = apiKey ? getProductByApiKey(apiKey) : null;
-
-    const body = await req.json();
-
-    // If product was verified via API key, ensure product_id matches
-    if (product) {
-      body.product_id = product.id;
-      body.product_name = product.name;
+    const parsed = await req.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return NextResponse.json(
+        { error: "Invalid JSON telemetry payload." },
+        { status: 400 }
+      );
     }
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON telemetry payload." },
+      { status: 400 }
+    );
+  }
+
+  try {
+    body.product_id = product.id;
+    body.product_name = product.name;
 
     const event = appendTelemetryEvent(body);
 
@@ -34,10 +62,9 @@ export async function POST(req: NextRequest) {
       { status: 202 }
     );
   } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : "Internal ingestion failure";
-    console.error("[API Telemetry Ingestion Error]:", errorMsg);
+    console.error("[API Telemetry Ingestion Error]:", err);
     return NextResponse.json(
-      { error: "Failed to ingest telemetry event", details: errorMsg },
+      { error: "Failed to ingest telemetry event." },
       { status: 500 }
     );
   }
@@ -45,15 +72,45 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    const { actor } = resolveVerifiedActor(req);
+    const isKpmg = actor.tenantType === "kpmg";
+
+    if (!isKpmg && !actor.permissions.canViewAudit) {
+      return NextResponse.json(
+        { error: "Forbidden: your persona does not have audit telemetry access." },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get("productId") || undefined;
     const status = searchParams.get("status") || undefined;
     const search = searchParams.get("search") || undefined;
-    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 50;
-    const offset = searchParams.get("offset") ? parseInt(searchParams.get("offset")!, 10) : 0;
 
-    const { events, total } = getTelemetryEvents({ productId, status, search, limit, offset });
-    const metrics = getTelemetryMetrics();
+    const rawLimit = searchParams.get("limit")
+      ? parseInt(searchParams.get("limit")!, 10)
+      : 50;
+    const rawOffset = searchParams.get("offset")
+      ? parseInt(searchParams.get("offset")!, 10)
+      : 0;
+    const limit = Number.isFinite(rawLimit)
+      ? Math.max(1, Math.min(200, rawLimit))
+      : 50;
+    const offset = Number.isFinite(rawOffset)
+      ? Math.max(0, Math.min(100_000, rawOffset))
+      : 0;
+
+    const allowedProductIds = isKpmg ? undefined : actor.allowedProductIds;
+
+    const { events, total } = getTelemetryEvents({
+      productId,
+      allowedProductIds,
+      status,
+      search,
+      limit,
+      offset,
+    });
+    const metrics = getTelemetryMetrics(allowedProductIds);
 
     return NextResponse.json(
       {
@@ -71,9 +128,12 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : "Internal query failure";
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    console.error("[API Telemetry GET Error]:", err);
     return NextResponse.json(
-      { error: "Failed to retrieve telemetry events", details: errorMsg },
+      { error: "Failed to retrieve telemetry events." },
       { status: 500 }
     );
   }

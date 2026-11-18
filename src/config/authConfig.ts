@@ -1,18 +1,16 @@
-export interface AdvisoryLeadCredentials {
-  email: string;
-  passcode: string;
+export interface AdvisoryLeadDisplayConfig {
+  emailHint: string;
   name: string;
   role: string;
   badge: string;
 }
 
 /**
- * Designated credentials for the KPMG Lead persona.
- * Easily modifiable upon request or transferable to server environment variables.
+ * Non-secret public display hints for the KPMG Lead sign-in form.
+ * Credentials are verified exclusively server-side in `src/lib/auth/session.ts`.
  */
-export const KPMG_LEAD_USER: AdvisoryLeadCredentials = {
-  email: "kpmg.lead@kpmg.com",
-  passcode: "KPMG#Lead2026!",
+export const KPMG_LEAD_DISPLAY: AdvisoryLeadDisplayConfig = {
+  emailHint: "kpmg.lead@kpmg.com",
   name: "KPMG Lead",
   role: "Lead Partner, CFO Advisory Practice",
   badge: "Verified KPMG Lead",

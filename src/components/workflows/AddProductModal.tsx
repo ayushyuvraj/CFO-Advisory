@@ -68,6 +68,7 @@ function AddProductModalInner({
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           name,
           slug,
@@ -94,14 +95,18 @@ function AddProductModalInner({
     }
   };
 
-  const copyToClipboard = (text: string, type: "key" | "endpoint") => {
-    navigator.clipboard.writeText(text);
-    if (type === "key") {
-      setCopiedKey(true);
-      setTimeout(() => setCopiedKey(false), 2000);
-    } else {
-      setCopiedEndpoint(true);
-      setTimeout(() => setCopiedEndpoint(false), 2000);
+  const copyToClipboard = async (text: string, type: "key" | "endpoint") => {
+    try {
+      await navigator.clipboard.writeText(text);
+      if (type === "key") {
+        setCopiedKey(true);
+        setTimeout(() => setCopiedKey(false), 2000);
+      } else {
+        setCopiedEndpoint(true);
+        setTimeout(() => setCopiedEndpoint(false), 2000);
+      }
+    } catch {
+      // Clipboard API may be restricted in non-HTTPS contexts
     }
   };
 
@@ -243,10 +248,12 @@ function AddProductModalInner({
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-[#0C233C]">
+                  <label htmlFor="add-product-name" className="block text-xs font-semibold text-[#0C233C]">
                     Product Title *
                   </label>
                   <input
+                    id="add-product-name"
+                    data-autofocus="true"
                     type="text"
                     required
                     placeholder="e.g. Autonomous Treasury Reconciliation"
@@ -256,10 +263,11 @@ function AddProductModalInner({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#0C233C]">
+                  <label htmlFor="add-product-slug" className="block text-xs font-semibold text-[#0C233C]">
                     System Identifier (Slug) *
                   </label>
                   <input
+                    id="add-product-slug"
                     type="text"
                     required
                     placeholder="e.g. liquidity-stress-test"
@@ -272,10 +280,11 @@ function AddProductModalInner({
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-[#0C233C]">
+                  <label htmlFor="add-product-pillar" className="block text-xs font-semibold text-[#0C233C]">
                     Practice Pillar *
                   </label>
                   <select
+                    id="add-product-pillar"
                     value={pillar}
                     onChange={(e) => setPillar(e.target.value as typeof pillar)}
                     className="mt-1 w-full rounded-sm border border-[#D8DFE9] bg-white px-3 py-2 text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
@@ -287,10 +296,11 @@ function AddProductModalInner({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#0C233C]">
+                  <label htmlFor="add-product-launch-url" className="block text-xs font-semibold text-[#0C233C]">
                     Launch Destination URL *
                   </label>
                   <input
+                    id="add-product-launch-url"
                     type="text"
                     required
                     placeholder="http://localhost:3002 or https://..."
@@ -303,10 +313,11 @@ function AddProductModalInner({
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-[#0C233C]">
+                  <label htmlFor="add-product-port-fe" className="block text-xs font-semibold text-[#0C233C]">
                     Frontend Port (Local Dev)
                   </label>
                   <input
+                    id="add-product-port-fe"
                     type="number"
                     placeholder="3002"
                     value={portFrontend}
@@ -315,10 +326,11 @@ function AddProductModalInner({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#0C233C]">
+                  <label htmlFor="add-product-port-be" className="block text-xs font-semibold text-[#0C233C]">
                     Backend Port (Local Dev)
                   </label>
                   <input
+                    id="add-product-port-be"
                     type="number"
                     placeholder="8002"
                     value={portBackend}
@@ -329,10 +341,11 @@ function AddProductModalInner({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#0C233C]">
+                <label htmlFor="add-product-erp" className="block text-xs font-semibold text-[#0C233C]">
                   Integrated Systems / ERP
                 </label>
                 <input
+                  id="add-product-erp"
                   type="text"
                   placeholder="e.g. SAP S/4HANA · Kyriba TMS · Workday"
                   value={systemIntegration}
@@ -342,10 +355,11 @@ function AddProductModalInner({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#0C233C]">
+                <label htmlFor="add-product-desc" className="block text-xs font-semibold text-[#0C233C]">
                   Description
                 </label>
                 <textarea
+                  id="add-product-desc"
                   rows={2}
                   placeholder="Summarize product purpose and capabilities..."
                   value={description}

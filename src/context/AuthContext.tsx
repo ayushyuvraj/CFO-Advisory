@@ -9,7 +9,6 @@ import React, {
   useState,
   useSyncExternalStore,
 } from "react";
-import { KPMG_LEAD_USER } from "@/config/authConfig";
 import {
   CompanyPersona,
   CompanyProfile,
@@ -52,9 +51,9 @@ interface AuthContextValue {
     company: CompanyProfile,
     persona: CompanyPersona,
     allowedProductIds: string[]
-  ) => void;
-  exitPreview: () => void;
-  signOut: () => void;
+  ) => Promise<void>;
+  exitPreview: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const SESSION_KEY = "kpmg_cfo_advisory_session_v1";
@@ -151,11 +150,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => false
   );
 
+  const [isServerSynced, setIsServerSynced] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [sessionNotice, setSessionNotice] = useState<string | null>(null);
 
   const isPreviewMode = Boolean(user && user.method === "kpmg_preview");
+
+  // Hydrate and verify authoritative session from server-signed HttpOnly cookie
+  useEffect(() => {
+    let cancelled = false;
+    const syncFromServer = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
+        if (cancelled) return;
+        const data = await safeParseJson(res);
+        if (res.ok && data.active === true && data.user) {
+          persistSession(data.user as AuthUser);
+        } else {
+          if (
+            (res.status === 403 || res.status === 404) &&
+            typeof data.reason === "string"
+          ) {
+            setSessionNotice(data.reason);
+          }
+          persistSession(null);
+        }
+      } catch {
+        // Keep current cached state on transient network hiccup
+      } finally {
+        if (!cancelled) setIsServerSynced(true);
+      }
+    };
+    void syncFromServer();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const clearSessionNotice = useCallback(() => {
     setSessionNotice(null);
@@ -180,24 +214,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setIsAuthenticating(true);
       try {
-        if (
-          cleanEmail !== KPMG_LEAD_USER.email.toLowerCase() ||
-          cleanPasscode !== KPMG_LEAD_USER.passcode
-        ) {
+        const res = await fetch("/api/auth/kpmg-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ email: cleanEmail, passcode: cleanPasscode }),
+        });
+
+        const data = await safeParseJson(res);
+        if (!res.ok || !data.user) {
           throw new Error(
-            "Invalid advisory credentials. Please verify your email and passcode."
+            typeof data.error === "string"
+              ? data.error
+              : "Invalid advisory credentials. Please verify your email and passcode."
           );
         }
 
-        const credUser: AuthUser = {
-          id: "usr-kpmg-lead",
-          name: KPMG_LEAD_USER.name,
-          role: KPMG_LEAD_USER.role,
-          email: KPMG_LEAD_USER.email,
-          method: "credentials",
-          badge: KPMG_LEAD_USER.badge,
-          tenantType: "kpmg",
-        };
+        const credUser = data.user as AuthUser;
         setSessionNotice(null);
         persistSession(credUser);
         setIsLoginOpen(false);
@@ -223,11 +256,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch("/api/auth/client-login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
           body: JSON.stringify({ email: cleanEmail, passcode: cleanPasscode }),
         });
 
         const data = await safeParseJson(res);
-        if (!res.ok) {
+        if (!res.ok || !data.user) {
           throw new Error(
             typeof data.error === "string"
               ? data.error
@@ -248,14 +282,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   // Live session sync for authenticated client personas so revocations, suspensions,
-  // and entitlement/permission toggles take effect immediately without requiring sign-out.
-  const clientCompanyId =
-    user?.method === "client_credentials" ? user.companyId : undefined;
-  const clientPersonaId =
-    user?.method === "client_credentials" ? user.personaId : undefined;
+  // and entitlement/permission toggles take effect immediately via verified cookie.
+  const isClientSession = user?.method === "client_credentials";
 
   useEffect(() => {
-    if (!clientCompanyId || !clientPersonaId) return;
+    if (!isClientSession) return;
     let cancelled = false;
 
     const revalidate = async () => {
@@ -264,16 +295,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch("/api/auth/session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            companyId: clientCompanyId,
-            personaId: clientPersonaId,
-          }),
+          credentials: "same-origin",
+          body: JSON.stringify({}),
           cache: "no-store",
         });
         if (cancelled) return;
         const data = await safeParseJson(res);
 
-        if (res.status === 403 || res.status === 404 || data.active === false) {
+        if (
+          res.status === 401 ||
+          res.status === 403 ||
+          res.status === 404 ||
+          data.active === false
+        ) {
           setSessionNotice(
             typeof data.reason === "string"
               ? data.reason
@@ -291,7 +325,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    void revalidate();
     const interval = setInterval(() => void revalidate(), 5000);
     const onFocus = () => void revalidate();
     window.addEventListener("focus", onFocus);
@@ -301,60 +334,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearInterval(interval);
       window.removeEventListener("focus", onFocus);
     };
-  }, [clientCompanyId, clientPersonaId]);
+  }, [isClientSession]);
 
   const startPreviewAs = useCallback(
-    (
+    async (
       company: CompanyProfile,
       persona: CompanyPersona,
-      allowedProductIds: string[]
+      _allowedProductIds: string[]
     ) => {
-      if (!user) return;
-      const originalAdmin =
-        user.method === "kpmg_preview"
-          ? user.previewOriginalAdmin || user
-          : user;
-
-      const effectiveAllowed =
-        company.status === "active" ? allowedProductIds : [];
-
-      const previewUser: AuthUser = {
-        id: persona.id,
-        name: persona.name,
-        role: persona.roleTitle,
-        email: persona.email,
-        method: "kpmg_preview",
-        badge:
-          company.status === "active"
-            ? `Preview: ${company.name}`
-            : `Preview (Suspended): ${company.name}`,
-        tenantType: "client",
-        companyId: company.id,
-        companyName: company.name,
-        personaId: persona.id,
-        permissions: persona.permissions,
-        allowedProductIds: effectiveAllowed,
-        previewOriginalAdmin: originalAdmin,
-      };
-
-      persistSession(previewUser);
+      void _allowedProductIds;
+      if (!user || (user.tenantType !== "kpmg" && user.method !== "kpmg_preview")) {
+        return;
+      }
+      const res = await fetch("/api/auth/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          action: "start",
+          companyId: company.id,
+          personaId: persona.id,
+        }),
+      });
+      const data = await safeParseJson(res);
+      if (res.ok && data.user) {
+        persistSession(data.user as AuthUser);
+      }
     },
     [user]
   );
 
-  const exitPreview = useCallback(() => {
-    if (!user || !user.previewOriginalAdmin) return;
-    persistSession(user.previewOriginalAdmin);
+  const exitPreview = useCallback(async () => {
+    if (!user || user.method !== "kpmg_preview") return;
+    const res = await fetch("/api/auth/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ action: "exit" }),
+    });
+    const data = await safeParseJson(res);
+    if (res.ok && data.user) {
+      persistSession(data.user as AuthUser);
+    } else if (user.previewOriginalAdmin) {
+      persistSession(user.previewOriginalAdmin);
+    }
   }, [user]);
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+    } catch {
+      // Clear local session regardless
+    }
     persistSession(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      isLoading: !isHydrated || isAuthenticating,
+      isLoading: !isHydrated || !isServerSynced || isAuthenticating,
       isLoginOpen,
       isPreviewMode,
       sessionNotice,
@@ -370,6 +411,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [
       user,
       isHydrated,
+      isServerSynced,
       isAuthenticating,
       isLoginOpen,
       isPreviewMode,

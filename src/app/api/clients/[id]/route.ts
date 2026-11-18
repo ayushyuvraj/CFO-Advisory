@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   deleteCompany,
   getCompanyById,
@@ -6,14 +6,16 @@ import {
   getCompanyPersonas,
   updateCompany,
 } from "@/lib/governance/store";
+import { requireKpmgAdmin, SessionAuthError } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    requireKpmgAdmin(request);
     const { id } = await context.params;
     const company = getCompanyById(id);
     if (!company) {
@@ -31,6 +33,9 @@ export async function GET(
       { status: 200 }
     );
   } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error("[API /api/clients/[id] GET] Error:", err);
     return NextResponse.json(
       { error: "Failed to fetch company profile." },
@@ -40,12 +45,28 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  try {
+    requireKpmgAdmin(request);
+  } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   let body: Record<string, unknown>;
   try {
-    body = await request.json();
+    const parsed = await request.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return NextResponse.json(
+        { error: "Invalid JSON request body." },
+        { status: 400 }
+      );
+    }
+    body = parsed as Record<string, unknown>;
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON request body." },
@@ -73,17 +94,18 @@ export async function PUT(
       message.includes("already assigned") ||
       message.includes("Status must be");
     return NextResponse.json(
-      { error: message },
+      { error: isClientError ? message : "Failed to update company profile." },
       { status: isClientError ? 400 : 500 }
     );
   }
 }
 
 export async function DELETE(
-  _request: Request,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    requireKpmgAdmin(request);
     const { id } = await context.params;
     const success = deleteCompany(id);
     if (!success) {
@@ -98,6 +120,9 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (err) {
+    if (err instanceof SessionAuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error("[API /api/clients/[id] DELETE] Error:", err);
     return NextResponse.json(
       { error: "Failed to delete company profile." },
