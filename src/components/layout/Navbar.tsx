@@ -83,7 +83,9 @@ export function Navbar() {
 
         <div className="flex items-center gap-2.5">
           {user ? (
-            <AccountMenu />
+            <div className={isWorkflowsRoute ? "lg:hidden" : undefined}>
+              <AccountMenu />
+            </div>
           ) : (
             <button
               type="button"
