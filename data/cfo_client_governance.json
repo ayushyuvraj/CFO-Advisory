@@ -19,6 +19,16 @@
       "notes": "test2",
       "createdAt": "2026-11-18T05:52:31.604Z",
       "updatedAt": "2026-11-18T05:52:31.604Z"
+    },
+    {
+      "id": "cmp_f74872465eaa",
+      "name": "xyz ltd",
+      "code": "XYZ-LTD",
+      "contactEmail": "xyzmain@xyz.com",
+      "status": "active",
+      "notes": "test2",
+      "createdAt": "2026-11-18T09:40:04.925Z",
+      "updatedAt": "2026-11-18T09:40:04.925Z"
     }
   ],
   "entitlements": [
@@ -27,6 +37,13 @@
       "productId": "invoice-processing-p2p",
       "enabled": true,
       "grantedAt": "2026-11-18T05:21:08.754Z",
+      "grantedBy": "KPMG Lead"
+    },
+    {
+      "companyId": "cmp_f74872465eaa",
+      "productId": "invoice-processing-p2p",
+      "enabled": true,
+      "grantedAt": "2026-11-18T09:46:23.680Z",
       "grantedBy": "KPMG Lead"
     }
   ],
@@ -42,12 +59,32 @@
       "allowedProductIds": [],
       "permissions": {
         "canLaunchProducts": true,
-        "canViewAudit": false,
-        "canManageDashboards": false,
+        "canViewAudit": true,
+        "canManageDashboards": true,
         "canExportData": true
       },
       "createdAt": "2026-11-18T05:17:44.928Z",
-      "updatedAt": "2026-11-18T05:17:44.928Z"
+      "updatedAt": "2026-11-18T09:41:46.260Z"
+    },
+    {
+      "id": "prs_745259921823",
+      "companyId": "cmp_f74872465eaa",
+      "name": "cro xyz",
+      "roleTitle": "cfo",
+      "email": "cfo@xyz.com",
+      "passcode": "CFO@123",
+      "productAccessMode": "custom",
+      "allowedProductIds": [
+        "invoice-processing-p2p"
+      ],
+      "permissions": {
+        "canLaunchProducts": true,
+        "canViewAudit": true,
+        "canManageDashboards": true,
+        "canExportData": true
+      },
+      "createdAt": "2026-11-18T09:45:56.651Z",
+      "updatedAt": "2026-11-18T09:46:39.129Z"
     }
   ]
 }
