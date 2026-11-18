@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { List, SignOut, SquaresFour, UserCircle, X } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
+import { KpmgLogo } from "@/components/brand/KpmgLogo";
 
 const NAV_LINKS = [
   { label: "Horizon", href: "/#chapter-horizon" },
@@ -16,33 +17,9 @@ const NAV_LINKS = [
 
 function KpmgWordmark() {
   return (
-    <span className="inline-flex items-center gap-3">
-      <svg
-        width="68"
-        height="26"
-        viewBox="0 0 68 26"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        className="shrink-0"
-      >
-        <rect x="0.5" y="0.5" width="12" height="10" stroke="#00338D" strokeWidth="1.2" />
-        <rect x="14.5" y="0.5" width="12" height="10" stroke="#00338D" strokeWidth="1.2" />
-        <rect x="28.5" y="0.5" width="12" height="10" stroke="#00338D" strokeWidth="1.2" />
-        <rect x="42.5" y="0.5" width="12" height="10" stroke="#00338D" strokeWidth="1.2" />
-        <text
-          x="0"
-          y="23"
-          fill="#00338D"
-          fontSize="13"
-          fontWeight="700"
-          letterSpacing="1.8"
-          fontFamily="var(--font-geist-sans), system-ui, sans-serif"
-        >
-          KPMG
-        </text>
-      </svg>
-      <span className="h-5 w-px bg-[#D8DFE9]" aria-hidden="true" />
+    <span className="inline-flex items-center gap-3.5">
+      <KpmgLogo className="h-[30px] w-auto shrink-0" />
+      <span className="h-6 w-px bg-[#D8DFE9]" aria-hidden="true" />
       <span className="text-sm font-medium tracking-tight text-[#0C233C] whitespace-nowrap">
         CFO Advisory
       </span>
