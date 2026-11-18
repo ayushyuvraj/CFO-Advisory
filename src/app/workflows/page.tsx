@@ -3,16 +3,12 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import {
   ArrowSquareOut,
-  Buildings,
   CheckCircle,
   Cpu,
   Database,
   Eye,
   LockKey,
   Sparkle,
-  ChartLineUp,
-  SquaresFour,
-  PresentationChart,
   Prohibit,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
@@ -22,6 +18,10 @@ import { CONNECTED_PLATFORMS, type ConnectedPlatform } from "@/data/platforms";
 import { AmbientLedgerGridCanvas } from "@/components/three/AmbientLedgerGridCanvas";
 import { AddProductModal } from "@/components/workflows/AddProductModal";
 import { AuditConsole } from "@/components/workflows/AuditConsole";
+import {
+  WorkflowsSidebar,
+  type WorkflowsTabId,
+} from "@/components/workflows/WorkflowsSidebar";
 import { ClientAccessConsole } from "@/components/governance/ClientAccessConsole";
 import { PreviewBanner } from "@/components/governance/PreviewBanner";
 import { DashboardsConsole } from "@/components/dashboards/DashboardsConsole";
@@ -49,13 +49,8 @@ function isValidPort(port: unknown): port is number {
 
 function WorkflowsSkeleton() {
   return (
-    <div className="mx-auto max-w-[1400px] px-4 pt-24 pb-20 sm:px-6 lg:px-8">
-      <div className="flex items-center gap-2 border-b border-[#D8DFE9] pb-4">
-        <div className="h-9 w-36 animate-pulse rounded-sm bg-[#F4F6FA]" />
-        <div className="h-9 w-40 animate-pulse rounded-sm bg-[#F4F6FA]" />
-        <div className="h-9 w-28 animate-pulse rounded-sm bg-[#F4F6FA]" />
-      </div>
-      <div className="mt-6 grid grid-cols-1 gap-6">
+    <div className="pt-[72px] pb-20 lg:pl-[68px]">
+      <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6 lg:px-8">
         <div className="h-96 animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]" />
       </div>
     </div>
@@ -70,9 +65,8 @@ export default function WorkflowsPage() {
     sessionNotice,
     clearSessionNotice,
   } = useAuth();
-  const [activeTab, setActiveTab] = useState<
-    "catalog" | "audit" | "dashboards" | "governance"
-  >("catalog");
+  const [activeTab, setActiveTab] = useState<WorkflowsTabId>("catalog");
+  const [isSidebarPinned, setIsSidebarPinned] = useState(false);
   const [dashboardCount, setDashboardCount] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [products, setProducts] = useState<ConnectedPlatform[]>(CONNECTED_PLATFORMS);
@@ -296,113 +290,42 @@ export default function WorkflowsPage() {
   }
 
   return (
-    <section className="relative min-h-[100dvh] bg-[#F8FAFC] px-4 pt-24 pb-20 sm:px-6 lg:px-8">
+    <section className="relative min-h-[100dvh] bg-[#F8FAFC] pt-[72px] pb-20">
       <AmbientLedgerGridCanvas />
 
-      <div className="relative z-10 mx-auto max-w-[1400px]">
-        <h1 className="sr-only">
-          {isClientUser && user.companyName
-            ? `${user.companyName} Workflows Hub`
-            : "KPMG CFO Advisory Workflows Hub"}
-        </h1>
+      <div
+        className={`relative z-10 transition-[padding-left] duration-[240ms] ease-[cubic-bezier(0.2,0,0,1)] ${
+          isSidebarPinned ? "lg:pl-[264px]" : "lg:pl-[68px]"
+        }`}
+      >
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <h1 className="sr-only">
+            {isClientUser && user.companyName
+              ? `${user.companyName} Workflows Hub`
+              : "KPMG CFO Advisory Workflows Hub"}
+          </h1>
 
-        {/* KPMG Instant Preview Banner */}
-        <PreviewBanner />
+          {/* Gemini-Inspired Hover-Expand Left Sidebar + Mobile Drawer */}
+          <WorkflowsSidebar
+            activeTab={effectiveActiveTab}
+            onSelectTab={setActiveTab}
+            productCount={visibleProducts.length}
+            canViewAudit={canViewAudit}
+            auditTotal={telemetrySummary?.total ?? 0}
+            dashboardCount={dashboardCount}
+            isKpmgAdmin={isKpmgAdmin}
+            pinned={isSidebarPinned}
+            onTogglePin={() => setIsSidebarPinned((prev) => !prev)}
+          />
 
-        {/* View Switcher Tabs: Catalog, Live Audit, Dashboards, Client Governance */}
-        <div className="flex items-center justify-between border-b border-[#D8DFE9] pb-4">
-          <div
-            role="tablist"
-            aria-label="Workflows Hub views"
-            className="flex flex-wrap items-center gap-2"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={effectiveActiveTab === "catalog"}
-              onClick={() => setActiveTab("catalog")}
-              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
-                effectiveActiveTab === "catalog"
-                  ? "bg-[#00338D] text-white shadow-xs"
-                  : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
-              }`}
-            >
-              <SquaresFour size={16} weight={effectiveActiveTab === "catalog" ? "bold" : "regular"} />
-              <span>Solution Catalog ({visibleProducts.length})</span>
-            </button>
+          {/* KPMG Instant Preview Banner */}
+          {isPreviewMode && (
+            <div className="mt-6">
+              <PreviewBanner />
+            </div>
+          )}
 
-            {canViewAudit && (
-              <button
-                type="button"
-                role="tab"
-                aria-selected={effectiveActiveTab === "audit"}
-                onClick={() => setActiveTab("audit")}
-                className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
-                  effectiveActiveTab === "audit"
-                    ? "bg-[#00338D] text-white shadow-xs"
-                    : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
-                }`}
-              >
-                <ChartLineUp size={16} weight={effectiveActiveTab === "audit" ? "bold" : "regular"} />
-                <span>Live Audit & Telemetry</span>
-                {telemetrySummary && telemetrySummary.total > 0 && (
-                  <span className="rounded-full bg-[#009A44] px-1.5 py-0.5 font-mono text-[10px] font-bold text-white leading-none">
-                    {telemetrySummary.total}
-                  </span>
-                )}
-                <span className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse" />
-              </button>
-            )}
-
-            <button
-              type="button"
-              role="tab"
-              aria-selected={effectiveActiveTab === "dashboards"}
-              onClick={() => setActiveTab("dashboards")}
-              className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
-                effectiveActiveTab === "dashboards"
-                  ? "bg-[#00338D] text-white shadow-xs"
-                  : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
-              }`}
-            >
-              <PresentationChart
-                size={16}
-                weight={effectiveActiveTab === "dashboards" ? "bold" : "regular"}
-              />
-              <span>Dashboards</span>
-              {dashboardCount !== null && dashboardCount > 0 && (
-                <span
-                  className={`rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none ${
-                    effectiveActiveTab === "dashboards"
-                      ? "bg-white/20 text-white"
-                      : "bg-[#00338D]/10 text-[#00338D]"
-                  }`}
-                >
-                  {dashboardCount}
-                </span>
-              )}
-            </button>
-
-            {isKpmgAdmin && (
-              <button
-                type="button"
-                role="tab"
-                aria-selected={effectiveActiveTab === "governance"}
-                onClick={() => setActiveTab("governance")}
-                className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-xs font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] ${
-                  effectiveActiveTab === "governance"
-                    ? "bg-[#00338D] text-white shadow-xs"
-                    : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:bg-[#F4F6FA]"
-                }`}
-              >
-                <Buildings size={16} weight={effectiveActiveTab === "governance" ? "bold" : "regular"} />
-                <span>Client & Access Governance</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Tab 1: Solution Catalog View */}
+          {/* Tab 1: Solution Catalog View */}
         {effectiveActiveTab === "catalog" && (
           <div className="mt-6 space-y-5">
             {isKpmgAdmin && (
@@ -670,6 +593,7 @@ export default function WorkflowsPage() {
         {effectiveActiveTab === "governance" && isKpmgAdmin && (
           <ClientAccessConsole availableProducts={products} />
         )}
+        </div>
       </div>
 
       {/* Add Product Modal (KPMG Lead Exclusive) */}
