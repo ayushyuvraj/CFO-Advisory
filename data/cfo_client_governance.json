@@ -103,6 +103,23 @@
       },
       "createdAt": "2026-11-19T14:01:37.137Z",
       "updatedAt": "2026-11-19T14:29:59.113Z"
+    },
+    {
+      "id": "prs_0044c9f60679",
+      "companyId": "cmp_f74872465eaa",
+      "name": "admin",
+      "roleTitle": "admin",
+      "email": "admin@xyz.com",
+      "passcode": "admin@123",
+      "productAccessMode": "all",
+      "allowedProductIds": [],
+      "permissions": {
+        "canLaunchProducts": false,
+        "canViewAudit": true,
+        "canManageDashboards": false
+      },
+      "createdAt": "2026-11-19T15:14:45.735Z",
+      "updatedAt": "2026-11-19T15:14:45.735Z"
     }
   ]
 }
