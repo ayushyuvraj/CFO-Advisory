@@ -25,6 +25,16 @@ type Body = Record<string, unknown> | FormData | undefined
 export async function api<T>(path: string, method = 'GET', body?: Body): Promise<T> {
   const headers: Record<string, string> = {}
   if (actingUser) headers['X-User'] = actingUser
+  if (typeof window !== 'undefined') {
+    try {
+      const cid = localStorage.getItem('kpmg_cfo_company_id')
+      if (cid) headers['X-Company-Id'] = cid
+      const pid = localStorage.getItem('kpmg_cfo_persona_id')
+      if (pid) headers['X-Persona-Id'] = pid
+    } catch {
+      /* storage unavailable */
+    }
+  }
   let payload: BodyInit | undefined
   if (body instanceof FormData) payload = body
   else if (body !== undefined) {

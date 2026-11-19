@@ -27,7 +27,7 @@ class CfoQuotaExceededException(Exception):
 
 
 async def check_cfo_quota(
-    company_id: str = "org_acme_corp_global",
+    company_id: str | None = None,
     persona_id: str | None = None,
     user_email: str | None = None,
     estimated_cost_usd: float = 0.01,
@@ -43,8 +43,13 @@ async def check_cfo_quota(
     elif "3001" in QUOTA_CHECK_ENDPOINT:
         target_urls.append(QUOTA_CHECK_ENDPOINT.replace("3001", "3000"))
 
+    # Resolve company ID if not provided; filter out legacy mock placeholder
+    cid = company_id or os.getenv("KPMG_CFO_COMPANY_ID") or None
+    if cid == "org_acme_corp_global":
+        cid = None
+
     payload = {
-        "companyId": company_id,
+        "companyId": cid,
         "personaId": persona_id,
         "userEmail": user_email,
         "estimatedCostUsd": estimated_cost_usd,
@@ -86,18 +91,28 @@ async def emit_cfo_telemetry_event(
     status: str = "SUCCESS",
     sanitized_query: str = "",
     sanitized_response: str = "",
+    tenant_id: str | None = None,
+    user_id: str | None = None,
+    user_email: str | None = None,
+    user_role: str | None = None,
 ) -> None:
     """Non-blocking background emission of telemetry to KPMG CFO Advisory platform."""
     try:
         total_tokens = prompt_tokens + completion_tokens
         cost_usd = round((prompt_tokens * 0.00000125) + (completion_tokens * 0.000005), 6) if total_tokens else 0.005
 
+        cid = tenant_id or os.getenv("KPMG_CFO_COMPANY_ID") or None
+        if cid == "org_acme_corp_global":
+            cid = None
+
+        u_email = user_email or os.getenv("DEFAULT_USER") or None
+
         payload = {
-            "tenant_id": "org_acme_corp_global",
+            "tenant_id": cid,
             "engagement_code": "ENG-2026-CFO-9042",
-            "user_id": "usr_kpmg_lead_01",
-            "user_email": "lead.director@kpmg.com",
-            "user_role": "KPMG_LEAD",
+            "user_id": user_id or "usr_client_persona",
+            "user_email": u_email,
+            "user_role": user_role or "CLIENT_PERSONA",
             "product_id": "invoice-processing-p2p",
             "product_name": "AI Invoice Processing & P2P Intelligence",
             "product_version": "v1.4.2",
@@ -152,6 +167,10 @@ def fire_cfo_telemetry(
     status: str = "SUCCESS",
     sanitized_query: str = "",
     sanitized_response: str = "",
+    tenant_id: str | None = None,
+    user_id: str | None = None,
+    user_email: str | None = None,
+    user_role: str | None = None,
 ) -> None:
     """Schedule the telemetry emission in the running event loop without awaiting."""
     try:
@@ -167,6 +186,10 @@ def fire_cfo_telemetry(
                 status=status,
                 sanitized_query=sanitized_query,
                 sanitized_response=sanitized_response,
+                tenant_id=tenant_id,
+                user_id=user_id,
+                user_email=user_email,
+                user_role=user_role,
             )
         )
     except Exception:

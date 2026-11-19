@@ -6,6 +6,7 @@ import {
 } from "@/lib/telemetry/telemetryStore";
 import { getProductByApiKey } from "@/lib/telemetry/productRegistry";
 import { resolveVerifiedActor, SessionAuthError } from "@/lib/auth/session";
+import { resolveCompanyAndPersona } from "@/lib/governance/quotaEngine";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -49,6 +50,26 @@ export async function POST(req: NextRequest) {
   try {
     body.product_id = product.id;
     body.product_name = product.name;
+
+    // Smart tenant & user identity resolution if missing, placeholder or legacy
+    const rawTenant = typeof body.tenant_id === "string" ? body.tenant_id.trim() : "";
+    const rawEmail = typeof body.user_email === "string" ? body.user_email.trim() : "";
+    const rawPersonaId = typeof body.user_id === "string" ? body.user_id.trim() : "";
+
+    const { company, persona } = resolveCompanyAndPersona({
+      companyId: rawTenant,
+      personaId: rawPersonaId,
+      userEmail: rawEmail,
+    });
+
+    if (company) {
+      body.tenant_id = company.id;
+      if (persona) {
+        body.user_id = persona.id;
+        body.user_email = persona.email;
+        body.user_role = "CLIENT_PERSONA";
+      }
+    }
 
     const event = appendTelemetryEvent(body);
 

@@ -227,7 +227,7 @@ class GeminiExtractor:
         self.client = genai.Client(api_key=s.gemini_api_key)
         self.model = s.gemini_model
 
-    async def _call(self, images: list[bytes], text_hint: str) -> XInvoice:
+    async def _call(self, images: list[bytes], text_hint: str, user: str | None = None) -> XInvoice:
         from google.genai import types
 
         parts = [types.Part.from_bytes(data=img, mime_type="image/png") for img in images]
@@ -237,7 +237,7 @@ class GeminiExtractor:
             # Pre-flight AI spend limit gate before LLM call
             try:
                 from .telemetry import check_cfo_quota, CfoQuotaExceededException
-                await check_cfo_quota(estimated_cost_usd=0.01)
+                await check_cfo_quota(user_email=user, estimated_cost_usd=0.01)
             except CfoQuotaExceededException as quota_err:
                 raise RuntimeError(f"KPMG CFO Advisory Governance: {quota_err.message}")
 
@@ -270,6 +270,7 @@ class GeminiExtractor:
                     status="SUCCESS",
                     sanitized_query=f"Extract header and line-items for invoice: {inv_val}",
                     sanitized_response=f"Extracted GST fields successfully with model {self.model}",
+                    user_email=user,
                 )
             except Exception:
                 pass
@@ -285,6 +286,7 @@ class GeminiExtractor:
                     status="FAILED",
                     sanitized_query=f"Extract invoice ({len(images)} pages)",
                     sanitized_response=f"Extraction failure: {type(exc).__name__}: {str(exc)}",
+                    user_email=user,
                 )
             except Exception:
                 pass
@@ -304,7 +306,7 @@ class GeminiExtractor:
         accounts = bank_cells_to_accounts(cells, len(images))
         return EnrichedInvoice.model_validate({**invoice.model_dump(), "bank_accounts": accounts})
 
-    async def extract(self, path: str, mime: str, pages: int) -> dict:
+    async def extract(self, path: str, mime: str, pages: int, user: str | None = None) -> dict:
         images = await documents.arender_all(path)
         text = await documents.apage_text(path)
         hint = ""
@@ -315,14 +317,14 @@ class GeminiExtractor:
                 "and digits, but use the images for layout and boxes:\n" + joined
             )
 
-        result = (await self._call(images, hint)).model_dump()
+        result = (await self._call(images, hint, user=user)).model_dump()
         # Strong total-tax labels in digital PDFs disambiguate repeated amounts.
         from .invoice_tax_evidence import anchor_total_tax
         result = await asyncio.to_thread(anchor_total_tax, path, result)
 
         if get_settings().extraction_second_pass:
             # An independent re-read. Where the two disagree, confidence is halved.
-            second = (await self._call(images, hint)).model_dump()
+            second = (await self._call(images, hint, user=user)).model_dump()
             for key, f in result.items():
                 if isinstance(f, dict) and "value" in f:
                     other = second.get(key, {}).get("value")
@@ -331,7 +333,7 @@ class GeminiExtractor:
                         f["disagreement"] = other
         return result
 
-    async def extract_pages(self, path: str, mime: str, pages: int, start: int, end: int) -> dict:
+    async def extract_pages(self, path: str, mime: str, pages: int, start: int, end: int, user: str | None = None) -> dict:
         """Read selected page images without creating or storing another PDF.
 
         Model pages are local to the image request; persist ORIGINAL PDF page
@@ -343,9 +345,9 @@ class GeminiExtractor:
         text = (await documents.apage_text(path))[start-1:end]
         hint = '\nRead ONLY this invoice. Returned page indexes must be 1 through ' + str(len(images)) + '.\n'
         hint += '\n'.join(f'--- page {i+1} ---\n{t[:6000]}' for i,t in enumerate(text))
-        result = (await self._call(images, hint)).model_dump()
+        result = (await self._call(images, hint, user=user)).model_dump()
         if get_settings().extraction_second_pass:
-            second = (await self._call(images, hint)).model_dump()
+            second = (await self._call(images, hint, user=user)).model_dump()
             for key, value in result.items():
                 if isinstance(value, dict) and 'value' in value:
                     if (value['value'] or '') != (second.get(key, {}).get('value') or ''):

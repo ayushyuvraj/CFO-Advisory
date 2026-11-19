@@ -54,14 +54,7 @@ export async function POST(req: NextRequest) {
   const companyId =
     (typeof body.companyId === "string" && body.companyId.trim()) ||
     sessionActorCompanyId ||
-    "";
-
-  if (!companyId) {
-    return NextResponse.json(
-      { error: "companyId parameter is required." },
-      { status: 400 }
-    );
-  }
+    undefined;
 
   const personaId =
     (typeof body.personaId === "string" && body.personaId.trim()) ||
@@ -72,6 +65,13 @@ export async function POST(req: NextRequest) {
     (typeof body.userEmail === "string" && body.userEmail.trim()) ||
     sessionActorEmail ||
     undefined;
+
+  if (!companyId && !userEmail && !personaId) {
+    return NextResponse.json(
+      { error: "companyId or userEmail parameter is required." },
+      { status: 400 }
+    );
+  }
 
   const estimatedCostUsd =
     typeof body.estimatedCostUsd === "number" && Number.isFinite(body.estimatedCostUsd)

@@ -14,6 +14,7 @@ import {
   Prohibit,
 } from "@phosphor-icons/react";
 import { ConnectedPlatform } from "@/data/platforms";
+import { useAuth } from "@/context/AuthContext";
 import { TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
 import { useDialogFocusTrap } from "@/hooks/useDialogFocusTrap";
 import { ProductHealthProbe } from "./CompactProductCard";
@@ -121,7 +122,20 @@ function ProductDetailsDrawerInner({
   const isOperational = currentStatus === "operational";
   const isMaintenance = currentStatus === "maintenance";
   const isOffline = currentStatus === "offline";
+  const { user } = useAuth();
   const safeLaunch = isSafeLaunchUrl(platform.launchUrl);
+  const launchHref = (() => {
+    if (!platform.launchUrl) return "#";
+    try {
+      const url = new URL(platform.launchUrl);
+      if (user?.email) url.searchParams.set("userEmail", user.email);
+      if (user?.companyId) url.searchParams.set("companyId", user.companyId);
+      if (user?.personaId || user?.id) url.searchParams.set("personaId", user?.personaId || user?.id);
+      return url.toString();
+    } catch {
+      return platform.launchUrl;
+    }
+  })();
   const hasTelemetry = Boolean(canViewAudit && telemetrySummary && telemetrySummary.total > 0);
 
   return (
@@ -384,7 +398,7 @@ function ProductDetailsDrawerInner({
               </button>
             ) : canLaunchProducts && safeLaunch ? (
               <a
-                href={platform.launchUrl}
+                href={launchHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-4 py-1.5 font-mono text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"

@@ -9,6 +9,7 @@ import {
   Cpu,
 } from "@phosphor-icons/react";
 import { ConnectedPlatform } from "@/data/platforms";
+import { useAuth } from "@/context/AuthContext";
 import { UnifiedHubCard } from "../UnifiedHubCard";
 
 function isSafeLaunchUrl(rawUrl: string): boolean {
@@ -48,6 +49,20 @@ export function CompactProductCard({
   isPreviewMode,
   onInspect,
 }: CompactProductCardProps) {
+  const { user } = useAuth();
+
+  const launchHref = (() => {
+    if (!platform.launchUrl) return "#";
+    try {
+      const url = new URL(platform.launchUrl);
+      if (user?.email) url.searchParams.set("userEmail", user.email);
+      if (user?.companyId) url.searchParams.set("companyId", user.companyId);
+      if (user?.personaId || user?.id) url.searchParams.set("personaId", user?.personaId || user?.id);
+      return url.toString();
+    } catch {
+      return platform.launchUrl;
+    }
+  })();
   // Use real-time live probe if available; otherwise fall back to platform.status
   const currentStatus = probe
     ? probe.status
@@ -131,7 +146,7 @@ export function CompactProductCard({
         </button>
       ) : canLaunchProducts && safeLaunch ? (
         <a
-          href={platform.launchUrl}
+          href={launchHref}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}

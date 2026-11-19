@@ -276,9 +276,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // ── Config and acting user ────────────────────────────────────────────────
   useEffect(() => {
+    let queryUser: string | null = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        queryUser = params.get('userEmail') || params.get('user');
+        const queryCompany = params.get('companyId') || params.get('tenantId');
+        const queryPersona = params.get('personaId');
+        if (queryUser) {
+          localStorage.setItem(USER_KEY, queryUser);
+        }
+        if (queryCompany) {
+          localStorage.setItem('kpmg_cfo_company_id', queryCompany);
+        }
+        if (queryPersona) {
+          localStorage.setItem('kpmg_cfo_persona_id', queryPersona);
+        }
+      } catch {
+        /* storage unavailable */
+      }
+    }
+
     api<AppConfig>('/config')
       .then((config) => {
-        const user = stateRef.current.user || config.defaultUser
+        const user = queryUser || stateRef.current.user || config.defaultUser
         setActingUser(user)
         set({ config, user, parkReason: config.parkReasons[0] ?? 'Other', editReason: config.correctionReasons[0] ?? '' })
       })

@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ..config import get_settings
 from ..db import get_db
-from ..deps import current_user, invoice_or_404
+from ..deps import current_user, current_company, current_persona, invoice_or_404
 from ..models import Invoice
 from ..schemas import (
     ApprovalIn,
@@ -50,6 +50,8 @@ async def upload(
     channel: Literal["upload", "mailbox", "connector"] = Form("upload"),
     db: AsyncSession = Depends(get_db),
     user: str = Depends(current_user),
+    company_id: str | None = Depends(current_company),
+    persona_id: str | None = Depends(current_persona),
     request_id: str | None = Form(default=None, max_length=36),
     screen_document: bool = Form(default=False),
 ):
@@ -66,7 +68,13 @@ async def upload(
         # Classification precedes identifiers, storage and case creation.
         await db.rollback()  # Release a read-only retry lookup during provider work.
         from ..services.upload_screening import screen_upload
-        screening = await screen_upload(content, documents.safe_name(file.filename or "document"))
+        screening = await screen_upload(
+            content,
+            documents.safe_name(file.filename or "document"),
+            user=user,
+            company_id=company_id,
+            persona_id=persona_id,
+        )
         if screening["outcome"] != "invoice":
             return screening
     inv = Invoice(**({"id": stable_id} if stable_id else {}), txn_id=await new_txn_id(db), case_id=await new_case_id(db), channel=channel,

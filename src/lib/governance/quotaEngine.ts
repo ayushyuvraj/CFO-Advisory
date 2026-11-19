@@ -5,7 +5,12 @@ import {
   SpendPeriod,
   CompanySpendSummary,
 } from "./types";
-import { getAllCompanies, getCompanyById, getCompanyPersonas } from "./store";
+import {
+  getAllCompanies,
+  getCompanyById,
+  getCompanyPersonas,
+  readGovernanceData,
+} from "./store";
 import { getTenantEvents } from "@/lib/telemetry/telemetryStore";
 
 export interface QuotaCheckResult {
@@ -166,11 +171,100 @@ export function getAggregatedSpend(
 }
 
 export interface EvaluateQuotaParams {
-  companyId: string;
+  companyId?: string;
   personaId?: string;
   userEmail?: string;
   estimatedCostUsd?: number;
   referenceDate?: Date;
+}
+
+/**
+ * Resolves company and persona using hierarchical fallback strategies:
+ * 1. Direct companyId match (exact ID).
+ * 2. Company code / slug match (e.g. "APEX-GLOBAL" or "apex-global").
+ * 3. Persona userEmail reverse-lookup across all registered personas.
+ * 4. Persona personaId reverse-lookup across all registered personas.
+ * 5. Single active company fallback if only one client company is registered.
+ */
+export function resolveCompanyAndPersona(params: {
+  companyId?: string;
+  personaId?: string;
+  userEmail?: string;
+}): { company?: CompanyProfile; persona?: CompanyPersona } {
+  const companies = getAllCompanies();
+  const rawGov = readGovernanceData();
+  const allPersonas = rawGov.personas;
+
+  let company: CompanyProfile | undefined;
+  let persona: CompanyPersona | undefined;
+
+  const cleanCompanyId = (params.companyId || "").trim();
+  const cleanEmail = (params.userEmail || "").trim().toLowerCase();
+  const cleanPersonaId = (params.personaId || "").trim();
+
+  // 1. Direct exact company ID match (excluding legacy placeholder)
+  if (cleanCompanyId && cleanCompanyId !== "org_acme_corp_global") {
+    company = companies.find((c) => c.id === cleanCompanyId);
+  }
+
+  // 2. Company code / slug match (e.g. APEX-GLOBAL)
+  if (!company && cleanCompanyId && cleanCompanyId !== "org_acme_corp_global") {
+    const codeMatch = cleanCompanyId.toUpperCase();
+    company = companies.find((c) => c.code.toUpperCase() === codeMatch);
+  }
+
+  // 3. Reverse lookup by userEmail across all registered personas
+  if (cleanEmail) {
+    const matchedPersona = allPersonas.find(
+      (p) => p.email.trim().toLowerCase() === cleanEmail
+    );
+    if (matchedPersona) {
+      persona = matchedPersona;
+      if (!company) {
+        company = companies.find((c) => c.id === matchedPersona.companyId);
+      }
+    }
+  }
+
+  // 4. Reverse lookup by personaId across all registered personas
+  if (!persona && cleanPersonaId) {
+    const matchedPersona = allPersonas.find((p) => p.id === cleanPersonaId);
+    if (matchedPersona) {
+      persona = matchedPersona;
+      if (!company) {
+        company = companies.find((c) => c.id === matchedPersona.companyId);
+      }
+    }
+  }
+
+  // 5. If company found but persona not resolved yet, check personas within that company
+  if (company && !persona) {
+    const compPersonas = getCompanyPersonas(company.id);
+    if (cleanPersonaId) {
+      persona = compPersonas.find((p) => p.id === cleanPersonaId);
+    }
+    if (!persona && cleanEmail) {
+      persona = compPersonas.find(
+        (p) => p.email.trim().toLowerCase() === cleanEmail
+      );
+    }
+  }
+
+  // 6. Sensible fallback: if no company resolved yet, but only one active company exists
+  if (!company) {
+    const activeCompanies = companies.filter((c) => c.status === "active");
+    if (activeCompanies.length === 1) {
+      company = activeCompanies[0];
+      if (!persona && cleanEmail) {
+        const compPersonas = getCompanyPersonas(company.id);
+        persona = compPersonas.find(
+          (p) => p.email.trim().toLowerCase() === cleanEmail
+        );
+      }
+    }
+  }
+
+  return { company, persona };
 }
 
 /**
@@ -183,11 +277,17 @@ export function evaluateQuotaCheck({
   estimatedCostUsd = 0,
   referenceDate = new Date(),
 }: EvaluateQuotaParams): QuotaCheckResult {
-  const company = getCompanyById(companyId);
+  const { company, persona } = resolveCompanyAndPersona({
+    companyId,
+    personaId,
+    userEmail,
+  });
+
   if (!company) {
+    const targetIdent = companyId || userEmail || personaId || "unknown";
     return {
       allowed: false,
-      companyId,
+      companyId: companyId || "unknown",
       companyName: "Unknown Organization",
       companyCode: "UNKNOWN",
       period: "unlimited",
@@ -201,7 +301,7 @@ export function evaluateQuotaCheck({
       personaSpendUsd: 0,
       personaRemainingUsd: null,
       effectiveRemainingUsd: null,
-      denialReason: `Organization '${companyId}' was not found in KPMG Governance registry.`,
+      denialReason: `Organization '${targetIdent}' was not found in KPMG Governance registry.`,
     };
   }
 
@@ -224,17 +324,6 @@ export function evaluateQuotaCheck({
       effectiveRemainingUsd: 0,
       denialReason: `Organization '${company.name}' is currently suspended by KPMG Advisory Lead.`,
     };
-  }
-
-  // Resolve Persona if provided
-  const personas = getCompanyPersonas(company.id);
-  let persona: CompanyPersona | undefined;
-  if (personaId) {
-    persona = personas.find((p) => p.id === personaId);
-  }
-  if (!persona && userEmail) {
-    const cleanEmail = userEmail.trim().toLowerCase();
-    persona = personas.find((p) => p.email.toLowerCase() === cleanEmail);
   }
 
   const spendLimit = company.spendLimit;

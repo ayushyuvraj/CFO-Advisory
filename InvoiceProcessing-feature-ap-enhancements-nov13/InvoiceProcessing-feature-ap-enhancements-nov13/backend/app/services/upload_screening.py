@@ -36,11 +36,22 @@ def _pdf_payload(content):
         raise HTTPException(422, "Document could not be read. Use a valid, unencrypted PDF, JPG, PNG or TIFF.") from None
 
 
-async def screen_upload(content: bytes, filename: str):
+async def screen_upload(
+    content: bytes,
+    filename: str,
+    user: str | None = None,
+    company_id: str | None = None,
+    persona_id: str | None = None,
+):
     pdf, text = await asyncio.to_thread(_pdf_payload, content)
     try:
         from .telemetry import check_cfo_quota, CfoQuotaExceededException
-        await check_cfo_quota(estimated_cost_usd=0.005)
+        await check_cfo_quota(
+            company_id=company_id,
+            persona_id=persona_id,
+            user_email=user,
+            estimated_cost_usd=0.005,
+        )
     except CfoQuotaExceededException as quota_err:
         raise HTTPException(status_code=402, detail=f"KPMG CFO Advisory Governance: {quota_err.message}")
 
@@ -57,6 +68,9 @@ async def screen_upload(content: bytes, filename: str):
                 status="FAILED",
                 sanitized_query=f"Screen and classify uploaded document: {filename}",
                 sanitized_response=f"Document screening failed: {type(error).__name__}: {str(error)}",
+                tenant_id=company_id,
+                user_id=persona_id,
+                user_email=user,
             )
         except Exception:
             pass

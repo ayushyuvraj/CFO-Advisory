@@ -8,6 +8,7 @@ import {
   Sliders,
 } from "@phosphor-icons/react";
 import { ConnectedPlatform } from "@/data/platforms";
+import { useAuth } from "@/context/AuthContext";
 import { ProductHealthProbe } from "./CompactProductCard";
 
 function isSafeLaunchUrl(rawUrl: string): boolean {
@@ -41,6 +42,20 @@ export function ProductTableView({
   isPreviewMode,
   onInspect,
 }: ProductTableViewProps) {
+  const { user } = useAuth();
+
+  const getLaunchHref = (platform: ConnectedPlatform) => {
+    if (!platform.launchUrl) return "#";
+    try {
+      const url = new URL(platform.launchUrl);
+      if (user?.email) url.searchParams.set("userEmail", user.email);
+      if (user?.companyId) url.searchParams.set("companyId", user.companyId);
+      if (user?.personaId || user?.id) url.searchParams.set("personaId", user?.personaId || user?.id);
+      return url.toString();
+    } catch {
+      return platform.launchUrl;
+    }
+  };
   return (
     <div className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs">
       <div className="overflow-x-auto">
@@ -156,7 +171,7 @@ export function ProductTableView({
                         </button>
                       ) : canLaunchProducts && safeLaunch ? (
                         <a
-                          href={platform.launchUrl}
+                          href={getLaunchHref(platform)}
                           target="_blank"
                           rel="noopener noreferrer"
                           title={`Launch ${platform.title}`}

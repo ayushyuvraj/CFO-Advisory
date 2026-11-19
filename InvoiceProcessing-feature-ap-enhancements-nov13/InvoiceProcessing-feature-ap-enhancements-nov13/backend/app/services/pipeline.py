@@ -163,12 +163,13 @@ async def _extract(invoice_id: str) -> dict:
         from .document_context import context
         part = context(inv)
     extractor = get_extractor()
+    inv_user = getattr(inv, "uploaded_by", None)
     if part:
         method = getattr(extractor, 'extract_pages', None)
         if method is None:
             raise RuntimeError('Configured extractor does not support original-document page contexts')
-        return await method(path, mime, pages, part['startPage'], part['endPage'])
-    return await extractor.extract(path, mime, pages)
+        return await method(path, mime, pages, part['startPage'], part['endPage'], user=inv_user)
+    return await extractor.extract(path, mime, pages, user=inv_user)
 
 
 async def _validate(invoice_id: str, data: dict | None, error: Exception | None) -> None:

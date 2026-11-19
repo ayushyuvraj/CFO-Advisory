@@ -20,6 +20,14 @@ def current_user(x_user: str | None = Header(default=None, description="Acting u
     return user
 
 
+def current_company(x_company_id: str | None = Header(default=None, description="Company ID")) -> str | None:
+    return x_company_id.strip() if x_company_id and x_company_id.strip() else None
+
+
+def current_persona(x_persona_id: str | None = Header(default=None, description="Persona ID")) -> str | None:
+    return x_persona_id.strip() if x_persona_id and x_persona_id.strip() else None
+
+
 async def invoice_or_404(invoice_id: str, db: AsyncSession = Depends(get_db)) -> Invoice:
     inv = await db.get(Invoice, invoice_id)
     if inv is None:

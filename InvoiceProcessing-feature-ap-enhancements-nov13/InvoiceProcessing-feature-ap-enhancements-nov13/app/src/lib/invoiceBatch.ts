@@ -17,6 +17,16 @@ export class BatchRequestError extends Error { constructor(public status: number
 /** Captures the acting user for every request, including work after navigating away. */
 async function request<T>(actor: string, path: string, body?: FormData | object): Promise<T> {
   const headers: Record<string,string> = { 'X-User': actor }
+  if (typeof window !== 'undefined') {
+    try {
+      const cid = localStorage.getItem('kpmg_cfo_company_id')
+      if (cid) headers['X-Company-Id'] = cid
+      const pid = localStorage.getItem('kpmg_cfo_persona_id')
+      if (pid) headers['X-Persona-Id'] = pid
+    } catch {
+      /* storage unavailable */
+    }
+  }
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), body ? 900000 : 30000)
   try {
