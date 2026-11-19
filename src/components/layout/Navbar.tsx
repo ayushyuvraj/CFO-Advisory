@@ -20,14 +20,12 @@ const NAV_LINKS = [
 interface WorkflowsNavItem {
   id: WorkflowsTabId;
   label: string;
-  badge?: number;
-  isLive?: boolean;
 }
 
 export function Navbar() {
   const pathname = usePathname();
   const { user, isLoading, openLogin } = useAuth();
-  const { activeTab, setActiveTab, badges } = useWorkflowsNav();
+  const { activeTab, setActiveTab } = useWorkflowsNav();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isLandingRoute = pathname === "/";
@@ -42,22 +40,18 @@ export function Navbar() {
     {
       id: "catalog",
       label: "Catalog",
-      badge: badges.catalogCount,
     },
     ...(canViewAudit
       ? [
           {
             id: "audit" as WorkflowsTabId,
             label: "Audit",
-            badge: badges.auditTotal,
-            isLive: true,
           },
         ]
       : []),
     {
       id: "dashboards",
       label: "Dashboards",
-      badge: badges.dashboardCount ?? undefined,
     },
     ...(isKpmgAdmin
       ? [
@@ -97,7 +91,7 @@ export function Navbar() {
             <KpmgLogo className="h-[32px] w-[82px] shrink-0" />
           </Link>
 
-          {/* Workspace Tabs (on /workflows when authenticated): Exactly matches KPMG font, spacing & line height */}
+          {/* Workspace Tabs (on /workflows when authenticated): Pure words, exact KPMG typography & spacing */}
           {isAuthedWorkflows && (
             <nav
               aria-label="Workflows Hub Navigation"
@@ -113,30 +107,13 @@ export function Navbar() {
                     role="tab"
                     aria-selected={isActive}
                     onClick={() => setActiveTab(item.id)}
-                    className={`relative flex h-[76px] items-center gap-2 text-[16px] leading-[18px] tracking-[0.44px] whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
+                    className={`relative flex h-[76px] items-center text-[16px] leading-[18px] tracking-[0.44px] whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
                       isActive
                         ? "font-semibold text-[#00338D]"
                         : "font-normal text-[#0C233C] hover:text-[#00338D]"
                     }`}
                   >
                     <span>{item.label}</span>
-                    {item.badge !== undefined && (
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-mono text-[11px] leading-none select-none ${
-                          isActive
-                            ? "bg-[#00338D]/10 text-[#00338D]"
-                            : "bg-[#F4F6FA] text-[#526075]"
-                        }`}
-                      >
-                        {item.isLive && (
-                          <span
-                            className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse"
-                            aria-hidden="true"
-                          />
-                        )}
-                        {item.badge}
-                      </span>
-                    )}
                     {isActive && (
                       <span
                         className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#00338D]"
@@ -215,30 +192,13 @@ export function Navbar() {
                       setActiveTab(item.id);
                       setMobileOpen(false);
                     }}
-                    className={`flex items-center justify-between rounded-sm px-3 py-2.5 text-base font-normal transition-colors duration-150 ${
+                    className={`flex items-center rounded-sm px-3 py-2.5 text-base font-normal transition-colors duration-150 ${
                       isActive
                         ? "bg-[#00338D]/10 font-semibold text-[#00338D]"
                         : "text-[#0C233C] hover:bg-[#F4F6FA] hover:text-[#00338D]"
                     }`}
                   >
                     <span>{item.label}</span>
-                    {item.badge !== undefined && (
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-mono text-[11px] leading-none ${
-                          isActive
-                            ? "bg-[#00338D]/15 text-[#00338D]"
-                            : "bg-[#F4F6FA] text-[#526075]"
-                        }`}
-                      >
-                        {item.isLive && (
-                          <span
-                            className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse"
-                            aria-hidden="true"
-                          />
-                        )}
-                        {item.badge}
-                      </span>
-                    )}
                   </button>
                 );
               })}
