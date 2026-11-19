@@ -204,7 +204,7 @@ async function runQAPass(baseUrl, label) {
         hasFilterBtn: Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Filter'))),
         hasSortBtn: Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Sort'))),
         hasAddProductBtn: Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('Add Product'))),
-        hasProductTitle: text.includes("ai invoice processing & p2p intelligence"),
+        hasProductTitle: text.includes("ai invoice processing"),
       };
     })()
   `);

@@ -37,7 +37,7 @@ export interface WorkflowItem {
 export const WORKFLOWS: WorkflowItem[] = [
   {
     id: "invoice-processing-p2p",
-    title: "AI Invoice Processing & P2P Intelligence",
+    title: "AI Invoice Processing",
     pillar: "Transformation & AI",
     status: "Active",
     sourceSystems: ["Zoho Books", "SAP S/4HANA", "Gemini 2.5 Flash"],

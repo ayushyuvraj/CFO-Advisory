@@ -177,7 +177,7 @@ export function appendTelemetryEvent(raw: Partial<TelemetryEvent>): TelemetryEve
     product_id: safeStr(raw.product_id, "invoice-processing-p2p", 80),
     product_name: safeStr(
       raw.product_name,
-      "AI Invoice Processing & P2P Intelligence",
+      "AI Invoice Processing",
       160
     ),
     product_version: safeStr(raw.product_version, "1.0.0", 40),

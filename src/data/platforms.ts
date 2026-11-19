@@ -20,7 +20,7 @@ export interface ConnectedPlatform {
 export const CONNECTED_PLATFORMS: ConnectedPlatform[] = [
   {
     id: "invoice-processing-p2p",
-    title: "AI Invoice Processing & P2P Intelligence",
+    title: "AI Invoice Processing",
     shortName: "Invoice Processing",
     category: "Procure-to-Pay Automation & Autonomous AP",
     description:
