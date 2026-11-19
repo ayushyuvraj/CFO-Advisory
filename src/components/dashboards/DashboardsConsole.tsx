@@ -402,111 +402,8 @@ export function DashboardsConsole({
   }
 
   return (
-    <div className="mt-6 space-y-5">
-      {/* Gallery Header Bar */}
-      <div className="flex flex-col justify-between gap-4 rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs sm:flex-row sm:items-center">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-bold tracking-tight text-[#0C233C]">
-              Executive Dashboards Studio
-            </h2>
-            <span className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#00338D]">
-              47 Visual Types · 100% Live Data
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-[#526075]">
-            {canManage
-              ? "Drag and drop charts, KPI boxes, pivot matrices, and interactive slicers over live platform telemetry and governance datasets."
-              : isPreviewMode
-              ? "Read-only preview perspective: explore interactive dashboards visible to this persona."
-              : "Interactive viewer mode: cross-filter and inspect executive dashboards published to your organization."}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              void fetchDashboards();
-              void fetchDatasets();
-            }}
-            aria-label="Refresh dashboards list"
-            className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-3 py-2 text-xs font-semibold text-[#333940] hover:border-[#00338D] hover:text-[#00338D]"
-          >
-            <ArrowClockwise size={14} weight="bold" />
-            <span>Refresh</span>
-          </button>
-
-          {canManage && (
-            <>
-              <button
-                type="button"
-                onClick={() => setIsImportOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-3 py-2 text-xs font-semibold text-[#00338D] hover:border-[#00338D] hover:bg-[#F4F6FA]"
-              >
-                <UploadSimple size={14} weight="bold" />
-                <span>Import JSON</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
-              >
-                <PlusCircle size={15} weight="bold" />
-                <span>New Blank Dashboard</span>
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Live Semantic Sources Coverage Bar */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        {[
-          {
-            id: "telemetry_events" as const,
-            label: "Telemetry Events",
-            count: datasetsPayload.datasets.telemetry_events.length,
-          },
-          {
-            id: "registered_products" as const,
-            label: "Platforms",
-            count: datasetsPayload.datasets.registered_products.length,
-          },
-          {
-            id: "client_companies" as const,
-            label: "Companies",
-            count: datasetsPayload.datasets.client_companies.length,
-          },
-          {
-            id: "client_personas" as const,
-            label: "Personas",
-            count: datasetsPayload.datasets.client_personas.length,
-          },
-          {
-            id: "product_entitlements" as const,
-            label: "Entitlements",
-            count: datasetsPayload.datasets.product_entitlements.length,
-          },
-        ].map((src) => {
-          const locked = Boolean(datasetsPayload.restrictedDatasets?.[src.id]);
-          return (
-            <div
-              key={src.id}
-              className="rounded-sm border border-[#D8DFE9] bg-white px-3.5 py-2.5"
-            >
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#526075]">
-                {src.label}
-              </p>
-              <p className="mt-0.5 font-mono text-base font-bold text-[#0C233C] tabular-nums">
-                {locked ? "Restricted" : src.count.toLocaleString()}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Unified Search, Filter & Sort Bar */}
+    <div className="space-y-4">
+      {/* Unified Search, Filter & Sort Bar: Sits at identical Y = 112px as all Hub tabs */}
       <UnifiedWorkflowsBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -536,21 +433,33 @@ export function DashboardsConsole({
             void fetchDatasets();
           }}
           aria-label="Refresh dashboards list"
-          className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#333940] hover:border-[#00338D] hover:text-[#00338D]"
+          className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#F8FAFC]"
         >
           <ArrowClockwise size={14} weight="bold" />
           <span>Refresh</span>
         </button>
 
         {canManage && (
-          <button
-            type="button"
-            onClick={() => setIsCreateOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
-          >
-            <PlusCircle size={15} weight="bold" />
-            <span>New Dashboard</span>
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => setIsImportOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#00338D] transition-colors hover:bg-[#F4F6FA]"
+              title="Import JSON template"
+            >
+              <UploadSimple size={14} weight="bold" />
+              <span>Import JSON</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsCreateOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
+            >
+              <PlusCircle size={15} weight="bold" />
+              <span>New Dashboard</span>
+            </button>
+          </>
         )}
       </UnifiedWorkflowsBar>
 

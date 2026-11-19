@@ -6,7 +6,6 @@ import {
   Cpu,
   MagnifyingGlass,
   PlusCircle,
-  ShieldCheck,
   SlidersHorizontal,
   ToggleLeft,
   ToggleRight,
@@ -269,57 +268,8 @@ export function ClientAccessConsole({
   );
 
   return (
-    <div className="mt-6 space-y-6">
-      {/* Executive Summary Metrics */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-              Onboarded Companies
-            </p>
-            <Buildings size={20} className="text-[#00338D]" weight="bold" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-[#0C233C]">
-            {governanceData.companies.length}
-          </p>
-          <p className="mt-1 text-xs text-[#4B5563]">
-            {activeCompanyIds.size} active ·{" "}
-            {governanceData.companies.length - activeCompanyIds.size} suspended
-          </p>
-        </div>
-
-        <div className="rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-              Active Entitlements
-            </p>
-            <ShieldCheck size={20} className="text-[#009A44]" weight="bold" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-[#0C233C]">
-            {totalActiveEntitlements}
-          </p>
-          <p className="mt-1 text-xs text-[#4B5563]">
-            Granted active company-to-product links
-          </p>
-        </div>
-
-        <div className="rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-xs font-semibold uppercase tracking-wider text-[#4B5563]">
-              Configured Personas
-            </p>
-            <UsersThree size={20} className="text-[#1E49E2]" weight="bold" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-[#0C233C]">
-            {governanceData.personas.length}
-          </p>
-          <p className="mt-1 text-xs text-[#4B5563]">
-            Role profiles with active credentials
-          </p>
-        </div>
-      </div>
-
-      {/* Unified Control Bar */}
+    <div className="space-y-4">
+      {/* Unified Control Bar: Sits at identical Y = 112px as all Hub tabs */}
       <UnifiedWorkflowsBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}

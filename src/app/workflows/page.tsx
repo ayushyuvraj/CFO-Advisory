@@ -485,12 +485,16 @@ export default function WorkflowsPage() {
 
         {/* Tab 3: Drag-and-Drop Executive Dashboards Studio & Viewer */}
         {effectiveActiveTab === "dashboards" && (
-          <DashboardsConsole onDashboardCountChange={setDashboardCount} />
+          <div className="mt-6 space-y-4">
+            <DashboardsConsole onDashboardCountChange={setDashboardCount} />
+          </div>
         )}
 
         {/* Tab 4: Client & Access Governance (KPMG Lead Exclusive) */}
         {effectiveActiveTab === "governance" && isKpmgAdmin && (
-          <ClientAccessConsole availableProducts={products} />
+          <div className="mt-6 space-y-4">
+            <ClientAccessConsole availableProducts={products} />
+          </div>
         )}
         </div>
       </div>

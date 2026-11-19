@@ -487,13 +487,44 @@ async function runQAPass(baseUrl, label) {
       const hasBar = Boolean(document.querySelector("input[placeholder*='dashboards']"));
       const hasFilter = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Scope') || b.innerText.trim().startsWith('Filter')));
       const hasSort = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Sort')));
-      return { hasBar, hasFilter, hasSort, isDashActive: text.includes("dashboard") };
+      const hasDashHero = text.includes("executive dashboards studio") && text.includes("47 visual types");
+      const hasSemanticCards = text.includes("telemetry events") && text.includes("entitlements");
+      const hasImportJsonBtn = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes("Import JSON")));
+      const hasNewDashBtn = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes("New Dashboard")));
+      return { hasBar, hasFilter, hasSort, hasDashHero, hasSemanticCards, hasImportJsonBtn, hasNewDashBtn, isDashActive: text.includes("dashboard") };
     })()
   `);
   console.log(`[QA Dashboards Strip Check]:`, JSON.stringify(dashStripCheck, null, 2));
   if (!dashStripCheck.hasBar) defects.push("Dashboards tab: Unified search input missing.");
   if (!dashStripCheck.hasFilter) defects.push("Dashboards tab: Scope filter button missing.");
   if (!dashStripCheck.hasSort) defects.push("Dashboards tab: Sort button missing.");
+  if (dashStripCheck.hasDashHero) defects.push("FAIL: Redundant Dashboards studio banner still visible.");
+  if (dashStripCheck.hasSemanticCards) defects.push("FAIL: Redundant semantic sources cards still visible in Dashboards.");
+  if (!dashStripCheck.hasImportJsonBtn) defects.push("FAIL: Import JSON button missing from Dashboards control bar.");
+  if (!dashStripCheck.hasNewDashBtn) defects.push("FAIL: New Dashboard button missing from Dashboards control bar.");
+
+  // Measure Dashboards Control Bar Coordinate
+  const dashBarRect = await client.eval(`
+    (() => {
+      const input = document.querySelector("input[placeholder*='dashboards']");
+      if (!input) return null;
+      const bar = input.closest(".border");
+      const rect = bar ? bar.getBoundingClientRect() : null;
+      return rect ? { top: Math.round(rect.top), left: Math.round(rect.left), height: Math.round(rect.height) } : null;
+    })()
+  `);
+  console.log(`[QA Dashboards Control Bar Coordinate]:`, JSON.stringify(dashBarRect));
+
+  if (catalogBarRect && dashBarRect) {
+    const diff = Math.abs(catalogBarRect.top - dashBarRect.top);
+    console.log(`[QA Vertical Coordinate Alignment]: Catalog top = ${catalogBarRect.top}px, Dashboards top = ${dashBarRect.top}px, Delta = ${diff}px`);
+    if (diff > 2) {
+      defects.push(`FAIL: Dashboards control bar vertical mismatch! Catalog=${catalogBarRect.top}px, Dashboards=${dashBarRect.top}px (delta: ${diff}px)`);
+    } else {
+      console.log(`>>> [PERFECT ALIGNMENT] Control bar sits at exact same Y coordinate between Catalog and Dashboards (delta: ${diff}px) <<<`);
+    }
+  }
+
   await client.screenshot(path.join(ARTIFACT_DIR, `qa_${label}_dashboards_tab.png`));
 
   // ==========================================
@@ -515,13 +546,59 @@ async function runQAPass(baseUrl, label) {
       const hasBar = Boolean(document.querySelector("input[placeholder*='organizations']"));
       const hasFilter = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Status') || b.innerText.trim().startsWith('Filter')));
       const hasSort = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Sort')));
-      return { hasBar, hasFilter, hasSort, isGovActive: text.includes("organization") || text.includes("company") };
+      const hasGovMetricCards = text.includes("onboarded companies") || text.includes("active entitlements") || text.includes("configured personas");
+      const hasAddOrgBtn = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes("Add Organization")));
+      const hasViewSwitcher = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes("Companies")));
+      return { hasBar, hasFilter, hasSort, hasGovMetricCards, hasAddOrgBtn, hasViewSwitcher, isGovActive: text.includes("organization") || text.includes("company") };
     })()
   `);
   console.log(`[QA Governance Strip Check]:`, JSON.stringify(govStripCheck, null, 2));
   if (!govStripCheck.hasBar) defects.push("Governance tab: Unified search input missing.");
   if (!govStripCheck.hasFilter) defects.push("Governance tab: Status filter button missing.");
   if (!govStripCheck.hasSort) defects.push("Governance tab: Sort button missing.");
+  if (govStripCheck.hasGovMetricCards) defects.push("FAIL: Redundant summary metric cards still visible in Governance tab.");
+  if (!govStripCheck.hasAddOrgBtn) defects.push("FAIL: Add Organization CTA missing from Governance control bar.");
+  if (!govStripCheck.hasViewSwitcher) defects.push("FAIL: View switcher missing from Governance control bar.");
+
+  // Measure Governance Control Bar Coordinate
+  const govBarRect = await client.eval(`
+    (() => {
+      const input = document.querySelector("input[placeholder*='organizations']");
+      if (!input) return null;
+      const bar = input.closest(".border");
+      const rect = bar ? bar.getBoundingClientRect() : null;
+      return rect ? { top: Math.round(rect.top), left: Math.round(rect.left), height: Math.round(rect.height) } : null;
+    })()
+  `);
+  console.log(`[QA Governance Control Bar Coordinate]:`, JSON.stringify(govBarRect));
+
+  if (catalogBarRect && govBarRect) {
+    const diff = Math.abs(catalogBarRect.top - govBarRect.top);
+    console.log(`[QA Vertical Coordinate Alignment]: Catalog top = ${catalogBarRect.top}px, Governance top = ${govBarRect.top}px, Delta = ${diff}px`);
+    if (diff > 2) {
+      defects.push(`FAIL: Governance control bar vertical mismatch! Catalog=${catalogBarRect.top}px, Governance=${govBarRect.top}px (delta: ${diff}px)`);
+    } else {
+      console.log(`>>> [PERFECT ALIGNMENT] Control bar sits at exact same Y coordinate between Catalog and Governance (delta: ${diff}px) <<<`);
+    }
+  }
+
+  // Final 4-Tab Coordinate Summary
+  if (catalogBarRect && auditBarRect && dashBarRect && govBarRect) {
+    const coords = [catalogBarRect.top, auditBarRect.top, dashBarRect.top, govBarRect.top];
+    const maxDelta = Math.max(...coords) - Math.min(...coords);
+    console.log(`\n======================================================`);
+    console.log(`[4-TAB SEAMLESS ALIGNMENT VERDICT]`);
+    console.log(`Catalog Top:    ${catalogBarRect.top}px`);
+    console.log(`Audit Top:      ${auditBarRect.top}px`);
+    console.log(`Dashboards Top: ${dashBarRect.top}px`);
+    console.log(`Governance Top: ${govBarRect.top}px`);
+    console.log(`Maximum Delta Across All 4 Tabs: ${maxDelta}px`);
+    console.log(`======================================================\n`);
+    if (maxDelta > 2) {
+      defects.push(`FAIL: 4-Tab maximum vertical delta exceeds tolerance (${maxDelta}px > 2px).`);
+    }
+  }
+
   await client.screenshot(path.join(ARTIFACT_DIR, `qa_${label}_governance_tab.png`));
 
   // Check console errors
