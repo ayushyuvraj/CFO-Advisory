@@ -29,6 +29,11 @@ import { CreateDashboardModal } from "./modals/CreateDashboardModal";
 import { ShareDashboardModal } from "./modals/ShareDashboardModal";
 import { ImportDashboardModal } from "./modals/ImportDashboardModal";
 import { ConfirmActionModal } from "./modals/ConfirmActionModal";
+import {
+  UnifiedWorkflowsBar,
+  FilterOptionItem,
+  SortOptionItem,
+} from "@/components/workflows/UnifiedWorkflowsBar";
 
 const EMPTY_DATASETS: LiveDatasetsPayload = {
   datasets: {
@@ -63,6 +68,8 @@ export function DashboardsConsole({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scopeFilter, setScopeFilter] = useState<"all" | "mine" | "shared">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"title-asc" | "title-desc" | "recent">("title-asc");
 
   const [openDashboardId, setOpenDashboardId] = useState<string | null>(null);
   const [openInPresent, setOpenInPresent] = useState(false);
@@ -170,21 +177,46 @@ export function DashboardsConsole({
   );
 
   const filteredDashboards = useMemo(() => {
-    if (scopeFilter === "all") return dashboards;
+    let result = dashboards;
     if (scopeFilter === "mine") {
-      return isKpmgAdmin
+      result = isKpmgAdmin
         ? dashboards.filter((d) => d.ownerType === "kpmg")
         : dashboards.filter(
             (d) => d.ownerType === "client" && d.ownerCompanyId === user?.companyId
           );
+    } else if (scopeFilter === "shared") {
+      result = isKpmgAdmin
+        ? dashboards.filter(
+            (d) =>
+              d.visibility === "specific_companies" || d.visibility === "all_clients"
+          )
+        : dashboards.filter((d) => d.ownerType === "kpmg");
     }
-    return isKpmgAdmin
-      ? dashboards.filter(
-          (d) =>
-            d.visibility === "specific_companies" || d.visibility === "all_clients"
-        )
-      : dashboards.filter((d) => d.ownerType === "kpmg");
-  }, [dashboards, scopeFilter, isKpmgAdmin, user?.companyId]);
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (d) =>
+          d.title.toLowerCase().includes(q) ||
+          d.description.toLowerCase().includes(q)
+      );
+    }
+
+    result = [...result].sort((a, b) => {
+      if (sortBy === "title-asc") {
+        return a.title.localeCompare(b.title);
+      }
+      if (sortBy === "title-desc") {
+        return b.title.localeCompare(a.title);
+      }
+      if (sortBy === "recent") {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+      return 0;
+    });
+
+    return result;
+  }, [dashboards, scopeFilter, searchQuery, sortBy, isKpmgAdmin, user?.companyId]);
 
   const handleCreate = async (input: CreateDashboardInput) => {
     const res = await fetch("/api/dashboards", {
@@ -474,34 +506,53 @@ export function DashboardsConsole({
         })}
       </div>
 
-      {/* Scope Filter Pills */}
-      <div className="flex flex-wrap items-center gap-2">
-        {[
-          { id: "all" as const, label: `All Accessible (${dashboards.length})` },
-          {
-            id: "mine" as const,
-            label: isKpmgAdmin ? "KPMG Authored" : "Company Workspace",
-          },
-          {
-            id: "shared" as const,
-            label: isKpmgAdmin ? "Published to Clients" : "Published by KPMG",
-          },
-        ].map((pill) => (
+      {/* Unified Search, Filter & Sort Bar */}
+      <UnifiedWorkflowsBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search executive dashboards..."
+        filterOptions={[
+          { id: "all", label: "All Dashboards" },
+          { id: "mine", label: isKpmgAdmin ? "KPMG Authored" : "Company Workspace" },
+          { id: "shared", label: isKpmgAdmin ? "Published to Clients" : "Published by KPMG" },
+        ]}
+        activeFilter={scopeFilter}
+        onFilterChange={(id) => setScopeFilter(id as "all" | "mine" | "shared")}
+        filterLabel="Scope"
+        sortOptions={[
+          { id: "title-asc", label: "Title (A → Z)" },
+          { id: "title-desc", label: "Title (Z → A)" },
+          { id: "recent", label: "Recently Updated" },
+        ]}
+        activeSort={sortBy}
+        onSortChange={(id) => setSortBy(id as "title-asc" | "title-desc" | "recent")}
+        sortLabel="Sort"
+        countLabel={`${filteredDashboards.length} ${filteredDashboards.length === 1 ? "dashboard" : "dashboards"}`}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            void fetchDashboards();
+            void fetchDatasets();
+          }}
+          aria-label="Refresh dashboards list"
+          className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#333940] hover:border-[#00338D] hover:text-[#00338D]"
+        >
+          <ArrowClockwise size={14} weight="bold" />
+          <span>Refresh</span>
+        </button>
+
+        {canManage && (
           <button
-            key={pill.id}
             type="button"
-            aria-pressed={scopeFilter === pill.id}
-            onClick={() => setScopeFilter(pill.id)}
-            className={`rounded-sm px-3 py-1.5 text-xs font-semibold transition-colors ${
-              scopeFilter === pill.id
-                ? "bg-[#00338D] text-white"
-                : "border border-[#D8DFE9] bg-white text-[#526075] hover:bg-[#F4F6FA]"
-            }`}
+            onClick={() => setIsCreateOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
           >
-            {pill.label}
+            <PlusCircle size={15} weight="bold" />
+            <span>New Dashboard</span>
           </button>
-        ))}
-      </div>
+        )}
+      </UnifiedWorkflowsBar>
 
       {error && (
         <div
