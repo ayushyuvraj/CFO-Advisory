@@ -273,7 +273,7 @@ export function ClientAccessConsole({
       <UnifiedWorkflowsBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        searchPlaceholder="Search client organizations, domains, contacts..."
+        searchPlaceholder="Search organizations, domains..."
         filterOptions={[
           { id: "all", label: "All Organizations" },
           { id: "active", label: "Active Clients Only" },
@@ -295,14 +295,14 @@ export function ClientAccessConsole({
         <div
           role="tablist"
           aria-label="Governance view mode"
-          className="inline-flex rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-0.5 text-xs"
+          className="inline-flex h-[30px] items-center rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-0.5 text-xs box-border"
         >
           <button
             type="button"
             role="tab"
             aria-selected={viewMode === "by-company"}
             onClick={() => setViewMode("by-company")}
-            className={`inline-flex items-center gap-1.5 rounded-xs px-2.5 py-1 text-xs font-semibold transition-all ${
+            className={`inline-flex h-[24px] items-center gap-1.5 rounded-xs px-2.5 py-0 text-xs font-semibold transition-all box-border ${
               viewMode === "by-company"
                 ? "bg-white text-[#00338D] shadow-xs"
                 : "text-[#4B5563] hover:text-[#0C233C]"
@@ -316,7 +316,7 @@ export function ClientAccessConsole({
             role="tab"
             aria-selected={viewMode === "by-product"}
             onClick={() => setViewMode("by-product")}
-            className={`inline-flex items-center gap-1.5 rounded-xs px-2.5 py-1 text-xs font-semibold transition-all ${
+            className={`inline-flex h-[24px] items-center gap-1.5 rounded-xs px-2.5 py-0 text-xs font-semibold transition-all box-border ${
               viewMode === "by-product"
                 ? "bg-white text-[#00338D] shadow-xs"
                 : "text-[#4B5563] hover:text-[#0C233C]"
@@ -331,7 +331,7 @@ export function ClientAccessConsole({
         <button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
+          className="inline-flex h-[30px] items-center justify-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-0 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2] box-border"
         >
           <PlusCircle size={15} weight="bold" />
           <span>Add Organization</span>

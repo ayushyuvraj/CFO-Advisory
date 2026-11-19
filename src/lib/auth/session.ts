@@ -153,7 +153,7 @@ export function setSessionCookie(
     httpOnly: true,
     sameSite: "lax",
     path: "/",
-    secure: process.env.NODE_ENV === "production" && process.env.ALLOW_HTTP_LOCAL !== "true" && false,
+    secure: process.env.NODE_ENV === "production" && process.env.ALLOW_HTTP_LOCAL !== "true",
     maxAge: Math.floor(SESSION_TTL_MS / 1000),
   });
 }

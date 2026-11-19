@@ -99,7 +99,7 @@ export function UnifiedWorkflowsBar({
   );
 
   return (
-    <div className="flex flex-col gap-3 rounded-sm border border-[#D8DFE9] bg-white p-2.5 shadow-xs lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-2.5 shadow-xs lg:h-[52px] lg:flex-row lg:items-center lg:justify-between lg:py-0 box-border">
       {/* Left: Clean Search Input + Filter & Sort Buttons */}
       <div className="flex flex-1 flex-wrap items-center gap-2">
         {/* Minimalist Search Input */}
@@ -115,7 +115,7 @@ export function UnifiedWorkflowsBar({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-1.5 pl-8 pr-8 text-xs text-[#0C233C] placeholder-[#526075] transition-all duration-150 focus:border-[#0C233C] focus:bg-white focus:outline-none"
+            className="h-[30px] w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-0 pl-8 pr-8 text-xs text-[#0C233C] placeholder-[#526075] transition-all duration-150 focus:border-[#0C233C] focus:bg-white focus:outline-none box-border"
           />
           {searchQuery && (
             <button
@@ -144,7 +144,7 @@ export function UnifiedWorkflowsBar({
               }}
               aria-expanded={isFilterOpen}
               aria-label="Filter records"
-              className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1.5 text-xs font-medium transition-all duration-150 active:scale-[0.98] ${
+              className={`inline-flex h-[30px] items-center gap-1.5 rounded-sm border px-2.5 py-0 text-xs font-medium transition-all duration-150 active:scale-[0.98] box-border ${
                 hasActiveFilter || isFilterOpen
                   ? "border-[#0C233C] bg-[#F1F5F9] text-[#0C233C] font-semibold"
                   : "border-[#D8DFE9] bg-[#F8FAFC] text-[#333940] hover:bg-[#F1F5F9] hover:text-[#0C233C]"
@@ -208,7 +208,7 @@ export function UnifiedWorkflowsBar({
               }}
               aria-expanded={isSortOpen}
               aria-label="Sort records"
-              className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1.5 text-xs font-medium transition-all duration-150 active:scale-[0.98] ${
+              className={`inline-flex h-[30px] items-center gap-1.5 rounded-sm border px-2.5 py-0 text-xs font-medium transition-all duration-150 active:scale-[0.98] box-border ${
                 isSortOpen
                   ? "border-[#0C233C] bg-[#F1F5F9] text-[#0C233C] font-semibold"
                   : "border-[#D8DFE9] bg-[#F8FAFC] text-[#333940] hover:bg-[#F1F5F9] hover:text-[#0C233C]"

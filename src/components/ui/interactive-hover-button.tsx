@@ -18,7 +18,7 @@ const InteractiveHoverButton = React.forwardRef<
       ref={ref}
       type={type}
       className={cn(
-        "group relative inline-flex w-auto cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[#D8DFE9] bg-white px-5 py-2 text-center text-xs font-semibold text-[#0C233C] shadow-xs transition-[border-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-[#00338D] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F8FAFC]",
+        "group relative inline-flex w-auto cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[#D8DFE9] bg-white px-3.5 h-[30px] box-border text-center text-xs font-semibold text-[#0C233C] shadow-xs transition-[border-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-[#00338D] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F8FAFC]",
         className
       )}
       {...props}
