@@ -224,6 +224,18 @@ async function runQAPass(baseUrl, label) {
   if (!catalogCheck.hasSortBtn) defects.push("Sort button missing in Catalog.");
   if (!catalogCheck.hasAddProductBtn) defects.push("Add Product button missing in Catalog.");
 
+  // Measure Catalog Control Bar Coordinates
+  const catalogBarRect = await client.eval(`
+    (() => {
+      const input = document.querySelector("input[placeholder*='platforms']");
+      if (!input) return null;
+      const bar = input.closest(".border");
+      const rect = bar ? bar.getBoundingClientRect() : null;
+      return rect ? { top: Math.round(rect.top), left: Math.round(rect.left), height: Math.round(rect.height) } : null;
+    })()
+  `);
+  console.log(`[QA Catalog Control Bar Coordinate]:`, JSON.stringify(catalogBarRect));
+
   await client.screenshot(path.join(ARTIFACT_DIR, `qa_${label}_catalog_grid.png`));
 
   // 3D Card Hover & Click Pop Verification
@@ -418,13 +430,42 @@ async function runQAPass(baseUrl, label) {
       const hasBar = Boolean(document.querySelector("input[placeholder*='actions']"));
       const hasFilter = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Status') || b.innerText.trim().startsWith('Filter')));
       const hasSort = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Sort')));
-      return { hasBar, hasFilter, hasSort, isAuditActive: text.includes("observability") || text.includes("audit") };
+      const hasSOXBanner = text.includes("sox audit command center") || text.includes("continuous telemetry ingestion active");
+      const hasKPICards = text.includes("total spend (usd)") || text.includes("tokens consumed") || text.includes("avg latency");
+      const hasPollingBadge = text.includes("3s polling") || text.includes("polling");
+      return { hasBar, hasFilter, hasSort, hasSOXBanner, hasKPICards, hasPollingBadge, isAuditActive: text.includes("audit") };
     })()
   `);
   console.log(`[QA Audit Strip Check]:`, JSON.stringify(auditStripCheck, null, 2));
   if (!auditStripCheck.hasBar) defects.push("Audit tab: Unified search input missing.");
   if (!auditStripCheck.hasFilter) defects.push("Audit tab: Status filter button missing.");
   if (!auditStripCheck.hasSort) defects.push("Audit tab: Sort button missing.");
+  if (auditStripCheck.hasSOXBanner) defects.push("FAIL: Redundant SOX Command Center banner still visible in Audit tab.");
+  if (auditStripCheck.hasKPICards) defects.push("FAIL: Redundant KPI cards still visible in Audit tab.");
+  if (!auditStripCheck.hasPollingBadge) defects.push("FAIL: 3s polling indicator missing in Audit tab.");
+
+  // Measure Audit Control Bar Coordinate
+  const auditBarRect = await client.eval(`
+    (() => {
+      const input = document.querySelector("input[placeholder*='actions']");
+      if (!input) return null;
+      const bar = input.closest(".border");
+      const rect = bar ? bar.getBoundingClientRect() : null;
+      return rect ? { top: Math.round(rect.top), left: Math.round(rect.left), height: Math.round(rect.height) } : null;
+    })()
+  `);
+  console.log(`[QA Audit Control Bar Coordinate]:`, JSON.stringify(auditBarRect));
+
+  if (catalogBarRect && auditBarRect) {
+    const diff = Math.abs(catalogBarRect.top - auditBarRect.top);
+    console.log(`[QA Vertical Coordinate Alignment]: Catalog top = ${catalogBarRect.top}px, Audit top = ${auditBarRect.top}px, Delta = ${diff}px`);
+    if (diff > 2) {
+      defects.push(`FAIL: Control bar vertical position mismatch! Catalog=${catalogBarRect.top}px, Audit=${auditBarRect.top}px (delta: ${diff}px)`);
+    } else {
+      console.log(`>>> [PERFECT ALIGNMENT] Control bar sits at exact same Y coordinate between Catalog and Audit (delta: ${diff}px) <<<`);
+    }
+  }
+
   await client.screenshot(path.join(ARTIFACT_DIR, `qa_${label}_audit_tab.png`));
 
   // ==========================================

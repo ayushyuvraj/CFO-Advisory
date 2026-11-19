@@ -478,7 +478,7 @@ export default function WorkflowsPage() {
 
         {/* Tab 2: Live Audit & Observability Console View */}
         {effectiveActiveTab === "audit" && canViewAudit && (
-          <div className="mt-6">
+          <div className="mt-6 space-y-4">
             <AuditConsole availableProducts={visibleProducts} />
           </div>
         )}

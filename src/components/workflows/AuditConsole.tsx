@@ -2,16 +2,10 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
-  Cpu,
-  Clock,
-  CurrencyDollar,
-  Lightning,
   ArrowsClockwise,
-  MagnifyingGlass,
   CheckCircle,
   XCircle,
   Eye,
-  Funnel,
   ChartLineUp,
 } from "@phosphor-icons/react";
 import { TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
@@ -177,163 +171,69 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Live Observability Mesh Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#009A44] animate-pulse" />
-            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#009A44]">
-              Continuous Telemetry Ingestion Active
-            </span>
-            <span className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2 py-0.5 font-mono text-[11px] text-[#4B5563]">
-              PostgreSQL Append-Only Mesh
-            </span>
-          </div>
-          <h2 className="mt-2 text-xl font-bold tracking-tight text-[#0C233C]">
-            Enterprise Observability & SOX Audit Command Center
-          </h2>
-          <p className="mt-1 text-xs text-[#4B5563]">
-            Real-time telemetry streaming from all connected execution engines across the CFO Advisory practice.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => void handleManualRefresh()}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-3 py-2 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#E2E8F0]"
-          >
-            <ArrowsClockwise size={15} weight="bold" className={isRefreshing ? "animate-spin text-[#00338D]" : ""} />
-            <span>Auto-Polling (3s)</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Tier 1: Executive KPI Strip */}
-      {metrics && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {/* KPI 1 */}
-          <div className="rounded-sm border border-[#D8DFE9] bg-white p-4 shadow-xs">
-            <div className="flex items-center justify-between text-[#4B5563]">
-              <span className="font-mono text-xs font-medium uppercase">Total Spend (USD)</span>
-              <CurrencyDollar size={18} weight="bold" className="text-[#009A44]" />
-            </div>
-            <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-[#0C233C]">
-              ${metrics.totalCostUsd.toFixed(4)}
-            </p>
-            <p className="mt-1 font-mono text-[11px] text-[#4B5563]">
-              Calculated across all live LLM calls
-            </p>
-          </div>
-
-          {/* KPI 2 */}
-          <div className="rounded-sm border border-[#D8DFE9] bg-white p-4 shadow-xs">
-            <div className="flex items-center justify-between text-[#4B5563]">
-              <span className="font-mono text-xs font-medium uppercase">Tokens Consumed</span>
-              <Lightning size={18} weight="bold" className="text-[#00338D]" />
-            </div>
-            <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-[#0C233C]">
-              {metrics.totalTokens.toLocaleString()}
-            </p>
-            <p className="mt-1 font-mono text-[11px] text-[#4B5563]">
-              {metrics.promptTokens.toLocaleString()} in · {metrics.completionTokens.toLocaleString()} out
-            </p>
-          </div>
-
-          {/* KPI 3 */}
-          <div className="rounded-sm border border-[#D8DFE9] bg-white p-4 shadow-xs">
-            <div className="flex items-center justify-between text-[#4B5563]">
-              <span className="font-mono text-xs font-medium uppercase">Avg Latency</span>
-              <Clock size={18} weight="bold" className="text-[#1E49E2]" />
-            </div>
-            <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-[#0C233C]">
-              {metrics.avgDurationMs} <span className="text-sm font-normal text-[#4B5563]">ms</span>
-            </p>
-            <p className="mt-1 font-mono text-[11px] text-[#009A44]">
-              Real-world execution time
-            </p>
-          </div>
-
-          {/* KPI 4 */}
-          <div className="rounded-sm border border-[#D8DFE9] bg-white p-4 shadow-xs">
-            <div className="flex items-center justify-between text-[#4B5563]">
-              <span className="font-mono text-xs font-medium uppercase">Success Rate</span>
-              <CheckCircle size={18} weight="bold" className="text-[#009A44]" />
-            </div>
-            <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-[#0C233C]">
-              {metrics.successRate}%
-            </p>
-            <p className="mt-1 font-mono text-[11px] text-[#4B5563]">
-              {metrics.totalEventsCount} audit events recorded
-            </p>
-          </div>
-
-          {/* KPI 5 */}
-          <div className="rounded-sm border border-[#D8DFE9] bg-white p-4 shadow-xs">
-            <div className="flex items-center justify-between text-[#4B5563]">
-              <span className="font-mono text-xs font-medium uppercase">Active Products</span>
-              <Cpu size={18} weight="bold" className="text-[#00338D]" />
-            </div>
-            <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-[#0C233C]">
-              {metrics.activeProductsCount}
-            </p>
-            <p className="mt-1 font-mono text-[11px] text-[#4B5563]">
-              Streaming into central platform
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Tier 2: Search, Filter & Event Table */}
-      <div className="space-y-3">
-        <UnifiedWorkflowsBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder="Search actions, models, entities..."
-          filterOptions={AUDIT_STATUS_FILTERS}
-          activeFilter={selectedStatus}
-          onFilterChange={setSelectedStatus}
-          filterLabel="Status"
-          sortOptions={AUDIT_SORT_OPTIONS}
-          activeSort={sortBy}
-          onSortChange={setSortBy}
-          sortLabel="Sort"
-          countLabel={`${sortedEvents.length} events`}
+    <div className="space-y-4">
+      {/* Unified Control Bar: Placed at top at exact same vertical coordinate as Solution Catalog */}
+      <UnifiedWorkflowsBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search actions, models, entities..."
+        filterOptions={AUDIT_STATUS_FILTERS}
+        activeFilter={selectedStatus}
+        onFilterChange={setSelectedStatus}
+        filterLabel="Status"
+        sortOptions={AUDIT_SORT_OPTIONS}
+        activeSort={sortBy}
+        onSortChange={setSortBy}
+        sortLabel="Sort"
+        countLabel={`${sortedEvents.length} events`}
+      >
+        {/* Product Scope Dropdown */}
+        <select
+          aria-label="Filter telemetry by product"
+          value={selectedProduct}
+          onChange={(e) => setSelectedProduct(e.target.value)}
+          className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#0C233C] focus:outline-none"
         >
-          {/* Product Scope Dropdown */}
-          <select
-            aria-label="Filter telemetry by product"
-            value={selectedProduct}
-            onChange={(e) => setSelectedProduct(e.target.value)}
-            className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
-          >
-            <option value="ALL">All Products</option>
-            {productFilterOptions.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.title}
-              </option>
-            ))}
-          </select>
+          <option value="ALL">All Products</option>
+          {productFilterOptions.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.title}
+            </option>
+          ))}
+        </select>
 
-          {/* Refresh Action */}
+        {/* Live Ingestion Indicator & Refresh Action */}
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-1.5 font-mono text-[11px] text-[#526075]"
+            title="Real-time telemetry continuous ingestion"
+          >
+            <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" />
+            <span>3s polling</span>
+          </span>
+
           <button
             type="button"
             onClick={() => void handleManualRefresh()}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#F8FAFC]"
+            className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#F8FAFC] active:scale-[0.98]"
             title="Refresh telemetry"
           >
-            <ArrowsClockwise size={14} weight="bold" className={isRefreshing ? "animate-spin text-[#00338D]" : ""} />
+            <ArrowsClockwise
+              size={14}
+              weight="bold"
+              className={isRefreshing ? "animate-spin text-[#00338D]" : ""}
+            />
             <span>Refresh</span>
           </button>
-        </UnifiedWorkflowsBar>
+        </div>
+      </UnifiedWorkflowsBar>
 
-        <div className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs">
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-xs">
-              <thead>
-                <tr className="border-b border-[#D8DFE9] bg-[#F4F6FA] font-mono text-[11px] font-semibold uppercase text-[#4B5563]">
+      <div className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs">
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left text-xs">
+            <thead>
+              <tr className="border-b border-[#D8DFE9] bg-[#F4F6FA] font-mono text-[11px] font-semibold uppercase text-[#4B5563]">
                   <th className="py-3 px-4">Timestamp (UTC)</th>
                   <th className="py-3 px-4">Product</th>
                   <th className="py-3 px-4">Action / Workflow Step</th>
@@ -426,7 +326,6 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
           </table>
         </div>
       </div>
-    </div>
 
       {/* Slideout Inspector Drawer */}
       <AuditInspectorDrawer
