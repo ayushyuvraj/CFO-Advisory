@@ -13,11 +13,17 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const actor = resolveDashboardActor(req);
+    if (actor.tenantType === "client" && !actor.permissions.canManageDashboards) {
+      return NextResponse.json(
+        { error: "Your persona does not have access to dashboards." },
+        { status: 403 }
+      );
+    }
     const dashboards = listDashboardsForActor(actor);
     return NextResponse.json({
       dashboards,
       canCreate: canActorCreateDashboard(actor),
-      canExport: actor.tenantType === "kpmg" || actor.permissions.canExportData,
+      canExport: actor.tenantType === "kpmg" || Boolean(actor.permissions.canManageDashboards),
     });
   } catch (err) {
     if (err instanceof ActorAuthError) {

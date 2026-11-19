@@ -35,13 +35,19 @@ export function Navbar() {
   const showLandingLinks = isLandingRoute || (!user && !isLoading);
 
   const isKpmgAdmin = Boolean(user && (!user.tenantType || user.tenantType === "kpmg"));
+  const canAccessCatalog = isKpmgAdmin || Boolean(user?.permissions?.canLaunchProducts);
   const canViewAudit = isKpmgAdmin || Boolean(user?.permissions?.canViewAudit);
+  const canAccessDashboards = isKpmgAdmin || Boolean(user?.permissions?.canManageDashboards);
 
   const workflowsTabs: WorkflowsNavItem[] = [
-    {
-      id: "catalog",
-      label: "Catalog",
-    },
+    ...(canAccessCatalog
+      ? [
+          {
+            id: "catalog" as WorkflowsTabId,
+            label: "Catalog",
+          },
+        ]
+      : []),
     ...(canViewAudit
       ? [
           {
@@ -50,10 +56,14 @@ export function Navbar() {
           },
         ]
       : []),
-    {
-      id: "dashboards",
-      label: "Dashboards",
-    },
+    ...(canAccessDashboards
+      ? [
+          {
+            id: "dashboards" as WorkflowsTabId,
+            label: "Dashboards",
+          },
+        ]
+      : []),
     ...(isKpmgAdmin
       ? [
           {

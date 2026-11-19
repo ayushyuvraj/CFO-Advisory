@@ -133,7 +133,6 @@ export async function POST(
         canLaunchProducts: Boolean(perms.canLaunchProducts),
         canViewAudit: Boolean(perms.canViewAudit),
         canManageDashboards: Boolean(perms.canManageDashboards),
-        canExportData: Boolean(perms.canExportData),
       },
     });
 

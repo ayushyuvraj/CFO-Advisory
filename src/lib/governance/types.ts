@@ -21,7 +21,7 @@ export interface PersonaPermissions {
   canLaunchProducts: boolean;
   canViewAudit: boolean;
   canManageDashboards: boolean;
-  canExportData: boolean;
+  canExportData?: boolean;
 }
 
 export interface CompanyPersona {

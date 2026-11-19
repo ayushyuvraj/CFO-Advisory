@@ -294,7 +294,7 @@ export interface DashboardActor {
     canLaunchProducts: boolean;
     canViewAudit: boolean;
     canManageDashboards: boolean;
-    canExportData: boolean;
+    canExportData?: boolean;
   };
 }
 

@@ -60,13 +60,13 @@
         "invoice-processing-p2p"
       ],
       "permissions": {
-        "canLaunchProducts": true,
+        "canLaunchProducts": false,
         "canViewAudit": true,
         "canManageDashboards": true,
         "canExportData": true
       },
       "createdAt": "2026-11-18T09:45:56.651Z",
-      "updatedAt": "2026-11-18T09:46:39.129Z"
+      "updatedAt": "2026-11-19T14:51:16.038Z"
     },
     {
       "id": "prs_1564cfb9b1e0",
@@ -97,12 +97,12 @@
       "allowedProductIds": [],
       "permissions": {
         "canLaunchProducts": true,
-        "canViewAudit": false,
+        "canViewAudit": true,
         "canManageDashboards": false,
         "canExportData": false
       },
       "createdAt": "2026-11-19T14:01:37.137Z",
-      "updatedAt": "2026-11-19T14:01:37.137Z"
+      "updatedAt": "2026-11-19T14:29:59.113Z"
     }
   ]
 }

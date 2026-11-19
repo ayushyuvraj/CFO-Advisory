@@ -25,7 +25,7 @@ export async function GET(
     return NextResponse.json({
       dashboard,
       canEdit: canActorEditDashboard(actor, dashboard),
-      canExport: actor.tenantType === "kpmg" || actor.permissions.canExportData,
+      canExport: actor.tenantType === "kpmg" || Boolean(actor.permissions.canManageDashboards),
     });
   } catch (err) {
     if (err instanceof ActorAuthError) {

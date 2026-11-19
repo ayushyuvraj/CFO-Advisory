@@ -9,7 +9,6 @@ import {
   EnvelopeSimple,
   Eye,
   EyeSlash,
-  FileArrowDown,
   Gauge,
   LockKey,
   ShieldCheck,
@@ -76,7 +75,6 @@ function PersonaModalContent({
       canLaunchProducts: true,
       canViewAudit: true,
       canManageDashboards: false,
-      canExportData: false,
     }
   );
 
@@ -153,7 +151,11 @@ function PersonaModalContent({
           passcode: passcode.trim(),
           productAccessMode,
           allowedProductIds: sanitizedAllowedIds,
-          permissions,
+          permissions: {
+            canLaunchProducts: Boolean(permissions.canLaunchProducts),
+            canViewAudit: Boolean(permissions.canViewAudit),
+            canManageDashboards: Boolean(permissions.canManageDashboards),
+          },
         }),
       });
 
@@ -361,7 +363,18 @@ function PersonaModalContent({
           </div>
 
           {/* Product Access Scope */}
-          <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-3.5 space-y-3">
+          <div
+            className={`rounded-sm border border-[#D8DFE9] p-3.5 space-y-3 transition-opacity duration-150 ${
+              permissions.canLaunchProducts
+                ? "bg-[#F8FAFC]"
+                : "bg-gray-50 opacity-65"
+            }`}
+          >
+            {!permissions.canLaunchProducts && (
+              <div className="rounded-xs border border-[#D8DFE9] bg-white p-2.5 text-[11px] text-[#526075]">
+                <span className="font-semibold text-[#0C233C]">Product Catalog Disabled:</span> This persona cannot view or launch any platforms. Toggle &quot;Product Catalog&quot; ON below to configure platform access.
+              </div>
+            )}
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h4 className="text-xs font-bold text-[#0C233C] uppercase tracking-wide">
@@ -379,6 +392,7 @@ function PersonaModalContent({
                 <button
                   type="button"
                   role="tab"
+                  disabled={!permissions.canLaunchProducts}
                   aria-selected={productAccessMode === "all"}
                   onClick={() => setProductAccessMode("all")}
                   className={`px-2.5 py-1 font-semibold rounded-xs transition-colors ${
@@ -392,6 +406,7 @@ function PersonaModalContent({
                 <button
                   type="button"
                   role="tab"
+                  disabled={!permissions.canLaunchProducts}
                   aria-selected={productAccessMode === "custom"}
                   onClick={() => setProductAccessMode("custom")}
                   className={`px-2.5 py-1 font-semibold rounded-xs transition-colors ${
@@ -456,174 +471,187 @@ function PersonaModalContent({
             )}
           </div>
 
-          {/* Granular Permission On/Off Toggles (Accessible Native Switches) */}
+          {/* Granular Permission Toggles (Accessible Native Switches) */}
           <div className="space-y-2.5">
-            <h4 className="text-xs font-bold text-[#0C233C] uppercase tracking-wide">
-              Persona Feature Toggles (On / Off)
-            </h4>
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wide text-[#0C233C]">
+                Persona Feature Toggles
+              </h4>
+              <span className="text-[11px] text-[#526075]">
+                {Object.values(permissions).filter(Boolean).length} of 3 active
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {/* 1. Launch Products */}
               <button
                 type="button"
                 role="switch"
                 aria-checked={permissions.canLaunchProducts}
                 onClick={() => handlePermissionToggle("canLaunchProducts")}
-                className={`flex items-center justify-between rounded-sm border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
+                className={`group flex w-full items-center justify-between rounded-sm border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
                   permissions.canLaunchProducts
-                    ? "border-[#00338D] bg-[#00338D]/5"
+                    ? "border-[#00338D]/40 bg-[#00338D]/[0.03]"
                     : "border-[#D8DFE9] bg-white hover:bg-[#F8FAFC]"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-xs ${
+                    className={`flex h-8 w-8 items-center justify-center rounded-xs transition-colors duration-150 ${
                       permissions.canLaunchProducts
                         ? "bg-[#00338D] text-white"
                         : "bg-[#F4F6FA] text-[#4B5563]"
                     }`}
                   >
-                    <Cpu size={16} weight="bold" />
+                    <Cpu size={18} weight="bold" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-[#0C233C]">
-                      Launch Products
+                      Product Catalog
                     </p>
-                    <p className="text-[10px] text-[#4B5563]">
-                      Execute live platforms
+                    <p className="text-[11px] text-[#526075]">
+                      View and launch platforms
                     </p>
                   </div>
                 </div>
-                <span
-                  className={`font-mono text-xs font-bold ${
-                    permissions.canLaunchProducts
-                      ? "text-[#009A44]"
-                      : "text-[#6B7280]"
-                  }`}
-                >
-                  {permissions.canLaunchProducts ? "ON" : "OFF"}
-                </span>
+
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={`font-mono text-xs font-bold transition-colors duration-150 ${
+                      permissions.canLaunchProducts
+                        ? "text-[#009A44]"
+                        : "text-[#6B7280]"
+                    }`}
+                  >
+                    {permissions.canLaunchProducts ? "ON" : "OFF"}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      permissions.canLaunchProducts ? "bg-[#009A44]" : "bg-[#CBD5E1]"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                        permissions.canLaunchProducts ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </span>
+                </div>
               </button>
 
+              {/* 2. Audit Telemetry */}
               <button
                 type="button"
                 role="switch"
                 aria-checked={permissions.canViewAudit}
                 onClick={() => handlePermissionToggle("canViewAudit")}
-                className={`flex items-center justify-between rounded-sm border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
+                className={`group flex w-full items-center justify-between rounded-sm border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
                   permissions.canViewAudit
-                    ? "border-[#00338D] bg-[#00338D]/5"
+                    ? "border-[#00338D]/40 bg-[#00338D]/[0.03]"
                     : "border-[#D8DFE9] bg-white hover:bg-[#F8FAFC]"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-xs ${
+                    className={`flex h-8 w-8 items-center justify-center rounded-xs transition-colors duration-150 ${
                       permissions.canViewAudit
                         ? "bg-[#00338D] text-white"
                         : "bg-[#F4F6FA] text-[#4B5563]"
                     }`}
                   >
-                    <ShieldCheck size={16} weight="bold" />
+                    <ShieldCheck size={18} weight="bold" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-[#0C233C]">
                       Audit Telemetry
                     </p>
-                    <p className="text-[10px] text-[#4B5563]">
+                    <p className="text-[11px] text-[#526075]">
                       View audit line logs
                     </p>
                   </div>
                 </div>
-                <span
-                  className={`font-mono text-xs font-bold ${
-                    permissions.canViewAudit
-                      ? "text-[#009A44]"
-                      : "text-[#6B7280]"
-                  }`}
-                >
-                  {permissions.canViewAudit ? "ON" : "OFF"}
-                </span>
+
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={`font-mono text-xs font-bold transition-colors duration-150 ${
+                      permissions.canViewAudit
+                        ? "text-[#009A44]"
+                        : "text-[#6B7280]"
+                    }`}
+                  >
+                    {permissions.canViewAudit ? "ON" : "OFF"}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      permissions.canViewAudit ? "bg-[#009A44]" : "bg-[#CBD5E1]"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                        permissions.canViewAudit ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </span>
+                </div>
               </button>
 
+              {/* 3. Dashboards */}
               <button
                 type="button"
                 role="switch"
                 aria-checked={permissions.canManageDashboards}
                 onClick={() => handlePermissionToggle("canManageDashboards")}
-                className={`flex items-center justify-between rounded-sm border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
+                className={`group flex w-full items-center justify-between rounded-sm border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
                   permissions.canManageDashboards
-                    ? "border-[#00338D] bg-[#00338D]/5"
+                    ? "border-[#00338D]/40 bg-[#00338D]/[0.03]"
                     : "border-[#D8DFE9] bg-white hover:bg-[#F8FAFC]"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-xs ${
+                    className={`flex h-8 w-8 items-center justify-center rounded-xs transition-colors duration-150 ${
                       permissions.canManageDashboards
                         ? "bg-[#00338D] text-white"
                         : "bg-[#F4F6FA] text-[#4B5563]"
                     }`}
                   >
-                    <Gauge size={16} weight="bold" />
+                    <Gauge size={18} weight="bold" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-[#0C233C]">
                       Dashboards
                     </p>
-                    <p className="text-[10px] text-[#4B5563]">
-                      Configure layout filters
+                    <p className="text-[11px] text-[#526075]">
+                      Executive visual analytics
                     </p>
                   </div>
                 </div>
-                <span
-                  className={`font-mono text-xs font-bold ${
-                    permissions.canManageDashboards
-                      ? "text-[#009A44]"
-                      : "text-[#6B7280]"
-                  }`}
-                >
-                  {permissions.canManageDashboards ? "ON" : "OFF"}
-                </span>
-              </button>
 
-              <button
-                type="button"
-                role="switch"
-                aria-checked={permissions.canExportData}
-                onClick={() => handlePermissionToggle("canExportData")}
-                className={`flex items-center justify-between rounded-sm border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
-                  permissions.canExportData
-                    ? "border-[#00338D] bg-[#00338D]/5"
-                    : "border-[#D8DFE9] bg-white hover:bg-[#F8FAFC]"
-                }`}
-              >
                 <div className="flex items-center gap-2.5">
-                  <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-xs ${
-                      permissions.canExportData
-                        ? "bg-[#00338D] text-white"
-                        : "bg-[#F4F6FA] text-[#4B5563]"
+                  <span
+                    className={`font-mono text-xs font-bold transition-colors duration-150 ${
+                      permissions.canManageDashboards
+                        ? "text-[#009A44]"
+                        : "text-[#6B7280]"
                     }`}
                   >
-                    <FileArrowDown size={16} weight="bold" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-[#0C233C]">
-                      Data Export
-                    </p>
-                    <p className="text-[10px] text-[#4B5563]">
-                      Download reports
-                    </p>
-                  </div>
+                    {permissions.canManageDashboards ? "ON" : "OFF"}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      permissions.canManageDashboards ? "bg-[#009A44]" : "bg-[#CBD5E1]"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                        permissions.canManageDashboards ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </span>
                 </div>
-                <span
-                  className={`font-mono text-xs font-bold ${
-                    permissions.canExportData
-                      ? "text-[#009A44]"
-                      : "text-[#6B7280]"
-                  }`}
-                >
-                  {permissions.canExportData ? "ON" : "OFF"}
-                </span>
               </button>
             </div>
           </div>

@@ -372,7 +372,9 @@ export function createPersona(
         canLaunchProducts: Boolean(input.permissions?.canLaunchProducts),
         canViewAudit: Boolean(input.permissions?.canViewAudit),
         canManageDashboards: Boolean(input.permissions?.canManageDashboards),
-        canExportData: Boolean(input.permissions?.canExportData),
+        ...(input.permissions?.canExportData !== undefined
+          ? { canExportData: Boolean(input.permissions.canExportData) }
+          : {}),
       },
       createdAt: now,
       updatedAt: now,
@@ -482,10 +484,11 @@ export function updatePersona(
           input.permissions?.canManageDashboards !== undefined
             ? Boolean(input.permissions.canManageDashboards)
             : existing.permissions.canManageDashboards,
-        canExportData:
-          input.permissions?.canExportData !== undefined
-            ? Boolean(input.permissions.canExportData)
-            : existing.permissions.canExportData,
+        ...(input.permissions?.canExportData !== undefined
+          ? { canExportData: Boolean(input.permissions.canExportData) }
+          : existing.permissions.canExportData !== undefined
+          ? { canExportData: existing.permissions.canExportData }
+          : {}),
       },
       updatedAt: new Date().toISOString(),
     };
@@ -534,6 +537,10 @@ export function getEffectiveProductIdsForPersona(
     (p) => p.id === personaId && p.companyId === companyId
   );
   if (!persona) {
+    return [];
+  }
+
+  if (!persona.permissions.canLaunchProducts) {
     return [];
   }
 

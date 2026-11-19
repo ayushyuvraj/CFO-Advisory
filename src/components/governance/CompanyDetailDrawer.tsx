@@ -620,7 +620,7 @@ function DrawerInner({
                                 : "bg-gray-100 text-[#6B7280] line-through"
                             }`}
                           >
-                            Launch:{" "}
+                            Catalog:{" "}
                             {persona.permissions.canLaunchProducts ? "ON" : "OFF"}
                           </span>
                           <span
@@ -645,19 +645,11 @@ function DrawerInner({
                               ? "ON"
                               : "OFF"}
                           </span>
-                          <span
-                            className={`rounded-xs px-2 py-0.5 ${
-                              persona.permissions.canExportData
-                                ? "bg-[#009A44]/10 text-[#009A44] font-semibold"
-                                : "bg-gray-100 text-[#6B7280] line-through"
-                            }`}
-                          >
-                            Export:{" "}
-                            {persona.permissions.canExportData ? "ON" : "OFF"}
-                          </span>
                           <span className="rounded-xs bg-[#F4F6FA] px-2 py-0.5 text-[#4B5563]">
                             Scope:{" "}
-                            {persona.productAccessMode === "all"
+                            {!persona.permissions.canLaunchProducts
+                              ? "Catalog Disabled"
+                              : persona.productAccessMode === "all"
                               ? `All Company Products (${companyEntitledProductIds.length})`
                               : `${effectiveCustomCount} Active Product${
                                   effectiveCustomCount !== 1 ? "s" : ""
