@@ -71,14 +71,14 @@ export function CatalogControlBar({
       countLabel={`${filteredCount} ${filteredCount === 1 ? "platform" : "platforms"}`}
     >
       {/* View Switcher: Grid vs Table */}
-      <div className="flex items-center rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-0.5">
+      <div className="flex h-[30px] items-center rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-0.5 box-border">
         <button
           type="button"
           onClick={() => onViewModeChange("grid")}
           title="Grid view"
           aria-label="Grid view"
           aria-pressed={viewMode === "grid"}
-          className={`flex h-7 w-7 items-center justify-center rounded-xs transition-colors duration-100 ${
+          className={`flex h-[24px] w-[26px] items-center justify-center rounded-xs transition-colors duration-100 ${
             viewMode === "grid"
               ? "bg-white text-[#0C233C] shadow-xs font-bold"
               : "text-[#526075] hover:text-[#0C233C]"
@@ -92,7 +92,7 @@ export function CatalogControlBar({
           title="Table view"
           aria-label="Table view"
           aria-pressed={viewMode === "table"}
-          className={`flex h-7 w-7 items-center justify-center rounded-xs transition-colors duration-100 ${
+          className={`flex h-[24px] w-[26px] items-center justify-center rounded-xs transition-colors duration-100 ${
             viewMode === "table"
               ? "bg-white text-[#0C233C] shadow-xs font-bold"
               : "text-[#526075] hover:text-[#0C233C]"
@@ -107,7 +107,7 @@ export function CatalogControlBar({
         <InteractiveHoverButton
           onClick={onOpenAddModal}
           text="Add Product"
-          className="h-8 min-w-[125px] text-xs font-medium"
+          className="h-[30px] min-w-[120px] text-xs font-medium"
         />
       )}
     </UnifiedWorkflowsBar>

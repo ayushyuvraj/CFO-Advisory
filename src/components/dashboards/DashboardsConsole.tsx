@@ -433,7 +433,7 @@ export function DashboardsConsole({
             void fetchDatasets();
           }}
           aria-label="Refresh dashboards list"
-          className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#F8FAFC]"
+          className="inline-flex h-[30px] items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-0 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#F8FAFC] box-border"
         >
           <ArrowClockwise size={14} weight="bold" />
           <span>Refresh</span>
@@ -444,7 +444,7 @@ export function DashboardsConsole({
             <button
               type="button"
               onClick={() => setIsImportOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#00338D] transition-colors hover:bg-[#F4F6FA]"
+              className="inline-flex h-[30px] items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-0 text-xs font-semibold text-[#00338D] transition-colors hover:bg-[#F4F6FA] box-border"
               title="Import JSON template"
             >
               <UploadSimple size={14} weight="bold" />
@@ -454,7 +454,7 @@ export function DashboardsConsole({
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
+              className="inline-flex h-[30px] items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-0 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2] box-border"
             >
               <PlusCircle size={15} weight="bold" />
               <span>New Dashboard</span>

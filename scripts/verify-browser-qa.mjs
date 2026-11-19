@@ -582,20 +582,26 @@ async function runQAPass(baseUrl, label) {
     }
   }
 
-  // Final 4-Tab Coordinate Summary
+  // Final 4-Tab Coordinate & Thickness Summary
   if (catalogBarRect && auditBarRect && dashBarRect && govBarRect) {
     const coords = [catalogBarRect.top, auditBarRect.top, dashBarRect.top, govBarRect.top];
+    const heights = [catalogBarRect.height, auditBarRect.height, dashBarRect.height, govBarRect.height];
     const maxDelta = Math.max(...coords) - Math.min(...coords);
+    const maxHeightDelta = Math.max(...heights) - Math.min(...heights);
     console.log(`\n======================================================`);
-    console.log(`[4-TAB SEAMLESS ALIGNMENT VERDICT]`);
-    console.log(`Catalog Top:    ${catalogBarRect.top}px`);
-    console.log(`Audit Top:      ${auditBarRect.top}px`);
-    console.log(`Dashboards Top: ${dashBarRect.top}px`);
-    console.log(`Governance Top: ${govBarRect.top}px`);
-    console.log(`Maximum Delta Across All 4 Tabs: ${maxDelta}px`);
+    console.log(`[4-TAB SEAMLESS ALIGNMENT & THICKNESS VERDICT]`);
+    console.log(`Catalog:    Top = ${catalogBarRect.top}px, Height = ${catalogBarRect.height}px`);
+    console.log(`Audit:      Top = ${auditBarRect.top}px, Height = ${auditBarRect.height}px`);
+    console.log(`Dashboards: Top = ${dashBarRect.top}px, Height = ${dashBarRect.height}px`);
+    console.log(`Governance: Top = ${govBarRect.top}px, Height = ${govBarRect.height}px`);
+    console.log(`Maximum Vertical Coordinate Delta: ${maxDelta}px`);
+    console.log(`Maximum Thickness (Height) Delta:  ${maxHeightDelta}px`);
     console.log(`======================================================\n`);
-    if (maxDelta > 2) {
-      defects.push(`FAIL: 4-Tab maximum vertical delta exceeds tolerance (${maxDelta}px > 2px).`);
+    if (maxDelta > 1) {
+      defects.push(`FAIL: 4-Tab maximum vertical delta exceeds tolerance (${maxDelta}px > 1px).`);
+    }
+    if (maxHeightDelta > 1) {
+      defects.push(`FAIL: 4-Tab maximum thickness (height) delta exceeds tolerance (${maxHeightDelta}px > 1px).`);
     }
   }
 

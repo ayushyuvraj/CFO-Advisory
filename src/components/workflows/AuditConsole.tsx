@@ -192,7 +192,7 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
           aria-label="Filter telemetry by product"
           value={selectedProduct}
           onChange={(e) => setSelectedProduct(e.target.value)}
-          className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#0C233C] focus:outline-none"
+          className="h-[30px] rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-0 font-mono text-xs text-[#0C233C] focus:border-[#0C233C] focus:outline-none box-border"
         >
           <option value="ALL">All Products</option>
           {productFilterOptions.map((opt) => (
@@ -205,7 +205,7 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
         {/* Live Ingestion Indicator & Refresh Action */}
         <div className="flex items-center gap-1.5">
           <span
-            className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-1.5 font-mono text-[11px] text-[#526075]"
+            className="inline-flex h-[30px] items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-0 font-mono text-[11px] text-[#526075] box-border"
             title="Real-time telemetry continuous ingestion"
           >
             <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" />
@@ -215,7 +215,7 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
           <button
             type="button"
             onClick={() => void handleManualRefresh()}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#F8FAFC] active:scale-[0.98]"
+            className="inline-flex h-[30px] items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-0 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#F8FAFC] active:scale-[0.98] box-border"
             title="Refresh telemetry"
           >
             <ArrowsClockwise
