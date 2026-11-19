@@ -46,7 +46,7 @@ export function ProductTableView({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-xs">
           <thead>
-            <tr className="border-b border-[#D8DFE9] bg-[#F8FAFC] font-mono text-[11px] text-[#526075] uppercase">
+            <tr className="border-b border-[#D8DFE9] bg-[#F8FAFC] font-mono text-[11px] font-semibold uppercase text-[#526075]">
               <th className="py-2.5 px-4 font-semibold">
                 Status
               </th>
@@ -58,7 +58,7 @@ export function ProductTableView({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#F1F5F9]">
+          <tbody className="divide-y divide-[#D8DFE9]">
             {products.map((platform) => {
               const probe = probes?.[platform.id];
               const currentStatus = probe

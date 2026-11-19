@@ -1,0 +1,105 @@
+"use client";
+
+import { SlidersHorizontal } from "@phosphor-icons/react";
+import { CompanyProfile, CompanyEntitlement } from "@/lib/governance/types";
+import { ConnectedPlatform } from "@/data/platforms";
+
+interface CompanyTableViewProps {
+  companies: CompanyProfile[];
+  entitlements: CompanyEntitlement[];
+  availableProducts: ConnectedPlatform[];
+  onManage: (companyId: string) => void;
+}
+
+export function CompanyTableView({
+  companies,
+  entitlements,
+  availableProducts,
+  onManage,
+}: CompanyTableViewProps) {
+  const registeredProductIds = new Set(availableProducts.map((p) => p.id));
+
+  return (
+    <div className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-left text-xs">
+          <thead>
+            <tr className="border-b border-[#D8DFE9] bg-[#F8FAFC] font-mono text-[11px] font-semibold uppercase text-[#526075]">
+              <th className="py-2.5 px-4">Status</th>
+              <th className="py-2.5 px-4">Organization</th>
+              <th className="py-2.5 px-4">Entitlements</th>
+              <th className="py-2.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#D8DFE9]">
+            {companies.map((company) => {
+              const isOperational = company.status === "active";
+              const enabledCount = entitlements.filter(
+                (e) =>
+                  e.companyId === company.id &&
+                  e.enabled &&
+                  registeredProductIds.has(e.productId)
+              ).length;
+
+              return (
+                <tr
+                  key={company.id}
+                  className="transition-colors duration-100 hover:bg-[#F8FAFC]"
+                >
+                  {/* Status Indicator */}
+                  <td className="whitespace-nowrap py-3 px-4">
+                    <span
+                      className={`inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold ${
+                        isOperational ? "text-[#009A44]" : "text-red-700"
+                      }`}
+                    >
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          isOperational
+                            ? "bg-[#009A44] animate-pulse"
+                            : "bg-red-600"
+                        }`}
+                      />
+                      {isOperational ? "Active" : "Suspended"}
+                    </span>
+                  </td>
+
+                  {/* Organization Name + Code */}
+                  <td className="py-3 px-4">
+                    <div
+                      onClick={() => onManage(company.id)}
+                      className="cursor-pointer font-sans font-semibold text-[#0C233C] transition-colors hover:text-[#00338D]"
+                    >
+                      <span>{company.name}</span>
+                      <span className="ml-2 rounded-xs border border-[#D8DFE9] bg-[#F8FAFC] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#00338D]">
+                        {company.code}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Entitlements Count */}
+                  <td className="whitespace-nowrap py-3 px-4 font-mono text-[11px] text-[#526075]">
+                    {enabledCount} / {availableProducts.length} Active
+                  </td>
+
+                  {/* Actions */}
+                  <td className="whitespace-nowrap py-3 px-4 text-right">
+                    <button
+                      type="button"
+                      onClick={() => onManage(company.id)}
+                      title={`Manage access and personas for ${company.name}`}
+                      aria-label={`Manage access for ${company.name}`}
+                      className="inline-flex h-7.5 w-7.5 items-center justify-center rounded-sm bg-[#00338D] text-white shadow-xs transition-all duration-150 hover:bg-[#1E49E2] hover:scale-110 hover:shadow-md active:scale-[0.92]"
+                    >
+                      <SlidersHorizontal size={16} weight="bold" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

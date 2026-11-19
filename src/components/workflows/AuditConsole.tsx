@@ -292,17 +292,17 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
-              <tr className="border-b border-[#D8DFE9] bg-[#F4F6FA] font-mono text-[11px] font-semibold uppercase text-[#4B5563]">
-                  <th className="py-3 px-4">Timestamp (UTC)</th>
-                  <th className="py-3 px-4">Product</th>
-                  <th className="py-3 px-4">Action / Workflow Step</th>
-                  <th className="py-3 px-4">Entity ID</th>
-                  <th className="py-3 px-4">Model Used</th>
-                  <th className="py-3 px-4">Tokens</th>
-                  <th className="py-3 px-4">Latency</th>
-                  <th className="py-3 px-4">Cost</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Audit</th>
+              <tr className="border-b border-[#D8DFE9] bg-[#F8FAFC] font-mono text-[11px] font-semibold uppercase text-[#526075]">
+                  <th className="py-2.5 px-4">Timestamp (UTC)</th>
+                  <th className="py-2.5 px-4">Product</th>
+                  <th className="py-2.5 px-4">Action / Workflow Step</th>
+                  <th className="py-2.5 px-4">Entity ID</th>
+                  <th className="py-2.5 px-4">Model Used</th>
+                  <th className="py-2.5 px-4">Tokens</th>
+                  <th className="py-2.5 px-4">Latency</th>
+                  <th className="py-2.5 px-4">Cost</th>
+                  <th className="py-2.5 px-4">Status</th>
+                  <th className="py-2.5 px-4 text-right">Audit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#D8DFE9]">

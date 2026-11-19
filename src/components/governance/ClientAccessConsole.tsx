@@ -5,12 +5,10 @@ import { motion } from "motion/react";
 import {
   Buildings,
   Cpu,
-  MagnifyingGlass,
+  GridFour,
+  List,
   PlusCircle,
   SlidersHorizontal,
-  ToggleLeft,
-  ToggleRight,
-  UsersThree,
   WarningCircle,
 } from "@phosphor-icons/react";
 import {
@@ -22,10 +20,12 @@ import {
 import { ConnectedPlatform } from "@/data/platforms";
 import { CreateCompanyModal } from "./CreateCompanyModal";
 import { CompanyDetailDrawer } from "./CompanyDetailDrawer";
+import { ProductAccessDrawer } from "./ProductAccessDrawer";
+import { CompanyTableView } from "./CompanyTableView";
+import { UnifiedHubCard } from "@/components/workflows/UnifiedHubCard";
+import { useWorkflowsNav } from "@/context/WorkflowsNavContext";
 import {
   UnifiedWorkflowsBar,
-  FilterOptionItem,
-  SortOptionItem,
 } from "@/components/workflows/UnifiedWorkflowsBar";
 
 interface ClientAccessConsoleProps {
@@ -35,7 +35,8 @@ interface ClientAccessConsoleProps {
 export function ClientAccessConsole({
   availableProducts,
 }: ClientAccessConsoleProps) {
-  const [viewMode, setViewMode] = useState<"by-company" | "by-product">(
+  const { viewMode, setViewMode } = useWorkflowsNav();
+  const [governanceScope, setGovernanceScope] = useState<"by-company" | "by-product">(
     "by-company"
   );
   const [governanceData, setGovernanceData] = useState<ClientGovernanceData>({
@@ -50,9 +51,8 @@ export function ClientAccessConsole({
   const [governanceFilter, setGovernanceFilter] = useState<"all" | "active" | "suspended">("all");
   const [governanceSort, setGovernanceSort] = useState<"name-asc" | "name-desc">("name-asc");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
-    null
-  );
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [togglingKeys, setTogglingKeys] = useState<Set<string>>(
     () => new Set()
   );
@@ -158,41 +158,33 @@ export function ClientAccessConsole({
       ...prev,
       companies: [...prev.companies, company],
     }));
-    setSelectedCompanyId(company.id);
   }, []);
 
-  const handleCompanyUpdated = useCallback((updated: CompanyProfile) => {
+  const handleCompanyUpdated = useCallback((company: CompanyProfile) => {
     setGovernanceData((prev) => ({
       ...prev,
-      companies: prev.companies.map((c) =>
-        c.id === updated.id ? updated : c
-      ),
+      companies: prev.companies.map((c) => (c.id === company.id ? company : c)),
     }));
   }, []);
 
   const handleCompanyDeleted = useCallback((companyId: string) => {
     setGovernanceData((prev) => ({
+      ...prev,
       companies: prev.companies.filter((c) => c.id !== companyId),
       entitlements: prev.entitlements.filter((e) => e.companyId !== companyId),
       personas: prev.personas.filter((p) => p.companyId !== companyId),
     }));
-    setSelectedCompanyId((prev) => (prev === companyId ? null : prev));
+    setSelectedCompanyId(null);
   }, []);
 
   const handlePersonaSaved = useCallback((persona: CompanyPersona) => {
     setGovernanceData((prev) => {
       const exists = prev.personas.some((p) => p.id === persona.id);
-      if (exists) {
-        return {
-          ...prev,
-          personas: prev.personas.map((p) =>
-            p.id === persona.id ? persona : p
-          ),
-        };
-      }
       return {
         ...prev,
-        personas: [...prev.personas, persona],
+        personas: exists
+          ? prev.personas.map((p) => (p.id === persona.id ? persona : p))
+          : [...prev.personas, persona],
       };
     });
   }, []);
@@ -204,43 +196,57 @@ export function ClientAccessConsole({
     }));
   }, []);
 
-  const selectedCompany =
-    governanceData.companies.find((c) => c.id === selectedCompanyId) || null;
-
-  const selectedCompanyEntitlements = selectedCompany
-    ? governanceData.entitlements.filter(
-        (e) => e.companyId === selectedCompany.id
-      )
-    : [];
-
-  const selectedCompanyPersonas = selectedCompany
-    ? governanceData.personas.filter((p) => p.companyId === selectedCompany.id)
-    : [];
-
+  // Filtered companies based on search, filter and sort
   const filteredCompanies = useMemo(() => {
-    let list = governanceData.companies;
-    if (governanceFilter !== "all") {
-      list = list.filter((c) => c.status === governanceFilter);
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.code.toLowerCase().includes(q) ||
-          c.contactEmail.toLowerCase().includes(q)
-      );
-    }
-    return [...list].sort((a, b) => {
-      if (governanceSort === "name-asc") return a.name.localeCompare(b.name);
-      if (governanceSort === "name-desc") return b.name.localeCompare(a.name);
-      return 0;
-    });
-  }, [governanceData.companies, governanceFilter, searchQuery, governanceSort]);
+    return governanceData.companies
+      .filter((company) => {
+        if (governanceFilter !== "all" && company.status !== governanceFilter) {
+          return false;
+        }
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase().trim();
+        return (
+          company.name.toLowerCase().includes(q) ||
+          company.code.toLowerCase().includes(q) ||
+          company.contactEmail.toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => {
+        if (governanceSort === "name-asc") {
+          return a.name.localeCompare(b.name);
+        }
+        return b.name.localeCompare(a.name);
+      });
+  }, [
+    governanceData.companies,
+    governanceFilter,
+    governanceSort,
+    searchQuery,
+  ]);
 
-  const registeredProductIds = useMemo(
-    () => new Set(availableProducts.map((p) => p.id)),
-    [availableProducts]
+  const selectedCompany = useMemo(
+    () =>
+      governanceData.companies.find((c) => c.id === selectedCompanyId) || null,
+    [governanceData.companies, selectedCompanyId]
+  );
+
+  const selectedProductForDrawer = useMemo(
+    () => availableProducts.find((p) => p.id === selectedProductId) || null,
+    [availableProducts, selectedProductId]
+  );
+
+  const selectedCompanyEntitlements = useMemo(
+    () =>
+      governanceData.entitlements.filter(
+        (e) => e.companyId === selectedCompanyId
+      ),
+    [governanceData.entitlements, selectedCompanyId]
+  );
+
+  const selectedCompanyPersonas = useMemo(
+    () =>
+      governanceData.personas.filter((p) => p.companyId === selectedCompanyId),
+    [governanceData.personas, selectedCompanyId]
   );
 
   const activeCompanyIds = useMemo(
@@ -252,13 +258,6 @@ export function ClientAccessConsole({
       ),
     [governanceData.companies]
   );
-
-  const totalActiveEntitlements = governanceData.entitlements.filter(
-    (e) =>
-      e.enabled &&
-      registeredProductIds.has(e.productId) &&
-      activeCompanyIds.has(e.companyId)
-  ).length;
 
   const handleDrawerToggleEntitlement = useCallback(
     (productId: string, enabled: boolean) => {
@@ -290,21 +289,57 @@ export function ClientAccessConsole({
         activeSort={governanceSort}
         onSortChange={(id) => setGovernanceSort(id as "name-asc" | "name-desc")}
         sortLabel="Sort"
-        countLabel={`${filteredCompanies.length} ${filteredCompanies.length === 1 ? "organization" : "organizations"}`}
+        countLabel={
+          governanceScope === "by-company"
+            ? `${filteredCompanies.length} ${filteredCompanies.length === 1 ? "organization" : "organizations"}`
+            : `${availableProducts.length} ${availableProducts.length === 1 ? "product" : "products"}`
+        }
       >
-        {/* View Switcher: By Company vs By Product */}
+        {/* View Switcher: Grid vs Table */}
+        <div className="flex h-[30px] items-center rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-0.5 box-border">
+          <button
+            type="button"
+            onClick={() => setViewMode("grid")}
+            title="Grid view"
+            aria-label="Grid view"
+            aria-pressed={viewMode === "grid"}
+            className={`flex h-[24px] w-[26px] items-center justify-center rounded-xs transition-colors duration-100 ${
+              viewMode === "grid"
+                ? "bg-white text-[#0C233C] shadow-xs font-bold"
+                : "text-[#526075] hover:text-[#0C233C]"
+            }`}
+          >
+            <GridFour size={15} weight={viewMode === "grid" ? "bold" : "regular"} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("table")}
+            title="Table view"
+            aria-label="Table view"
+            aria-pressed={viewMode === "table"}
+            className={`flex h-[24px] w-[26px] items-center justify-center rounded-xs transition-colors duration-100 ${
+              viewMode === "table"
+                ? "bg-white text-[#0C233C] shadow-xs font-bold"
+                : "text-[#526075] hover:text-[#0C233C]"
+            }`}
+          >
+            <List size={15} weight={viewMode === "table" ? "bold" : "regular"} />
+          </button>
+        </div>
+
+        {/* Subview Scope Switcher: Companies vs Products */}
         <div
           role="tablist"
-          aria-label="Governance view mode"
-          className="inline-flex h-[30px] items-center rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-0.5 text-xs box-border"
+          aria-label="Governance scope"
+          className="inline-flex h-[30px] items-center rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-0.5 text-xs box-border"
         >
           <button
             type="button"
             role="tab"
-            aria-selected={viewMode === "by-company"}
-            onClick={() => setViewMode("by-company")}
+            aria-selected={governanceScope === "by-company"}
+            onClick={() => setGovernanceScope("by-company")}
             className={`inline-flex h-[24px] items-center gap-1.5 rounded-xs px-2.5 py-0 text-xs font-semibold transition-all box-border ${
-              viewMode === "by-company"
+              governanceScope === "by-company"
                 ? "bg-white text-[#00338D] shadow-xs"
                 : "text-[#4B5563] hover:text-[#0C233C]"
             }`}
@@ -315,10 +350,10 @@ export function ClientAccessConsole({
           <button
             type="button"
             role="tab"
-            aria-selected={viewMode === "by-product"}
-            onClick={() => setViewMode("by-product")}
+            aria-selected={governanceScope === "by-product"}
+            onClick={() => setGovernanceScope("by-product")}
             className={`inline-flex h-[24px] items-center gap-1.5 rounded-xs px-2.5 py-0 text-xs font-semibold transition-all box-border ${
-              viewMode === "by-product"
+              governanceScope === "by-product"
                 ? "bg-white text-[#00338D] shadow-xs"
                 : "text-[#4B5563] hover:text-[#0C233C]"
             }`}
@@ -366,7 +401,14 @@ export function ClientAccessConsole({
         transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
       >
         {isLoading ? (
-        <div className="h-48 animate-pulse rounded-sm border border-[#D8DFE9] bg-white" />
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((k) => (
+            <div
+              key={k}
+              className="h-44 animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]"
+            />
+          ))}
+        </div>
       ) : loadError ? (
         <div
           role="alert"
@@ -378,7 +420,7 @@ export function ClientAccessConsole({
           </h3>
           <p className="mt-1 text-xs text-[#4B5563]">{loadError}</p>
         </div>
-      ) : viewMode === "by-company" ? (
+      ) : governanceScope === "by-company" ? (
         governanceData.companies.length === 0 ? (
           <div className="rounded-sm border border-dashed border-[#D8DFE9] bg-white px-6 py-16 text-center shadow-xs">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
@@ -412,99 +454,63 @@ export function ClientAccessConsole({
               Clear Search
             </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        ) : viewMode === "grid" ? (
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
             {filteredCompanies.map((company) => {
-              const enabledCount = governanceData.entitlements.filter(
-                (e) =>
-                  e.companyId === company.id &&
-                  e.enabled &&
-                  registeredProductIds.has(e.productId)
-              ).length;
-              const personaCount = governanceData.personas.filter(
-                (p) => p.companyId === company.id
-              ).length;
-
+              const isOperational = company.status === "active";
               return (
-                <div
+                <UnifiedHubCard
                   key={company.id}
-                  className="flex flex-col justify-between rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-xs transition-all hover:border-[#00338D] hover:shadow-md"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
-                          <Buildings size={20} weight="bold" />
-                        </div>
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-base font-bold text-[#0C233C]">
-                              {company.name}
-                            </h3>
-                            <span className="rounded-xs border border-[#D8DFE9] bg-[#F8FAFC] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#00338D]">
-                              {company.code}
-                            </span>
-                          </div>
-                          <p className="text-xs text-[#4B5563]">
-                            {company.contactEmail}
-                          </p>
-                        </div>
-                      </div>
+                  dataCardId={company.id}
+                  icon={<Buildings size={19} weight="bold" />}
+                  badge={
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-xs px-2 py-0.5 font-mono text-[11px] font-semibold transition-all duration-200 ${
+                        isOperational
+                          ? "bg-[#009A44]/10 text-[#009A44]"
+                          : "bg-red-500/10 text-red-700"
+                      }`}
+                    >
                       <span
-                        className={`rounded-xs px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
-                          company.status === "active"
-                            ? "bg-[#009A44]/10 text-[#009A44]"
-                            : "bg-[#B91C1C]/10 text-[#B91C1C]"
+                        className={`h-2 w-2 rounded-full ${
+                          isOperational ? "bg-[#009A44] animate-pulse" : "bg-red-600"
                         }`}
-                      >
-                        {company.status}
-                      </span>
-                    </div>
-
-                    {company.notes && (
-                      <p className="mt-3 text-xs text-[#4B5563] line-clamp-2">
-                        {company.notes}
-                      </p>
-                    )}
-
-                    <div className="mt-4 grid grid-cols-2 gap-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-3 text-xs">
-                      <div>
-                        <span className="text-[11px] text-[#4B5563]">
-                          Product Entitlements
-                        </span>
-                        <p className="font-mono font-bold text-[#0C233C]">
-                          {enabledCount} / {availableProducts.length} Active
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-[#4B5563]">
-                          Assigned Personas
-                        </span>
-                        <p className="font-mono font-bold text-[#0C233C]">
-                          {personaCount} Persona{personaCount !== 1 ? "s" : ""}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-end border-t border-[#D8DFE9] pt-3.5">
+                      />
+                      {isOperational ? "Active" : "Suspended"}
+                    </span>
+                  }
+                  title={company.name}
+                  onTitleClick={() => setSelectedCompanyId(company.id)}
+                  onClick={() => setSelectedCompanyId(company.id)}
+                  actions={
                     <button
                       type="button"
-                      onClick={() => setSelectedCompanyId(company.id)}
-                      className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#1E49E2]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedCompanyId(company.id);
+                      }}
+                      title={`Manage access and personas for ${company.name}`}
+                      aria-label={`Manage access for ${company.name}`}
+                      className="flex h-7.5 w-7.5 items-center justify-center rounded-sm bg-[#00338D] text-white shadow-xs transition-all duration-150 hover:bg-[#1E49E2] hover:scale-110 hover:shadow-md active:scale-[0.92]"
                     >
-                      <SlidersHorizontal size={14} weight="bold" />
-                      <span>Manage Access & Personas</span>
+                      <SlidersHorizontal size={16} weight="bold" />
                     </button>
-                  </div>
-                </div>
+                  }
+                />
               );
             })}
           </div>
+        ) : (
+          <CompanyTableView
+            companies={filteredCompanies}
+            entitlements={governanceData.entitlements}
+            availableProducts={availableProducts}
+            onManage={(id) => setSelectedCompanyId(id)}
+          />
         )
       ) : (
-        /* VIEW 2: BY PRODUCT (Direct 1-Click Company Matrix) */
-        <div className="space-y-5">
+        /* VIEW 2: BY PRODUCT (Unified 4-Card Grid) */
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
           {availableProducts.map((platform) => {
             const entitledCompaniesCount = governanceData.entitlements.filter(
               (e) =>
@@ -514,118 +520,33 @@ export function ClientAccessConsole({
             ).length;
 
             return (
-              <div
+              <UnifiedHubCard
                 key={platform.id}
-                className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-[#00338D] text-white">
-                      <Cpu size={20} weight="bold" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-[#0C233C]">
-                        {platform.title}
-                      </h3>
-                      <p className="font-mono text-xs text-[#4B5563]">
-                        ID: {platform.id} · Frontend Port {platform.portFrontend}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="rounded-sm border border-[#D8DFE9] bg-white px-3 py-1.5 font-mono text-xs font-semibold text-[#00338D]">
-                    {entitledCompaniesCount} of {activeCompanyIds.size} Active
-                    Companies Entitled
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  {governanceData.companies.length === 0 ? (
-                    <div className="rounded-sm border border-dashed border-[#D8DFE9] bg-[#F8FAFC] p-6 text-center">
-                      <p className="text-xs font-medium text-[#4B5563]">
-                        No client companies exist yet. Create a company profile first to toggle access to this platform.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      {governanceData.companies.map((company) => {
-                        const isEnabled = governanceData.entitlements.some(
-                          (e) =>
-                            e.companyId === company.id &&
-                            e.productId === platform.id &&
-                            e.enabled
-                        );
-                        const isToggling = togglingKeys.has(
-                          `${company.id}:${platform.id}`
-                        );
-
-                        return (
-                          <div
-                            key={company.id}
-                            className={`flex items-center justify-between rounded-sm border p-3.5 transition-all ${
-                              company.status === "suspended"
-                                ? "border-[#B91C1C]/30 bg-[#B91C1C]/5"
-                                : isEnabled
-                                ? "border-[#009A44]/40 bg-[#009A44]/5"
-                                : "border-[#D8DFE9] bg-white"
-                            }`}
-                          >
-                            <div>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-sm font-bold text-[#0C233C]">
-                                  {company.name}
-                                </span>
-                                <span className="font-mono text-[10px] text-[#4B5563]">
-                                  ({company.code})
-                                </span>
-                                {company.status === "suspended" && (
-                                  <span className="rounded-xs bg-[#B91C1C]/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-[#B91C1C] uppercase">
-                                    SUSPENDED
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-[11px] text-[#4B5563]">
-                                {company.contactEmail}
-                              </p>
-                            </div>
-
-                            <button
-                              type="button"
-                              role="switch"
-                              aria-checked={isEnabled}
-                              aria-label={`Toggle ${platform.title} for ${company.name}`}
-                              disabled={isToggling}
-                              onClick={() =>
-                                void handleToggleEntitlement(
-                                  company.id,
-                                  platform.id,
-                                  !isEnabled
-                                ).catch(() => {})
-                              }
-                              className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs font-semibold transition-all disabled:opacity-60 ${
-                                isEnabled
-                                  ? "bg-[#009A44] text-white shadow-xs hover:bg-[#007A34]"
-                                  : "border border-[#D8DFE9] bg-white text-[#4B5563] hover:border-[#00338D] hover:text-[#00338D]"
-                              }`}
-                            >
-                              {isEnabled ? (
-                                <>
-                                  <ToggleRight size={17} weight="fill" />
-                                  <span>ON</span>
-                                </>
-                              ) : (
-                                <>
-                                  <ToggleLeft size={17} weight="regular" />
-                                  <span>OFF</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
+                dataCardId={platform.id}
+                icon={<Cpu size={19} weight="bold" />}
+                badge={
+                  <span className="inline-flex items-center gap-1 rounded-xs border border-[#009A44]/30 bg-[#009A44]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#009A44]">
+                    {entitledCompaniesCount} Active
+                  </span>
+                }
+                title={platform.title}
+                onTitleClick={() => setSelectedProductId(platform.id)}
+                onClick={() => setSelectedProductId(platform.id)}
+                actions={
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedProductId(platform.id);
+                    }}
+                    title={`Manage client entitlements for ${platform.title}`}
+                    aria-label={`Manage client entitlements for ${platform.title}`}
+                    className="flex h-7.5 w-7.5 items-center justify-center rounded-sm bg-[#00338D] text-white shadow-xs transition-all duration-150 hover:bg-[#1E49E2] hover:scale-110 hover:shadow-md active:scale-[0.92]"
+                  >
+                    <SlidersHorizontal size={16} weight="bold" />
+                  </button>
+                }
+              />
             );
           })}
         </div>
@@ -651,6 +572,16 @@ export function ClientAccessConsole({
         onPersonaDeleted={handlePersonaDeleted}
         onCompanyUpdated={handleCompanyUpdated}
         onCompanyDeleted={handleCompanyDeleted}
+      />
+
+      <ProductAccessDrawer
+        isOpen={Boolean(selectedProductForDrawer)}
+        onClose={() => setSelectedProductId(null)}
+        platform={selectedProductForDrawer}
+        companies={governanceData.companies}
+        entitlements={governanceData.entitlements}
+        togglingKeys={togglingKeys}
+        onToggleEntitlement={handleToggleEntitlement}
       />
     </div>
   );

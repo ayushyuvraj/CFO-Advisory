@@ -1,3 +1,24 @@
 {
-  "dashboards": []
+  "dashboards": [
+    {
+      "id": "dsh_9ff26d66fd2f",
+      "title": "test1",
+      "description": "notes",
+      "ownerType": "kpmg",
+      "ownerUserId": "usr-kpmg-lead",
+      "ownerName": "KPMG Lead",
+      "visibility": "kpmg_only",
+      "assignedCompanyIds": [],
+      "refreshIntervalSec": 0,
+      "pages": [
+        {
+          "id": "pg_ab91ae06",
+          "title": "Page 1",
+          "widgets": []
+        }
+      ],
+      "createdAt": "2026-11-19T11:32:36.202Z",
+      "updatedAt": "2026-11-19T11:32:39.102Z"
+    }
+  ]
 }
