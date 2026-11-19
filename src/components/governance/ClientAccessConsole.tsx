@@ -22,6 +22,7 @@ import { CreateCompanyModal } from "./CreateCompanyModal";
 import { CompanyDetailDrawer } from "./CompanyDetailDrawer";
 import { ProductAccessDrawer } from "./ProductAccessDrawer";
 import { CompanyTableView } from "./CompanyTableView";
+import { ProductGovernanceTableView } from "./ProductGovernanceTableView";
 import { UnifiedHubCard } from "@/components/workflows/UnifiedHubCard";
 import { useWorkflowsNav } from "@/context/WorkflowsNavContext";
 import {
@@ -504,11 +505,12 @@ export function ClientAccessConsole({
           <CompanyTableView
             companies={filteredCompanies}
             entitlements={governanceData.entitlements}
+            personas={governanceData.personas}
             availableProducts={availableProducts}
             onManage={(id) => setSelectedCompanyId(id)}
           />
         )
-      ) : (
+      ) : viewMode === "grid" ? (
         /* VIEW 2: BY PRODUCT (Unified 4-Card Grid) */
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
           {availableProducts.map((platform) => {
@@ -550,6 +552,14 @@ export function ClientAccessConsole({
             );
           })}
         </div>
+      ) : (
+        /* VIEW 2: BY PRODUCT (Standardized Table View) */
+        <ProductGovernanceTableView
+          products={availableProducts}
+          companies={governanceData.companies}
+          entitlements={governanceData.entitlements}
+          onManage={(id) => setSelectedProductId(id)}
+        />
       )}
       </motion.div>
 

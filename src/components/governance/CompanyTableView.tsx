@@ -1,12 +1,17 @@
 "use client";
 
 import { SlidersHorizontal } from "@phosphor-icons/react";
-import { CompanyProfile, CompanyEntitlement } from "@/lib/governance/types";
+import {
+  CompanyProfile,
+  CompanyEntitlement,
+  CompanyPersona,
+} from "@/lib/governance/types";
 import { ConnectedPlatform } from "@/data/platforms";
 
 interface CompanyTableViewProps {
   companies: CompanyProfile[];
   entitlements: CompanyEntitlement[];
+  personas?: CompanyPersona[];
   availableProducts: ConnectedPlatform[];
   onManage: (companyId: string) => void;
 }
@@ -14,6 +19,7 @@ interface CompanyTableViewProps {
 export function CompanyTableView({
   companies,
   entitlements,
+  personas = [],
   availableProducts,
   onManage,
 }: CompanyTableViewProps) {
@@ -25,10 +31,12 @@ export function CompanyTableView({
         <table className="w-full border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-[#D8DFE9] bg-[#F8FAFC] font-mono text-[11px] font-semibold uppercase text-[#526075]">
-              <th className="py-2.5 px-4">Status</th>
-              <th className="py-2.5 px-4">Organization</th>
-              <th className="py-2.5 px-4">Entitlements</th>
-              <th className="py-2.5 px-4 text-right">Actions</th>
+              <th className="py-2.5 px-4 font-semibold">Status</th>
+              <th className="py-2.5 px-4 font-semibold">Organization</th>
+              <th className="py-2.5 px-4 font-semibold">Code</th>
+              <th className="py-2.5 px-4 font-semibold">Entitlements</th>
+              <th className="py-2.5 px-4 font-semibold">Personas</th>
+              <th className="py-2.5 px-4 text-right font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#D8DFE9]">
@@ -39,6 +47,9 @@ export function CompanyTableView({
                   e.companyId === company.id &&
                   e.enabled &&
                   registeredProductIds.has(e.productId)
+              ).length;
+              const personaCount = personas.filter(
+                (p) => p.companyId === company.id
               ).length;
 
               return (
@@ -64,22 +75,29 @@ export function CompanyTableView({
                     </span>
                   </td>
 
-                  {/* Organization Name + Code */}
+                  {/* Organization Name (Separate from Code) */}
                   <td className="py-3 px-4">
                     <div
                       onClick={() => onManage(company.id)}
                       className="cursor-pointer font-sans font-semibold text-[#0C233C] transition-colors hover:text-[#00338D]"
                     >
-                      <span>{company.name}</span>
-                      <span className="ml-2 rounded-xs border border-[#D8DFE9] bg-[#F8FAFC] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#00338D]">
-                        {company.code}
-                      </span>
+                      {company.name}
                     </div>
+                  </td>
+
+                  {/* Dedicated Organization Code Column */}
+                  <td className="whitespace-nowrap py-3 px-4 font-mono text-xs font-semibold text-[#00338D]">
+                    {company.code}
                   </td>
 
                   {/* Entitlements Count */}
                   <td className="whitespace-nowrap py-3 px-4 font-mono text-[11px] text-[#526075]">
                     {enabledCount} / {availableProducts.length} Active
+                  </td>
+
+                  {/* Dedicated Personas Column */}
+                  <td className="whitespace-nowrap py-3 px-4 font-mono text-[11px] text-[#526075]">
+                    {personaCount} Persona{personaCount !== 1 ? "s" : ""}
                   </td>
 
                   {/* Actions */}
