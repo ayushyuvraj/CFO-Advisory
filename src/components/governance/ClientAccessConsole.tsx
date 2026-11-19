@@ -459,6 +459,17 @@ export function ClientAccessConsole({
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
             {filteredCompanies.map((company) => {
               const isOperational = company.status === "active";
+              const registeredProductIds = new Set(availableProducts.map((p) => p.id));
+              const enabledCount = governanceData.entitlements.filter(
+                (e) =>
+                  e.companyId === company.id &&
+                  e.enabled &&
+                  registeredProductIds.has(e.productId)
+              ).length;
+              const personaCount = governanceData.personas.filter(
+                (p) => p.companyId === company.id
+              ).length;
+
               return (
                 <UnifiedHubCard
                   key={company.id}
@@ -481,8 +492,20 @@ export function ClientAccessConsole({
                     </span>
                   }
                   title={company.name}
+                  subtitle={company.code}
                   onTitleClick={() => setSelectedCompanyId(company.id)}
                   onClick={() => setSelectedCompanyId(company.id)}
+                  meta={
+                    <div className="flex items-center gap-2 font-mono text-[11px] text-[#526075]">
+                      <span title="Active Entitlements">
+                        {enabledCount} / {availableProducts.length} Active
+                      </span>
+                      <span className="text-[#D8DFE9]">•</span>
+                      <span title="Configured Personas">
+                        {personaCount} {personaCount === 1 ? "Persona" : "Personas"}
+                      </span>
+                    </div>
+                  }
                   actions={
                     <button
                       type="button"
@@ -527,13 +550,20 @@ export function ClientAccessConsole({
                 dataCardId={platform.id}
                 icon={<Cpu size={19} weight="bold" />}
                 badge={
-                  <span className="inline-flex items-center gap-1 rounded-xs border border-[#009A44]/30 bg-[#009A44]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#009A44]">
-                    {entitledCompaniesCount} Active
+                  <span className="inline-flex items-center gap-1.5 rounded-xs px-2 py-0.5 font-mono text-[11px] font-semibold bg-[#009A44]/10 text-[#009A44]">
+                    <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" />
+                    Operational
                   </span>
                 }
                 title={platform.title}
+                subtitle={platform.id}
                 onTitleClick={() => setSelectedProductId(platform.id)}
                 onClick={() => setSelectedProductId(platform.id)}
+                meta={
+                  <span className="font-mono text-[11px] text-[#526075]" title="Entitled Organizations">
+                    {entitledCompaniesCount} of {activeCompanyIds.size} Active
+                  </span>
+                }
                 actions={
                   <button
                     type="button"
