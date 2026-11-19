@@ -73,6 +73,9 @@ export function canActorViewDashboard(
   if (actor.tenantType === "kpmg") {
     return true;
   }
+  if (!actor.permissions.canManageDashboards) {
+    return false;
+  }
   const companyId = actor.companyId;
   if (!companyId) return false;
 

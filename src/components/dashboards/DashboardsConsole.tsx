@@ -66,7 +66,7 @@ export function DashboardsConsole({
   const canManage =
     !isPreviewMode &&
     (isKpmgAdmin || Boolean(user?.permissions?.canManageDashboards));
-  const canExport = isKpmgAdmin || Boolean(user?.permissions?.canExportData);
+  const canExport = isKpmgAdmin || Boolean(user?.permissions?.canManageDashboards);
 
   const [dashboards, setDashboards] = useState<DashboardDocument[]>([]);
   const [datasetsPayload, setDatasetsPayload] =

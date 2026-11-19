@@ -64,14 +64,28 @@ export default function WorkflowsPage() {
 
   const isKpmgAdmin = Boolean(user && (!user.tenantType || user.tenantType === "kpmg"));
   const isClientUser = Boolean(user && user.tenantType === "client");
+  const canAccessCatalog = isKpmgAdmin || Boolean(user?.permissions?.canLaunchProducts);
   const canViewAudit = isKpmgAdmin || Boolean(user?.permissions?.canViewAudit);
-  const canLaunchProducts = isKpmgAdmin || Boolean(user?.permissions?.canLaunchProducts);
+  const canAccessDashboards = isKpmgAdmin || Boolean(user?.permissions?.canManageDashboards);
+  const canLaunchProducts = canAccessCatalog;
+
+  // Determine fallback tab based on persona's allowed surfaces
+  const defaultAllowedTab: WorkflowsTabId =
+    canAccessCatalog
+      ? "catalog"
+      : canAccessDashboards
+      ? "dashboards"
+      : canViewAudit
+      ? "audit"
+      : "catalog";
 
   // Derive effective tab cleanly based on current role permissions
   const effectiveActiveTab: WorkflowsTabId =
     (isClientUser && activeTab === "governance") ||
-      (isClientUser && !canViewAudit && activeTab === "audit")
-      ? "catalog"
+    (isClientUser && !canViewAudit && activeTab === "audit") ||
+    (isClientUser && !canAccessDashboards && activeTab === "dashboards") ||
+    (isClientUser && !canAccessCatalog && activeTab === "catalog")
+      ? defaultAllowedTab
       : activeTab;
 
   const fetchProducts = useCallback(async () => {
@@ -204,7 +218,7 @@ export default function WorkflowsPage() {
       if (!cancelled) setDashboardCount(null);
     }, 0);
 
-    if (!user) {
+    if (!user || !canAccessDashboards) {
       return () => {
         cancelled = true;
         clearTimeout(resetTimer);
@@ -233,7 +247,7 @@ export default function WorkflowsPage() {
       cancelled = true;
       clearTimeout(resetTimer);
     };
-  }, [user, user?.id, user?.companyId, user?.personaId, isPreviewMode]);
+  }, [user, user?.id, user?.companyId, user?.personaId, isPreviewMode, canAccessDashboards]);
 
   // Poll telemetry summary ONLY when signed in, allowed to view audit, and on the Catalog tab
   const shouldPollSummary = Boolean(
@@ -284,9 +298,12 @@ export default function WorkflowsPage() {
     if (isKpmgAdmin) {
       return products;
     }
+    if (!canAccessCatalog) {
+      return [];
+    }
     const allowedIds = user?.allowedProductIds || [];
     return products.filter((p) => allowedIds.includes(p.id));
-  }, [isKpmgAdmin, products, user?.allowedProductIds]);
+  }, [isKpmgAdmin, canAccessCatalog, products, user?.allowedProductIds]);
 
   // Client-side search, dynamic health status filtering, and sorting
   const filteredProducts = useMemo(() => {
@@ -341,11 +358,11 @@ export default function WorkflowsPage() {
   // Synchronize badge metrics with top navigation header
   useEffect(() => {
     setBadges({
-      catalogCount: visibleProducts.length,
-      auditTotal: telemetrySummary?.total,
-      dashboardCount: dashboardCount,
+      catalogCount: canAccessCatalog ? visibleProducts.length : undefined,
+      auditTotal: canViewAudit ? telemetrySummary?.total : undefined,
+      dashboardCount: canAccessDashboards ? dashboardCount : null,
     });
-  }, [visibleProducts.length, telemetrySummary?.total, dashboardCount, setBadges]);
+  }, [visibleProducts.length, telemetrySummary?.total, dashboardCount, canAccessCatalog, canViewAudit, canAccessDashboards, setBadges]);
 
   // Auto-correct active tab if restricted under current persona/tenant
   useEffect(() => {
@@ -390,7 +407,7 @@ export default function WorkflowsPage() {
           )}
 
             {/* Tab 1: Solution Catalog View */}
-          {effectiveActiveTab === "catalog" && (
+          {effectiveActiveTab === "catalog" && canAccessCatalog && (
             <div className="mt-6 space-y-4">
               {/* Scalable Catalog Control Bar */}
               <CatalogControlBar
@@ -482,6 +499,21 @@ export default function WorkflowsPage() {
             </div>
           )}
 
+          {/* Catalog Access Restricted Fallback */}
+          {effectiveActiveTab === "catalog" && !canAccessCatalog && (
+            <div className="mt-6 rounded-sm border border-[#D8DFE9] bg-white px-6 py-16 text-center shadow-xs">
+              <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-sm bg-[#F4F6FA] text-[#4B5563]">
+                <LockKey size={24} weight="bold" />
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-[#0C233C]">
+                Product Catalog Restricted
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-[#4B5563]">
+                Your persona does not have permission to view or execute platforms from the Product Catalog. Contact your KPMG CFO Advisory Lead to configure access.
+              </p>
+            </div>
+          )}
+
         {/* Tab 2: Live Audit & Observability Console View */}
         {effectiveActiveTab === "audit" && canViewAudit && (
           <div className="mt-6 space-y-4">
@@ -490,7 +522,7 @@ export default function WorkflowsPage() {
         )}
 
         {/* Tab 3: Drag-and-Drop Executive Dashboards Studio & Viewer */}
-        {effectiveActiveTab === "dashboards" && (
+        {effectiveActiveTab === "dashboards" && canAccessDashboards && (
           <div className="mt-6 space-y-4">
             <DashboardsConsole onDashboardCountChange={setDashboardCount} />
           </div>

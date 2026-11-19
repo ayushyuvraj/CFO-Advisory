@@ -254,7 +254,7 @@ export function AccountMenu({
                   : "bg-[#F4F6FA] text-[#64748B]"
               }`}
             >
-              Launch: {user.permissions.canLaunchProducts ? "ON" : "OFF"}
+              Catalog: {user.permissions.canLaunchProducts ? "ON" : "OFF"}
             </span>
             <span
               className={`rounded-xs px-1.5 py-0.5 ${
@@ -272,16 +272,7 @@ export function AccountMenu({
                   : "bg-[#F4F6FA] text-[#64748B]"
               }`}
             >
-              Studio: {user.permissions.canManageDashboards ? "Edit" : "View"}
-            </span>
-            <span
-              className={`rounded-xs px-1.5 py-0.5 ${
-                user.permissions.canExportData
-                  ? "bg-[#009A44]/10 font-medium text-[#009A44]"
-                  : "bg-[#F4F6FA] text-[#64748B]"
-              }`}
-            >
-              Export: {user.permissions.canExportData ? "ON" : "OFF"}
+              Dashboards: {user.permissions.canManageDashboards ? "ON" : "OFF"}
             </span>
           </div>
         )}

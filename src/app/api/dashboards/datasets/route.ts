@@ -13,6 +13,12 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const actor = resolveDashboardActor(req);
+    if (actor.tenantType === "client" && !actor.permissions.canManageDashboards) {
+      return NextResponse.json(
+        { error: "Your persona does not have access to dashboard datasets." },
+        { status: 403 }
+      );
+    }
     const isKpmg = actor.tenantType === "kpmg";
 
     const allProducts = getAllProducts();
@@ -142,7 +148,6 @@ export async function GET(req: NextRequest) {
         p.permissions.canLaunchProducts,
         p.permissions.canViewAudit,
         p.permissions.canManageDashboards,
-        p.permissions.canExportData,
       ].filter(Boolean).length;
 
       return {
