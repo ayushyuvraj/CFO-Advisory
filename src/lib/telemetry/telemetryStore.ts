@@ -398,3 +398,32 @@ export function getTelemetryMetrics(allowedProductIds?: string[]): TelemetryMetr
     statusDistribution,
   };
 }
+
+export function getTenantEvents(
+  tenantId: string,
+  aliases: string[] = [],
+  sinceIso?: string
+): TelemetryEvent[] {
+  const events = loadAllEvents();
+  const searchSet = new Set(
+    [tenantId, ...aliases].filter(Boolean).map((s) => s.trim().toLowerCase())
+  );
+  if (searchSet.size === 0) return [];
+
+  const sinceTime = sinceIso ? new Date(sinceIso).getTime() : 0;
+
+  return events.filter((e) => {
+    const tId = (e.tenant_id || "").trim().toLowerCase();
+    const engCode = (e.engagement_code || "").trim().toLowerCase();
+    const matchesTenant = searchSet.has(tId) || searchSet.has(engCode);
+    if (!matchesTenant) return false;
+
+    if (sinceTime > 0) {
+      const evtTime = new Date(e.created_at || e.timestamp_start).getTime();
+      if (Number.isFinite(evtTime) && evtTime < sinceTime) {
+        return false;
+      }
+    }
+    return true;
+  });
+}

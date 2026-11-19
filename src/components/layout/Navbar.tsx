@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useWorkflowsNav, type WorkflowsTabId } from "@/context/WorkflowsNavContext";
 import { KpmgLogo } from "@/components/brand/KpmgLogo";
 import { AccountMenu } from "@/components/layout/AccountMenu";
+import { BudgetMeterBadge } from "@/components/governance/BudgetMeterBadge";
 
 const NAV_LINKS = [
   { label: "Horizon", href: "/#chapter-horizon" },
@@ -166,7 +167,10 @@ export function Navbar() {
         {/* Right Utility: Account Menu & Mobile Toggle (aligned to right edge 85px) */}
         <div className="flex items-center gap-3">
           {user ? (
-            <AccountMenu placement="navbar" />
+            <>
+              {user.tenantType === "client" && <BudgetMeterBadge />}
+              <AccountMenu placement="navbar" />
+            </>
           ) : (
             <button
               type="button"

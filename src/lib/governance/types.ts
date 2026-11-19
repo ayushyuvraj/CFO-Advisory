@@ -1,3 +1,12 @@
+export type SpendPeriod = "daily" | "weekly" | "monthly" | "custom_days";
+
+export interface CompanySpendLimit {
+  amountUsd: number;
+  period: SpendPeriod;
+  customDays?: number;
+  enabled: boolean;
+}
+
 export interface CompanyProfile {
   id: string;
   name: string;
@@ -5,6 +14,7 @@ export interface CompanyProfile {
   contactEmail: string;
   status: "active" | "suspended";
   notes?: string;
+  spendLimit?: CompanySpendLimit;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +44,7 @@ export interface CompanyPersona {
   productAccessMode: "all" | "custom";
   allowedProductIds: string[];
   permissions: PersonaPermissions;
+  spendLimitUsd?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -50,6 +61,7 @@ export interface CreateCompanyInput {
   contactEmail: string;
   status?: "active" | "suspended";
   notes?: string;
+  spendLimit?: CompanySpendLimit;
 }
 
 export interface UpdateCompanyInput {
@@ -58,6 +70,7 @@ export interface UpdateCompanyInput {
   contactEmail?: string;
   status?: "active" | "suspended";
   notes?: string;
+  spendLimit?: CompanySpendLimit;
 }
 
 export interface CreatePersonaInput {
@@ -68,6 +81,7 @@ export interface CreatePersonaInput {
   productAccessMode: "all" | "custom";
   allowedProductIds?: string[];
   permissions: PersonaPermissions;
+  spendLimitUsd?: number | null;
 }
 
 export interface UpdatePersonaInput {
@@ -78,4 +92,5 @@ export interface UpdatePersonaInput {
   productAccessMode?: "all" | "custom";
   allowedProductIds?: string[];
   permissions?: Partial<PersonaPermissions>;
+  spendLimitUsd?: number | null;
 }

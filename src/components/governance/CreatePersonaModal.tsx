@@ -77,6 +77,12 @@ function PersonaModalContent({
       canManageDashboards: false,
     }
   );
+  const [spendLimitUsd, setSpendLimitUsd] = useState<string>(
+    existingPersona?.spendLimitUsd !== undefined &&
+      existingPersona?.spendLimitUsd !== null
+      ? String(existingPersona.spendLimitUsd)
+      : ""
+  );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -141,6 +147,9 @@ function PersonaModalContent({
               companyEntitledProductIds.includes(id)
             );
 
+      const sanitizedSpendLimit =
+        spendLimitUsd.trim() !== "" ? Number(spendLimitUsd.trim()) : null;
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -156,6 +165,7 @@ function PersonaModalContent({
             canViewAudit: Boolean(permissions.canViewAudit),
             canManageDashboards: Boolean(permissions.canManageDashboards),
           },
+          spendLimitUsd: sanitizedSpendLimit,
         }),
       });
 
@@ -654,6 +664,39 @@ function PersonaModalContent({
                 </div>
               </button>
             </div>
+          </div>
+
+          {/* Individual AI Spend Cap */}
+          <div className="space-y-1.5 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-3.5">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="persona-spend-limit"
+                className="text-xs font-bold uppercase tracking-wide text-[#0C233C]"
+              >
+                Individual AI Spend Cap (USD)
+              </label>
+              <span className="font-mono text-[10px] text-[#526075]">
+                Optional Sub-Cap
+              </span>
+            </div>
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-xs font-bold text-[#526075]">
+                $
+              </span>
+              <input
+                id="persona-spend-limit"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="e.g. 8.00 (leave blank to share company pool)"
+                value={spendLimitUsd}
+                onChange={(e) => setSpendLimitUsd(e.target.value)}
+                className="w-full rounded-sm border border-[#D8DFE9] bg-white py-1.5 pl-7 pr-3 text-xs text-[#0C233C] placeholder-[#9CA3AF] focus:border-[#00338D] focus:outline-none"
+              />
+            </div>
+            <p className="text-[11px] text-[#526075]">
+              Maximum AI budget this persona can consume within the active period. If left blank, this persona draws from the organization's pooled ceiling.
+            </p>
           </div>
 
           {/* Submit Buttons */}

@@ -6,6 +6,7 @@ import {
   getCompanyPersonas,
   updateCompany,
 } from "@/lib/governance/store";
+import { evaluateQuotaCheck } from "@/lib/governance/quotaEngine";
 import { requireKpmgAdmin, SessionAuthError } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
@@ -27,9 +28,10 @@ export async function GET(
 
     const entitlements = getCompanyEntitlements(id);
     const personas = getCompanyPersonas(id);
+    const quota = evaluateQuotaCheck({ companyId: id });
 
     return NextResponse.json(
-      { company, entitlements, personas },
+      { company, entitlements, personas, quota },
       { status: 200 }
     );
   } catch (err) {

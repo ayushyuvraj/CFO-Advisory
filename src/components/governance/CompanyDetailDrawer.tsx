@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Buildings,
+  ClockCountdown,
+  Coins,
   Cpu,
   Eye,
+  Gauge,
   PencilSimple,
   PlusCircle,
   ToggleLeft,
@@ -21,6 +24,7 @@ import {
   CompanyPersona,
   CompanyProfile,
 } from "@/lib/governance/types";
+import { QuotaCheckResult } from "@/lib/governance/quotaEngine";
 import { ConnectedPlatform } from "@/data/platforms";
 import { useAuth } from "@/context/AuthContext";
 import { useDialogFocusTrap } from "@/hooks/useDialogFocusTrap";
@@ -39,6 +43,17 @@ interface CompanyDetailDrawerProps {
   onPersonaDeleted: (personaId: string) => void;
   onCompanyUpdated: (company: CompanyProfile) => void;
   onCompanyDeleted: (companyId: string) => void;
+}
+
+function formatSeconds(sec?: number): string {
+  if (sec === undefined || sec <= 0) return "Imminent";
+  const hours = Math.floor(sec / 3600);
+  const minutes = Math.floor((sec % 3600) / 60);
+  if (hours >= 24) {
+    const days = Math.floor(hours / 24);
+    return `${days}d ${hours % 24}h`;
+  }
+  return `${hours}h ${minutes}m`;
 }
 
 function DrawerInner({
@@ -76,6 +91,35 @@ function DrawerInner({
     null
   );
   const [actionError, setActionError] = useState<string | null>(null);
+  const [quotaStatus, setQuotaStatus] = useState<QuotaCheckResult | null>(null);
+  const [isLoadingQuota, setIsLoadingQuota] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function loadQuota() {
+      setIsLoadingQuota(true);
+      try {
+        const res = await fetch(
+          `/api/governance/quota/status?companyId=${company.id}`,
+          { cache: "no-store" }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          if (active && json.quota) {
+            setQuotaStatus(json.quota);
+          }
+        }
+      } catch {
+        // non-fatal
+      } finally {
+        if (active) setIsLoadingQuota(false);
+      }
+    }
+    void loadQuota();
+    return () => {
+      active = false;
+    };
+  }, [company.id, company.spendLimit]);
 
   const handleCloseDrawer = useCallback(() => {
     if (!isDeletingCompany) {
@@ -394,6 +438,124 @@ function DrawerInner({
               </div>
             )}
 
+            {/* AI Spend & Quota Governance Section */}
+            <div className="rounded-sm border border-[#D8DFE9] bg-gradient-to-br from-[#F8FAFC] to-white p-4 shadow-xs">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xs bg-[#00338D]/10 text-[#00338D]">
+                    <Coins size={18} weight="bold" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#0C233C]">
+                      AI Spend & Budget Envelope
+                    </h3>
+                    <p className="text-[11px] text-[#526075]">
+                      {company.spendLimit?.enabled
+                        ? `Hierarchical spend ceiling governed on a ${company.spendLimit.period} cadence.`
+                        : "No spend limit enforced. Organization consumes from unlimited pool."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`rounded-xs px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                      company.spendLimit?.enabled
+                        ? "border border-[#009A44]/30 bg-[#009A44]/10 text-[#009A44]"
+                        : "border border-[#D8DFE9] bg-white text-[#526075]"
+                    }`}
+                  >
+                    {company.spendLimit?.enabled
+                      ? company.spendLimit.period.replace("_", " ")
+                      : "Uncapped"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditCompanyOpen(true)}
+                    className="rounded-xs border border-[#D8DFE9] bg-white px-2 py-1 text-[11px] font-medium text-[#00338D] hover:border-[#00338D] hover:bg-[#F4F6FA]"
+                  >
+                    Configure
+                  </button>
+                </div>
+              </div>
+
+              {company.spendLimit?.enabled ? (
+                <div className="mt-3.5 space-y-2 border-t border-[#E2E8F0] pt-3">
+                  <div className="flex items-baseline justify-between text-xs">
+                    <div>
+                      <span className="font-semibold text-[#0C233C]">
+                        ${quotaStatus ? quotaStatus.companySpendUsd.toFixed(2) : "0.00"}
+                      </span>
+                      <span className="text-[#526075]">
+                        {" "}
+                        / ${company.spendLimit.amountUsd.toFixed(2)} Consumed
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 font-mono text-[11px]">
+                      <span className="text-[#526075]">
+                        ${quotaStatus?.companyRemainingUsd !== null && quotaStatus?.companyRemainingUsd !== undefined
+                          ? quotaStatus.companyRemainingUsd.toFixed(2)
+                          : company.spendLimit.amountUsd.toFixed(2)}{" "}
+                        remaining
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          (quotaStatus?.companySpendPct ?? 0) >= 90
+                            ? "text-[#B91C1C]"
+                            : (quotaStatus?.companySpendPct ?? 0) >= 70
+                            ? "text-[#D97706]"
+                            : "text-[#009A44]"
+                        }`}
+                      >
+                        ({quotaStatus?.companySpendPct ?? 0}%)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-[#E2E8F0]">
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        (quotaStatus?.companySpendPct ?? 0) >= 90
+                          ? "bg-[#B91C1C]"
+                          : (quotaStatus?.companySpendPct ?? 0) >= 70
+                          ? "bg-[#D97706]"
+                          : "bg-gradient-to-r from-[#009A44] to-[#00338D]"
+                      }`}
+                      style={{
+                        width: `${Math.min(100, quotaStatus?.companySpendPct ?? 0)}%`,
+                      }}
+                    />
+                  </div>
+
+                  {/* Reset Cadence Indicator */}
+                  <div className="flex items-center justify-between text-[11px] text-[#526075] pt-0.5">
+                    <div className="flex items-center gap-1">
+                      <ClockCountdown size={13} className="text-[#00338D]" />
+                      <span>
+                        Reset in:{" "}
+                        <strong className="text-[#0C233C]">
+                          {formatSeconds(quotaStatus?.secondsUntilReset)}
+                        </strong>
+                      </span>
+                    </div>
+                    <span className="font-mono text-[10px]">
+                      {quotaStatus?.periodLabel || "Period active"}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-2.5 flex items-center justify-between rounded-xs bg-[#F1F5F9] px-3 py-2 text-[11px] text-[#526075]">
+                  <span>Unlimited consumption allowed across all satellite products.</span>
+                  <span className="font-mono text-[10px] font-semibold text-[#00338D]">
+                    Active Pool: ∞
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <hr className="border-[#D8DFE9]" />
+
             {/* Product Access Toggles Section */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -673,6 +835,30 @@ function DrawerInner({
                                   effectiveCustomCount !== 1 ? "s" : ""
                                 }`}
                           </span>
+                        </div>
+
+                        {/* Persona Spend Consumption & Cap */}
+                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-[#F1F5F9] pt-2 text-[11px]">
+                          <div className="flex items-center gap-1.5">
+                            <Coins size={13} className="text-[#00338D]" />
+                            <span className="text-[#526075]">Cycle Spend:</span>
+                            <span className="font-mono font-bold text-[#0C233C]">
+                              ${(quotaStatus?.spendByPersona?.[persona.id] || 0).toFixed(2)}
+                            </span>
+                            <span className="text-[#9CA3AF]">/</span>
+                            <span className="font-mono text-[#526075]">
+                              {persona.spendLimitUsd !== null && persona.spendLimitUsd !== undefined
+                                ? `$${persona.spendLimitUsd.toFixed(2)} cap`
+                                : "Company pool"}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditPersona(persona)}
+                            className="text-[11px] font-medium text-[#00338D] hover:underline"
+                          >
+                            Adjust Cap
+                          </button>
                         </div>
                       </div>
                     );

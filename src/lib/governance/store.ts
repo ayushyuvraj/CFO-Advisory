@@ -10,11 +10,49 @@ import {
   CompanyEntitlement,
   CompanyPersona,
   CompanyProfile,
+  CompanySpendLimit,
+  SpendPeriod,
   CreateCompanyInput,
   CreatePersonaInput,
   UpdateCompanyInput,
   UpdatePersonaInput,
 } from "./types";
+
+export function sanitizeSpendLimit(input?: unknown): CompanySpendLimit | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const raw = input as Record<string, unknown>;
+  const enabled = Boolean(raw.enabled);
+  const amountUsd = Number(raw.amountUsd);
+  if (!Number.isFinite(amountUsd) || amountUsd < 0) return undefined;
+
+  const validPeriods: SpendPeriod[] = ["daily", "weekly", "monthly", "custom_days"];
+  const period = validPeriods.includes(raw.period as SpendPeriod)
+    ? (raw.period as SpendPeriod)
+    : "monthly";
+
+  let customDays: number | undefined = undefined;
+  if (period === "custom_days") {
+    const parsedDays = parseInt(String(raw.customDays || 30), 10);
+    customDays =
+      Number.isFinite(parsedDays) && parsedDays >= 1 && parsedDays <= 365
+        ? parsedDays
+        : 30;
+  }
+
+  return {
+    amountUsd: Math.round(amountUsd * 100) / 100,
+    period,
+    customDays,
+    enabled,
+  };
+}
+
+export function sanitizePersonaSpendLimit(val: unknown): number | null | undefined {
+  if (val === null || val === undefined || val === "") return null;
+  const n = Number(val);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return Math.round(n * 100) / 100;
+}
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -143,6 +181,7 @@ export function createCompany(input: CreateCompanyInput): CompanyProfile {
     }
 
     const now = new Date().toISOString();
+    const spendLimit = sanitizeSpendLimit(input.spendLimit);
     const company: CompanyProfile = {
       id: `cmp_${crypto.randomBytes(6).toString("hex")}`,
       name: cleanName,
@@ -150,6 +189,7 @@ export function createCompany(input: CreateCompanyInput): CompanyProfile {
       contactEmail: cleanEmail,
       status,
       notes: typeof input.notes === "string" ? input.notes.trim().slice(0, 500) : "",
+      ...(spendLimit ? { spendLimit } : {}),
       createdAt: now,
       updatedAt: now,
     };
@@ -227,6 +267,11 @@ export function updateCompany(
           : existing.notes
         : existing.notes;
 
+    let nextSpendLimit = existing.spendLimit;
+    if (input.spendLimit !== undefined) {
+      nextSpendLimit = sanitizeSpendLimit(input.spendLimit);
+    }
+
     const updated: CompanyProfile = {
       ...existing,
       name: nextName,
@@ -234,6 +279,7 @@ export function updateCompany(
       contactEmail: nextEmail,
       status: nextStatus,
       notes: nextNotes,
+      spendLimit: nextSpendLimit,
       updatedAt: new Date().toISOString(),
     };
 
@@ -359,6 +405,7 @@ export function createPersona(
     }
 
     const now = new Date().toISOString();
+    const spendLimitUsd = sanitizePersonaSpendLimit(input.spendLimitUsd);
     const persona: CompanyPersona = {
       id: `prs_${crypto.randomBytes(6).toString("hex")}`,
       companyId,
@@ -376,6 +423,7 @@ export function createPersona(
           ? { canExportData: Boolean(input.permissions.canExportData) }
           : {}),
       },
+      spendLimitUsd: spendLimitUsd ?? null,
       createdAt: now,
       updatedAt: now,
     };
@@ -463,6 +511,11 @@ export function updatePersona(
         .slice(0, 50);
     }
 
+    let nextSpendLimitUsd = existing.spendLimitUsd ?? null;
+    if (input.spendLimitUsd !== undefined) {
+      nextSpendLimitUsd = sanitizePersonaSpendLimit(input.spendLimitUsd) ?? null;
+    }
+
     const updated: CompanyPersona = {
       ...existing,
       name: nextName,
@@ -471,6 +524,7 @@ export function updatePersona(
       passcode: nextPasscode,
       productAccessMode: nextMode,
       allowedProductIds: nextAllowed,
+      spendLimitUsd: nextSpendLimitUsd,
       permissions: {
         canLaunchProducts:
           input.permissions?.canLaunchProducts !== undefined

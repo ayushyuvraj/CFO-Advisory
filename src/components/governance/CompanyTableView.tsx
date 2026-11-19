@@ -35,6 +35,7 @@ export function CompanyTableView({
               <th className="py-2.5 px-4 font-semibold">Organization</th>
               <th className="py-2.5 px-4 font-semibold">Code</th>
               <th className="py-2.5 px-4 font-semibold">Entitlements</th>
+              <th className="py-2.5 px-4 font-semibold">AI Budget</th>
               <th className="py-2.5 px-4 text-center font-semibold">Personas</th>
               <th className="py-2.5 px-4 text-right font-semibold">Actions</th>
             </tr>
@@ -93,6 +94,23 @@ export function CompanyTableView({
                   {/* Entitlements Count */}
                   <td className="whitespace-nowrap py-3 px-4 font-mono text-[11px] text-[#526075]">
                     {enabledCount} / {availableProducts.length} Active
+                  </td>
+
+                  {/* AI Budget Ceiling */}
+                  <td className="whitespace-nowrap py-3 px-4">
+                    {company.spendLimit?.enabled ? (
+                      <span className="inline-flex items-center gap-1 rounded-xs border border-[#009A44]/30 bg-[#009A44]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#009A44]">
+                        ${company.spendLimit.amountUsd.toFixed(2)} /{" "}
+                        {company.spendLimit.period === "custom_days"
+                          ? `${company.spendLimit.customDays || 30}d`
+                          : company.spendLimit.period.slice(0, 1).toUpperCase() +
+                            company.spendLimit.period.slice(1)}
+                      </span>
+                    ) : (
+                      <span className="rounded-xs bg-[#F1F5F9] px-2 py-0.5 font-mono text-[10px] text-[#6B7280]">
+                        Uncapped
+                      </span>
+                    )}
                   </td>
 
                   {/* Dedicated Personas Column */}

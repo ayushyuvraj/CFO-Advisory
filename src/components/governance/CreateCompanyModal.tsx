@@ -11,7 +11,11 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useDialogFocusTrap } from "@/hooks/useDialogFocusTrap";
-import { CompanyProfile } from "@/lib/governance/types";
+import {
+  CompanyProfile,
+  CompanySpendLimit,
+  SpendPeriod,
+} from "@/lib/governance/types";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -62,6 +66,22 @@ function CompanyModalContent({
   const [status, setStatus] = useState<"active" | "suspended">(
     existingCompany?.status || "active"
   );
+  const [enableSpendCap, setEnableSpendCap] = useState(
+    Boolean(existingCompany?.spendLimit?.enabled)
+  );
+  const [spendLimitAmount, setSpendLimitAmount] = useState<string>(
+    existingCompany?.spendLimit?.amountUsd !== undefined
+      ? String(existingCompany.spendLimit.amountUsd)
+      : "20.00"
+  );
+  const [spendLimitPeriod, setSpendLimitPeriod] = useState<SpendPeriod>(
+    existingCompany?.spendLimit?.period || "monthly"
+  );
+  const [customDays, setCustomDays] = useState<string>(
+    existingCompany?.spendLimit?.customDays !== undefined
+      ? String(existingCompany.spendLimit.customDays)
+      : "30"
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -102,6 +122,22 @@ function CompanyModalContent({
         : "/api/clients";
       const method = existingCompany ? "PUT" : "POST";
 
+      const spendLimitPayload: CompanySpendLimit = enableSpendCap
+        ? {
+            enabled: true,
+            amountUsd: Math.max(0, parseFloat(spendLimitAmount) || 0),
+            period: spendLimitPeriod,
+            customDays:
+              spendLimitPeriod === "custom_days"
+                ? Math.max(1, parseInt(customDays, 10) || 30)
+                : undefined,
+          }
+        : {
+            enabled: false,
+            amountUsd: 0,
+            period: "monthly",
+          };
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -111,6 +147,7 @@ function CompanyModalContent({
           contactEmail: contactEmail.trim(),
           status,
           notes: notes.trim(),
+          spendLimit: spendLimitPayload,
         }),
       });
 
@@ -302,6 +339,106 @@ function CompanyModalContent({
                 className="w-full rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-2 pr-3 pl-9 text-sm text-[#0C233C] focus:border-[#1E49E2] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E49E2]"
               />
             </div>
+          </div>
+
+          {/* AI Spend & Quota Pool Configuration */}
+          <div className="space-y-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-3.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wide text-[#0C233C]">
+                  AI Spend Limit & Quota Cap
+                </span>
+                <p className="text-[11px] text-[#526075]">
+                  Enforce an upper financial ceiling on AI token consumption.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enableSpendCap}
+                onClick={() => setEnableSpendCap((prev) => !prev)}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                  enableSpendCap ? "bg-[#009A44]" : "bg-[#CBD5E1]"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                    enableSpendCap ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {enableSpendCap && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="space-y-1">
+                  <label
+                    htmlFor="company-spend-amount"
+                    className="text-[11px] font-semibold text-[#0C233C]"
+                  >
+                    Budget Cap (USD) <span className="text-[#B91C1C]">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2 text-xs font-bold text-[#526075]">
+                      $
+                    </span>
+                    <input
+                      id="company-spend-amount"
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={spendLimitAmount}
+                      onChange={(e) => setSpendLimitAmount(e.target.value)}
+                      placeholder="20.00"
+                      className="w-full rounded-sm border border-[#D8DFE9] bg-white py-1.5 pl-6 pr-2.5 text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label
+                    htmlFor="company-spend-period"
+                    className="text-[11px] font-semibold text-[#0C233C]"
+                  >
+                    Reset Cadence
+                  </label>
+                  <select
+                    id="company-spend-period"
+                    value={spendLimitPeriod}
+                    onChange={(e) =>
+                      setSpendLimitPeriod(e.target.value as SpendPeriod)
+                    }
+                    className="w-full rounded-sm border border-[#D8DFE9] bg-white px-2 py-1.5 text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
+                  >
+                    <option value="daily">Daily (Resets 00:00 UTC)</option>
+                    <option value="weekly">Weekly (Resets Mon 00:00)</option>
+                    <option value="monthly">Monthly (1st of month)</option>
+                    <option value="custom_days">Rolling N Days</option>
+                  </select>
+                </div>
+
+                {spendLimitPeriod === "custom_days" && (
+                  <div className="space-y-1 sm:col-span-2">
+                    <label
+                      htmlFor="company-custom-days"
+                      className="text-[11px] font-semibold text-[#0C233C]"
+                    >
+                      Rolling Window Duration (Days)
+                    </label>
+                    <input
+                      id="company-custom-days"
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={customDays}
+                      onChange={(e) => setCustomDays(e.target.value)}
+                      placeholder="30"
+                      className="w-full rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-1.5">

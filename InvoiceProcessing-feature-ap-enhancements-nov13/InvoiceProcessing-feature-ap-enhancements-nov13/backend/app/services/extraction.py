@@ -234,6 +234,13 @@ class GeminiExtractor:
         prompt = PROMPT.format(pages=len(images), text_hint=text_hint)
         t_start = asyncio.get_event_loop().time()
         try:
+            # Pre-flight AI spend limit gate before LLM call
+            try:
+                from .telemetry import check_cfo_quota, CfoQuotaExceededException
+                await check_cfo_quota(estimated_cost_usd=0.01)
+            except CfoQuotaExceededException as quota_err:
+                raise RuntimeError(f"KPMG CFO Advisory Governance: {quota_err.message}")
+
             resp = await with_retry(lambda: self.client.aio.models.generate_content(
                 model=self.model,
                 contents=[*parts, prompt],

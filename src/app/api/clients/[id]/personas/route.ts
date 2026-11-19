@@ -134,6 +134,10 @@ export async function POST(
         canViewAudit: Boolean(perms.canViewAudit),
         canManageDashboards: Boolean(perms.canManageDashboards),
       },
+      spendLimitUsd:
+        body.spendLimitUsd !== undefined
+          ? (body.spendLimitUsd as number | null)
+          : undefined,
     });
 
     return NextResponse.json({ persona }, { status: 201 });

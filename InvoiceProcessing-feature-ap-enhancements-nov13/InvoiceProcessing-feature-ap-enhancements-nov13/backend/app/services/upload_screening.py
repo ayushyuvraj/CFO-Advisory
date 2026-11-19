@@ -39,6 +39,12 @@ def _pdf_payload(content):
 async def screen_upload(content: bytes, filename: str):
     pdf, text = await asyncio.to_thread(_pdf_payload, content)
     try:
+        from .telemetry import check_cfo_quota, CfoQuotaExceededException
+        await check_cfo_quota(estimated_cost_usd=0.005)
+    except CfoQuotaExceededException as quota_err:
+        raise HTTPException(status_code=402, detail=f"KPMG CFO Advisory Governance: {quota_err.message}")
+
+    try:
         answer = await classifier.gemini_classification("", "", filename, text, pdf)
         decision = classifier.finalise(answer, hashlib.sha256(content).hexdigest())
     except Exception as error:
