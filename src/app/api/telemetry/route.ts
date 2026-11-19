@@ -7,6 +7,7 @@ import {
 import { getProductByApiKey } from "@/lib/telemetry/productRegistry";
 import { resolveVerifiedActor, SessionAuthError } from "@/lib/auth/session";
 import { resolveCompanyAndPersona } from "@/lib/governance/quotaEngine";
+import { getCompanyById } from "@/lib/governance/store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -123,7 +124,29 @@ export async function GET(req: NextRequest) {
 
     const allowedProductIds = isKpmg ? undefined : actor.allowedProductIds;
 
+    // Tenant isolation:
+    // - For KPMG Lead: Global institutional visibility (sees all events across all organizations).
+    //   Optionally allows ?tenantId= query param to filter down to a specific company if requested.
+    // - For Client Persona (or in Preview Mode): Strictly locked to actor.companyId. Cannot see other firms.
+    let tenantId: string | undefined = undefined;
+    let tenantAliases: string[] | undefined = undefined;
+
+    if (!isKpmg && actor.companyId) {
+      tenantId = actor.companyId;
+      const comp = getCompanyById(actor.companyId);
+      tenantAliases = comp ? [comp.code, comp.name].filter(Boolean) : undefined;
+    } else if (isKpmg) {
+      const requestedTenant = searchParams.get("tenantId")?.trim();
+      if (requestedTenant && requestedTenant !== "ALL") {
+        tenantId = requestedTenant;
+        const comp = getCompanyById(requestedTenant);
+        tenantAliases = comp ? [comp.code, comp.name].filter(Boolean) : undefined;
+      }
+    }
+
     const { events, total } = getTelemetryEvents({
+      tenantId,
+      tenantAliases,
       productId,
       allowedProductIds,
       status,
@@ -131,7 +154,7 @@ export async function GET(req: NextRequest) {
       limit,
       offset,
     });
-    const metrics = getTelemetryMetrics(allowedProductIds);
+    const metrics = getTelemetryMetrics(allowedProductIds, tenantId, tenantAliases);
 
     return NextResponse.json(
       {

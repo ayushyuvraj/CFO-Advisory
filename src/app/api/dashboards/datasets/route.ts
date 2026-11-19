@@ -37,7 +37,12 @@ export async function GET(req: NextRequest) {
     >();
 
     if (isKpmg || actor.permissions.canViewAudit) {
+      const comp = !isKpmg && actor.companyId ? governance.companies.find((c) => c.id === actor.companyId) : undefined;
+      const tenantAliases = comp ? [comp.code, comp.name].filter(Boolean) : undefined;
+
       const { events } = getTelemetryEvents({
+        tenantId: isKpmg ? undefined : actor.companyId,
+        tenantAliases,
         allowedProductIds: isKpmg ? undefined : actor.allowedProductIds,
         limit: 5000,
         offset: 0,

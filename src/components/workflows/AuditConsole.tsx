@@ -12,6 +12,7 @@ import {
   DownloadSimple,
 } from "@phosphor-icons/react";
 import { TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
+import { useAuth } from "@/context/AuthContext";
 import { AuditInspectorDrawer } from "./AuditInspectorDrawer";
 import {
   UnifiedWorkflowsBar,
@@ -38,6 +39,9 @@ interface AuditConsoleProps {
 }
 
 export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
+  const { user } = useAuth();
+  const isClientUser = Boolean(user && user.tenantType === "client");
+
   const [events, setEvents] = useState<TelemetryEvent[]>([]);
   const [, setMetrics] = useState<TelemetryMetrics | null>(null);
   const [selectedProduct, setSelectedProduct] = useState("ALL");
@@ -232,12 +236,15 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `kpmg-audit-telemetry-${new Date().toISOString().slice(0, 10)}.csv`;
+    const filePrefix = isClientUser && user?.companyName
+      ? `kpmg-audit-${user.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+      : "kpmg-audit-telemetry-global";
+    a.download = `${filePrefix}-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [sortedEvents]);
+  }, [sortedEvents, isClientUser, user?.companyName]);
 
   const handleInspect = useCallback((event: TelemetryEvent) => {
     setActiveEvent(event);
@@ -261,7 +268,11 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
         activeSort={sortBy}
         onSortChange={setSortBy}
         sortLabel="Sort"
-        countLabel={`${sortedEvents.length} events`}
+        countLabel={
+          isClientUser && user?.companyName
+            ? `${sortedEvents.length} events · ${user.companyName}`
+            : `${sortedEvents.length} events (Global Mesh)`
+        }
       >
         {/* Live Ingestion Indicator, Refresh Action & Primary Export CTA */}
         <div className="flex items-center gap-1.5">
@@ -328,9 +339,15 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
                     <td colSpan={10} className="py-12 text-center text-xs text-[#4B5563]">
                       <div className="max-w-md mx-auto space-y-2">
                         <ChartLineUp size={28} weight="light" className="mx-auto text-[#00338D]" />
-                        <p className="font-semibold text-[#0C233C]">No live telemetry events recorded yet</p>
+                        <p className="font-semibold text-[#0C233C]">
+                          {isClientUser && user?.companyName
+                            ? `No live telemetry events recorded yet for ${user.companyName}`
+                            : "No live telemetry events recorded yet"}
+                        </p>
                         <p className="text-[#4B5563] text-[11px]">
-                          Execute an operation in a connected product (e.g. AI Invoice Processing) to capture real-time audit data.
+                          {isClientUser && user?.companyName
+                            ? `Execute an operation in an authorized product (e.g. AI Invoice Processing) to capture real-time audit data for ${user.companyName}.`
+                            : "Execute an operation in a connected product (e.g. AI Invoice Processing) to capture real-time audit data across institutional deployments."}
                         </p>
                       </div>
                     </td>

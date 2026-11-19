@@ -276,6 +276,8 @@ export function appendTelemetryEvent(raw: Partial<TelemetryEvent>): TelemetryEve
 }
 
 export interface GetEventsFilter {
+  tenantId?: string;
+  tenantAliases?: string[];
   productId?: string;
   allowedProductIds?: string[];
   status?: string;
@@ -289,6 +291,19 @@ export function getTelemetryEvents(filter: GetEventsFilter = {}): {
   total: number;
 } {
   let list = loadAllEvents();
+
+  if (filter.tenantId) {
+    const searchSet = new Set(
+      [filter.tenantId, ...(filter.tenantAliases || [])]
+        .filter(Boolean)
+        .map((s) => s.trim().toLowerCase())
+    );
+    list = list.filter((e) => {
+      const tId = (e.tenant_id || "").trim().toLowerCase();
+      const engCode = (e.engagement_code || "").trim().toLowerCase();
+      return searchSet.has(tId) || searchSet.has(engCode);
+    });
+  }
 
   if (Array.isArray(filter.allowedProductIds)) {
     const allowed = new Set(filter.allowedProductIds);
@@ -307,7 +322,10 @@ export function getTelemetryEvents(filter: GetEventsFilter = {}): {
         String(e.product_name ?? "").toLowerCase().includes(q) ||
         String(e.action_name ?? "").toLowerCase().includes(q) ||
         String(e.target_entity_id ?? "").toLowerCase().includes(q) ||
-        String(e.model_name ?? "").toLowerCase().includes(q)
+        String(e.model_name ?? "").toLowerCase().includes(q) ||
+        String(e.user_email ?? "").toLowerCase().includes(q) ||
+        String(e.tenant_id ?? "").toLowerCase().includes(q) ||
+        String(e.engagement_code ?? "").toLowerCase().includes(q)
     );
   }
 
@@ -319,9 +337,26 @@ export function getTelemetryEvents(filter: GetEventsFilter = {}): {
   return { events: paginated, total };
 }
 
-export function getTelemetryMetrics(allowedProductIds?: string[]): TelemetryMetrics {
+export function getTelemetryMetrics(
+  allowedProductIds?: string[],
+  tenantId?: string,
+  tenantAliases?: string[]
+): TelemetryMetrics {
   let events = loadAllEvents();
   let products = getAllProducts();
+
+  if (tenantId) {
+    const searchSet = new Set(
+      [tenantId, ...(tenantAliases || [])]
+        .filter(Boolean)
+        .map((s) => s.trim().toLowerCase())
+    );
+    events = events.filter((e) => {
+      const tId = (e.tenant_id || "").trim().toLowerCase();
+      const engCode = (e.engagement_code || "").trim().toLowerCase();
+      return searchSet.has(tId) || searchSet.has(engCode);
+    });
+  }
 
   if (Array.isArray(allowedProductIds)) {
     const allowed = new Set(allowedProductIds);
