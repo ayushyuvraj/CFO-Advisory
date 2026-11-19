@@ -49,10 +49,19 @@ export interface CompanyPersona {
   updatedAt: string;
 }
 
+export interface CompanySpendSummary {
+  spendUsd: number;
+  limitUsd: number | null;
+  period: string;
+  spendPct: number;
+  enabled: boolean;
+}
+
 export interface ClientGovernanceData {
   companies: CompanyProfile[];
   entitlements: CompanyEntitlement[];
   personas: CompanyPersona[];
+  spendSummary?: Record<string, CompanySpendSummary>;
 }
 
 export interface CreateCompanyInput {

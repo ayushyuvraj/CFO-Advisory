@@ -3,8 +3,9 @@ import {
   CompanyPersona,
   CompanySpendLimit,
   SpendPeriod,
+  CompanySpendSummary,
 } from "./types";
-import { getCompanyById, getCompanyPersonas } from "./store";
+import { getAllCompanies, getCompanyById, getCompanyPersonas } from "./store";
 import { getTenantEvents } from "@/lib/telemetry/telemetryStore";
 
 export interface QuotaCheckResult {
@@ -341,4 +342,23 @@ export function evaluateQuotaCheck({
     denialReason,
     spendByPersona: personaSpendUsd,
   };
+}
+
+/**
+ * Fast spend and budget summary across all registered organizations for grid and list rendering.
+ */
+export function getAllCompaniesSpendSummary(): Record<string, CompanySpendSummary> {
+  const companies = getAllCompanies();
+  const summary: Record<string, CompanySpendSummary> = {};
+  for (const c of companies) {
+    const q = evaluateQuotaCheck({ companyId: c.id });
+    summary[c.id] = {
+      spendUsd: q.companySpendUsd,
+      limitUsd: q.companyLimitUsd,
+      period: q.period,
+      spendPct: q.companySpendPct,
+      enabled: Boolean(c.spendLimit?.enabled),
+    };
+  }
+  return summary;
 }

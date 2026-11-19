@@ -5,6 +5,7 @@ import {
   CompanyProfile,
   CompanyEntitlement,
   CompanyPersona,
+  CompanySpendSummary,
 } from "@/lib/governance/types";
 import { ConnectedPlatform } from "@/data/platforms";
 
@@ -13,6 +14,7 @@ interface CompanyTableViewProps {
   entitlements: CompanyEntitlement[];
   personas?: CompanyPersona[];
   availableProducts: ConnectedPlatform[];
+  spendSummary?: Record<string, CompanySpendSummary>;
   onManage: (companyId: string) => void;
 }
 
@@ -21,6 +23,7 @@ export function CompanyTableView({
   entitlements,
   personas = [],
   availableProducts,
+  spendSummary,
   onManage,
 }: CompanyTableViewProps) {
   const registeredProductIds = new Set(availableProducts.map((p) => p.id));
@@ -35,7 +38,7 @@ export function CompanyTableView({
               <th className="py-2.5 px-4 font-semibold">Organization</th>
               <th className="py-2.5 px-4 font-semibold">Code</th>
               <th className="py-2.5 px-4 font-semibold">Entitlements</th>
-              <th className="py-2.5 px-4 font-semibold">AI Budget</th>
+              <th className="py-2.5 px-4 font-semibold">Budget & Used</th>
               <th className="py-2.5 px-4 text-center font-semibold">Personas</th>
               <th className="py-2.5 px-4 text-right font-semibold">Actions</th>
             </tr>
@@ -96,20 +99,33 @@ export function CompanyTableView({
                     {enabledCount} / {availableProducts.length} Active
                   </td>
 
-                  {/* AI Budget Ceiling */}
-                  <td className="whitespace-nowrap py-3 px-4">
+                  {/* AI Budget & Used */}
+                  <td className="whitespace-nowrap py-3 px-4 font-mono text-[11px]">
                     {company.spendLimit?.enabled ? (
-                      <span className="inline-flex items-center gap-1 rounded-xs border border-[#009A44]/30 bg-[#009A44]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#009A44]">
-                        ${company.spendLimit.amountUsd.toFixed(2)} /{" "}
-                        {company.spendLimit.period === "custom_days"
-                          ? `${company.spendLimit.customDays || 30}d`
-                          : company.spendLimit.period.slice(0, 1).toUpperCase() +
-                            company.spendLimit.period.slice(1)}
-                      </span>
+                      <div className="inline-flex items-center gap-1.5">
+                        <span className="font-bold text-[#0C233C]">
+                          ${(spendSummary?.[company.id]?.spendUsd ?? 0).toFixed(2)}
+                        </span>
+                        <span className="text-[#9CA3AF]">/</span>
+                        <span className="font-semibold text-[#009A44]">
+                          ${company.spendLimit.amountUsd.toFixed(2)}
+                        </span>
+                        <span className="rounded-xs bg-[#F1F5F9] px-1.5 py-0.5 text-[10px] text-[#526075]">
+                          {company.spendLimit.period === "custom_days"
+                            ? `${company.spendLimit.customDays || 30}d`
+                            : company.spendLimit.period}
+                        </span>
+                      </div>
                     ) : (
-                      <span className="rounded-xs bg-[#F1F5F9] px-2 py-0.5 font-mono text-[10px] text-[#6B7280]">
-                        Uncapped
-                      </span>
+                      <div className="inline-flex items-center gap-1.5">
+                        <span className="font-bold text-[#0C233C]">
+                          ${(spendSummary?.[company.id]?.spendUsd ?? 0).toFixed(2)}
+                        </span>
+                        <span className="text-[#9CA3AF]">/</span>
+                        <span className="rounded-xs bg-[#F1F5F9] px-1.5 py-0.5 text-[10px] text-[#6B7280]">
+                          Uncapped
+                        </span>
+                      </div>
                     )}
                   </td>
 

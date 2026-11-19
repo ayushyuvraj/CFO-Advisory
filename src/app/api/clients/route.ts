@@ -4,6 +4,7 @@ import {
   isValidEmail,
   readGovernanceData,
 } from "@/lib/governance/store";
+import { getAllCompaniesSpendSummary } from "@/lib/governance/quotaEngine";
 import { requireKpmgAdmin, SessionAuthError } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,8 @@ export async function GET(request: NextRequest) {
   try {
     requireKpmgAdmin(request);
     const data = readGovernanceData();
-    return NextResponse.json(data, { status: 200 });
+    const spendSummary = getAllCompaniesSpendSummary();
+    return NextResponse.json({ ...data, spendSummary }, { status: 200 });
   } catch (err) {
     if (err instanceof SessionAuthError) {
       return NextResponse.json({ error: err.message }, { status: err.status });

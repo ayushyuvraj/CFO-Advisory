@@ -8,7 +8,12 @@
       "status": "active",
       "notes": "test2",
       "createdAt": "2026-11-18T05:52:31.604Z",
-      "updatedAt": "2026-11-18T05:52:31.604Z"
+      "updatedAt": "2026-11-19T19:08:02.998Z",
+      "spendLimit": {
+        "amountUsd": 20,
+        "period": "daily",
+        "enabled": true
+      }
     },
     {
       "id": "cmp_f74872465eaa",
@@ -102,7 +107,8 @@
         "canExportData": false
       },
       "createdAt": "2026-11-19T14:01:37.137Z",
-      "updatedAt": "2026-11-19T14:29:59.113Z"
+      "updatedAt": "2026-11-19T19:08:25.569Z",
+      "spendLimitUsd": 2
     },
     {
       "id": "prs_0044c9f60679",

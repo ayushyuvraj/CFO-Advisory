@@ -603,6 +603,7 @@ export function ClientAccessConsole({
               const personaCount = governanceData.personas.filter(
                 (p) => p.companyId === company.id
               ).length;
+              const spendInfo = governanceData.spendSummary?.[company.id];
 
               return (
                 <UnifiedHubCard
@@ -654,7 +655,28 @@ export function ClientAccessConsole({
                       <SlidersHorizontal size={16} weight="bold" />
                     </button>
                   }
-                />
+                >
+                  <div className="mt-2.5 flex items-center justify-between font-mono text-[11px]">
+                    <span className="text-[#526075]">Budget & Used:</span>
+                    <span className="font-mono text-[11px]">
+                      <strong className="text-[#0C233C]">
+                        ${(spendInfo?.spendUsd ?? 0).toFixed(2)}
+                      </strong>
+                      <span className="text-[#9CA3AF]"> / </span>
+                      <span
+                        className={
+                          company.spendLimit?.enabled
+                            ? "font-semibold text-[#009A44]"
+                            : "text-[#526075]"
+                        }
+                      >
+                        {company.spendLimit?.enabled
+                          ? `$${company.spendLimit.amountUsd.toFixed(2)}`
+                          : "∞"}
+                      </span>
+                    </span>
+                  </div>
+                </UnifiedHubCard>
               );
             })}
           </div>
@@ -664,6 +686,7 @@ export function ClientAccessConsole({
             entitlements={governanceData.entitlements}
             personas={governanceData.personas}
             availableProducts={availableProducts}
+            spendSummary={governanceData.spendSummary}
             onManage={(id) => handleOpenCompanyDrawer(id)}
           />
         )
