@@ -31,12 +31,295 @@ import {
 const MAX_PAGES = 20;
 const MAX_WIDGETS_PER_PAGE = 50;
 
+export const INBUILT_DASHBOARD_ID = "dsh_inbuilt_executive_governance";
+
+export function createInbuiltExecutiveDashboard(): DashboardDocument {
+  const now = "2026-11-19T12:00:00.000Z";
+  return {
+    id: INBUILT_DASHBOARD_ID,
+    title: "Executive Command · Product Adoption & Governance",
+    description:
+      "Institutional executive overview providing real-time visibility into product users, client adoption, token spend, and access governance.",
+    ownerType: "kpmg",
+    ownerUserId: "usr-kpmg-lead",
+    ownerName: "KPMG Lead",
+    visibility: "kpmg_only",
+    assignedCompanyIds: [],
+    refreshIntervalSec: 0,
+    isInbuilt: true,
+    createdAt: now,
+    updatedAt: now,
+    pages: [
+      {
+        id: "pg_exec_governance_main",
+        title: "Product Adoption & Governance",
+        widgets: [
+          // Row 0: Section Header
+          {
+            id: "wgt_inbuilt_header",
+            type: "section_header",
+            title: "KPMG Executive Command Center · Product Adoption & Governance",
+            subtitle:
+              "Institutional oversight of connected platform adoption, authorized client personas, granular access matrices, and real-time AI token telemetry.",
+            datasetId: "product_access_matrix",
+            layout: { x: 0, y: 0, w: 24, h: 2 },
+            encoding: { y: [], filters: [] },
+            style: {
+              ...createDefaultWidgetStyle("section_header"),
+              textContent: "KPMG Executive Command Center · Product Adoption & Governance",
+            },
+          },
+
+          // Row 1: 6 KPI Cards (y = 2, h = 4)
+          {
+            id: "wgt_kpi_companies",
+            type: "kpi_card",
+            title: "Client Organizations",
+            subtitle: "Onboarded enterprise clients",
+            datasetId: "client_companies",
+            layout: { x: 0, y: 2, w: 4, h: 4 },
+            encoding: {
+              y: [{ field: "__record_count", aggregation: "count" }],
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("kpi_card"),
+              numberFormat: "integer",
+              showSparkline: false,
+            },
+          },
+          {
+            id: "wgt_kpi_personas",
+            type: "kpi_card",
+            title: "Authorized Personas",
+            subtitle: "Provisioned client identities",
+            datasetId: "client_personas",
+            layout: { x: 4, y: 2, w: 4, h: 4 },
+            encoding: {
+              y: [{ field: "__record_count", aggregation: "count" }],
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("kpi_card"),
+              numberFormat: "integer",
+              showSparkline: false,
+            },
+          },
+          {
+            id: "wgt_kpi_entitled_users",
+            type: "kpi_card",
+            title: "Authorized Users (Invoice P2P)",
+            subtitle: "Users with live platform access",
+            datasetId: "product_access_matrix",
+            layout: { x: 8, y: 2, w: 4, h: 4 },
+            encoding: {
+              y: [{ field: "isEntitledNumeric", aggregation: "sum" }],
+              filters: [
+                {
+                  id: "f_prod_invoice",
+                  field: "productId",
+                  operator: "eq",
+                  values: ["invoice-processing-p2p"],
+                },
+              ],
+            },
+            style: {
+              ...createDefaultWidgetStyle("kpi_card"),
+              numberFormat: "integer",
+              showSparkline: false,
+            },
+          },
+          {
+            id: "wgt_kpi_daily_tokens",
+            type: "kpi_card",
+            title: "Avg Daily Token Spend",
+            subtitle: "Active daily inference velocity",
+            datasetId: "registered_products",
+            layout: { x: 12, y: 2, w: 4, h: 4 },
+            encoding: {
+              y: [{ field: "avgDailyTokens", aggregation: "sum" }],
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("kpi_card"),
+              numberFormat: "tokens",
+              showSparkline: false,
+            },
+          },
+          {
+            id: "wgt_kpi_total_tokens",
+            type: "kpi_card",
+            title: "Total Tokens Consumed",
+            subtitle: "Audit telemetry cumulative",
+            datasetId: "telemetry_events",
+            layout: { x: 16, y: 2, w: 4, h: 4 },
+            encoding: {
+              y: [{ field: "total_tokens", aggregation: "sum" }],
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("kpi_card"),
+              numberFormat: "tokens",
+              showSparkline: false,
+            },
+          },
+          {
+            id: "wgt_kpi_total_cost",
+            type: "kpi_card",
+            title: "Estimated AI Cost",
+            subtitle: "Inference expenditure (USD)",
+            datasetId: "telemetry_events",
+            layout: { x: 20, y: 2, w: 4, h: 4 },
+            encoding: {
+              y: [{ field: "estimated_cost_usd", aggregation: "sum" }],
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("kpi_card"),
+              numberFormat: "currency_usd",
+              showSparkline: false,
+            },
+          },
+
+          // Row 2: Visual Comparison & Trend Charts (y = 6, h = 9)
+          {
+            id: "wgt_bar_product_adoption",
+            type: "bar_clustered",
+            title: "Product Adoption: Authorized Personas & Entitled Clients",
+            subtitle: "Breakdown of authorized users and entitled organizations across physical platforms",
+            datasetId: "registered_products",
+            layout: { x: 0, y: 6, w: 12, h: 9 },
+            encoding: {
+              x: { field: "name" },
+              y: [
+                { field: "entitledPersonaCount", aggregation: "sum" },
+                { field: "entitledCompanyCount", aggregation: "sum" },
+              ],
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("bar_clustered"),
+              palette: "kpmg_institutional",
+              showLabels: true,
+              showLegend: true,
+            },
+          },
+          {
+            id: "wgt_area_token_trend",
+            type: "area",
+            title: "Daily AI Token Consumption Trend",
+            subtitle: "Time-series of daily LLM token consumption across audit execution spans",
+            datasetId: "telemetry_events",
+            layout: { x: 12, y: 6, w: 12, h: 9 },
+            encoding: {
+              x: { field: "created_at", dateBucket: "day" },
+              y: [{ field: "total_tokens", aggregation: "sum" }],
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("area"),
+              palette: "cobalt_pacific",
+              showLabels: false,
+              showLegend: true,
+            },
+          },
+
+          // Row 3: Access Governance Matrix Table (y = 15, h = 10)
+          {
+            id: "wgt_table_access_matrix",
+            type: "data_table",
+            title: "Access Governance Matrix · Who Has Access to What",
+            subtitle: "Persona-level platform access mapping with effective operational status and granular permissions",
+            datasetId: "product_access_matrix",
+            layout: { x: 0, y: 15, w: 24, h: 10 },
+            encoding: {
+              y: [],
+              columns: [
+                { field: "companyName" },
+                { field: "personaName" },
+                { field: "roleTitle" },
+                { field: "personaEmail" },
+                { field: "productName" },
+                { field: "accessStatus" },
+                { field: "canLaunch" },
+                { field: "canViewAudit" },
+                { field: "canManageDashboards" },
+              ],
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("data_table"),
+              showDataBars: false,
+            },
+          },
+
+          // Row 4: Slicers (y = 25, h = 4)
+          {
+            id: "wgt_slicer_platform",
+            type: "slicer_category",
+            title: "Filter by Platform",
+            subtitle: "Cross-filter page by connected product",
+            datasetId: "product_access_matrix",
+            layout: { x: 0, y: 25, w: 8, h: 4 },
+            encoding: {
+              y: [],
+              slicerField: { field: "productName" },
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("slicer_category"),
+              slicerStyle: "pills",
+              slicerMultiSelect: true,
+            },
+          },
+          {
+            id: "wgt_slicer_company",
+            type: "slicer_category",
+            title: "Filter by Client Organization",
+            subtitle: "Cross-filter page by client company",
+            datasetId: "product_access_matrix",
+            layout: { x: 8, y: 25, w: 8, h: 4 },
+            encoding: {
+              y: [],
+              slicerField: { field: "companyName" },
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("slicer_category"),
+              slicerStyle: "pills",
+              slicerMultiSelect: true,
+            },
+          },
+          {
+            id: "wgt_slicer_status",
+            type: "slicer_category",
+            title: "Filter by Access Status",
+            subtitle: "Filter by Active, Restricted, Disabled, Suspended",
+            datasetId: "product_access_matrix",
+            layout: { x: 16, y: 25, w: 8, h: 4 },
+            encoding: {
+              y: [],
+              slicerField: { field: "accessStatus" },
+              filters: [],
+            },
+            style: {
+              ...createDefaultWidgetStyle("slicer_category"),
+              slicerStyle: "pills",
+              slicerMultiSelect: true,
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
+
 function getDashboardsFile(): string {
   return path.join(resolveDataDir(), "cfo_dashboards_store.json");
 }
 
 function createEmptyStore(): DashboardStoreFile {
-  return { dashboards: [] };
+  return { dashboards: [createInbuiltExecutiveDashboard()] };
 }
 
 function validateStoreFile(raw: unknown): DashboardStoreFile {
@@ -44,9 +327,11 @@ function validateStoreFile(raw: unknown): DashboardStoreFile {
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
     throw new Error("Dashboards store file is corrupted.");
   }
-  return {
-    dashboards: Array.isArray(parsed.dashboards) ? parsed.dashboards : [],
-  };
+  const list = Array.isArray(parsed.dashboards) ? parsed.dashboards : [];
+  if (!list.some((d) => d && d.id === INBUILT_DASHBOARD_ID)) {
+    list.unshift(createInbuiltExecutiveDashboard());
+  }
+  return { dashboards: list };
 }
 
 function readStoreStrict(): DashboardStoreFile {
@@ -430,7 +715,11 @@ export function listDashboardsForActor(actor: DashboardActor): DashboardDocument
   const store = readStoreStrict();
   return store.dashboards
     .filter((d) => canActorViewDashboard(actor, d))
-    .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+    .sort((a, b) => {
+      if (a.isInbuilt && !b.isInbuilt) return -1;
+      if (!a.isInbuilt && b.isInbuilt) return 1;
+      return (b.updatedAt || "").localeCompare(a.updatedAt || "");
+    });
 }
 
 export function getDashboardByIdForActor(
@@ -612,6 +901,12 @@ export function deleteDashboard(actor: DashboardActor, id: string): boolean {
       if (!existing || !canActorViewDashboard(actor, existing)) {
         return { next: store, result: false, skipWrite: true };
       }
+      if (existing.id === INBUILT_DASHBOARD_ID || existing.isInbuilt) {
+        throw new DashboardStoreError(
+          "The Inbuilt Executive Command Dashboard cannot be deleted. You can edit its layout or use Reset to Default.",
+          400
+        );
+      }
       if (!canActorEditDashboard(actor, existing)) {
         throw new DashboardStoreError(
           "Forbidden: you do not have permission to delete this dashboard.",
@@ -621,6 +916,28 @@ export function deleteDashboard(actor: DashboardActor, id: string): boolean {
       return {
         next: { dashboards: store.dashboards.filter((d) => d.id !== id) },
         result: true,
+      };
+    }
+  );
+}
+
+export function resetInbuiltDashboard(actor: DashboardActor): DashboardDocument {
+  if (actor.tenantType !== "kpmg") {
+    throw new DashboardStoreError(
+      "Only KPMG Leads can reset the inbuilt dashboard.",
+      403
+    );
+  }
+  return mutateJsonFile(
+    getDashboardsFile(),
+    createEmptyStore,
+    validateStoreFile,
+    (store) => {
+      const fresh = createInbuiltExecutiveDashboard();
+      const filtered = store.dashboards.filter((d) => d.id !== INBUILT_DASHBOARD_ID);
+      return {
+        next: { dashboards: [fresh, ...filtered] },
+        result: fresh,
       };
     }
   );

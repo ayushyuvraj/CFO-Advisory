@@ -31,12 +31,32 @@ export async function GET(req: NextRequest) {
     // 1. Live Telemetry Events (strictly scoped by product entitlements + canViewAudit)
     // Includes all sanitized AuditInspectorDrawer fields without fabricating missing values.
     let telemetryRows: RawDataRow[] = [];
+    const productTelemetryMap = new Map<
+      string,
+      { totalTokens: number; totalCost: number; activeDays: Set<string>; count: number }
+    >();
+
     if (isKpmg || actor.permissions.canViewAudit) {
       const { events } = getTelemetryEvents({
         allowedProductIds: isKpmg ? undefined : actor.allowedProductIds,
         limit: 5000,
         offset: 0,
       });
+
+      for (const evt of events) {
+        const pid = evt.product_id;
+        let entry = productTelemetryMap.get(pid);
+        if (!entry) {
+          entry = { totalTokens: 0, totalCost: 0, activeDays: new Set(), count: 0 };
+          productTelemetryMap.set(pid, entry);
+        }
+        entry.totalTokens += evt.total_tokens || 0;
+        entry.totalCost += evt.estimated_cost_usd || 0;
+        if (evt.created_at) {
+          entry.activeDays.add(evt.created_at.slice(0, 10));
+        }
+        entry.count += 1;
+      }
 
       telemetryRows = events.map((e) => ({
         id: e.id,
@@ -94,43 +114,83 @@ export async function GET(req: NextRequest) {
         "Audit Telemetry dataset is restricted for this persona (canViewAudit is OFF).";
     }
 
-    // 2. Registered Products (apiKey strictly stripped)
+    // 2. Registered Products (apiKey strictly stripped, enriched with computed governance & telemetry)
     const scopedProducts = isKpmg
       ? allProducts
       : allProducts.filter((p) => actor.allowedProductIds.includes(p.id));
 
-    const productRows: RawDataRow[] = scopedProducts.map((p) => ({
-      id: p.id,
-      name: p.name,
-      shortName: p.shortName,
-      pillar: p.pillar,
-      status: p.status,
-      portFrontend: p.portFrontend ?? 0,
-      portBackend: p.portBackend ?? 0,
-      tagCount: p.tags.length,
-      featureCount: p.features.length,
-      systemIntegration: p.systemIntegration,
-      createdAt: p.createdAt,
-    }));
+    const productRows: RawDataRow[] = scopedProducts.map((p) => {
+      const activeEntitledCompanyIds = new Set(
+        governance.entitlements
+          .filter(
+            (e) =>
+              e.productId === p.id &&
+              e.enabled &&
+              governance.companies.some((c) => c.id === e.companyId && c.status === "active")
+          )
+          .map((e) => e.companyId)
+      );
+
+      const entitledPersonasCount = governance.personas.filter((persona) => {
+        if (!activeEntitledCompanyIds.has(persona.companyId)) return false;
+        if (persona.productAccessMode === "all") return true;
+        return persona.allowedProductIds.includes(p.id);
+      }).length;
+
+      const telem = productTelemetryMap.get(p.id);
+      const totalTokens = telem ? telem.totalTokens : 0;
+      const totalCostUsd = telem ? Number(telem.totalCost.toFixed(4)) : 0;
+      const totalRuns = telem ? telem.count : 0;
+      const activeDays = telem ? Math.max(1, telem.activeDays.size) : 1;
+      const avgDailyTokens = Math.round(totalTokens / activeDays);
+
+      return {
+        id: p.id,
+        name: p.name,
+        shortName: p.shortName,
+        pillar: p.pillar,
+        status: p.status,
+        entitledCompanyCount: activeEntitledCompanyIds.size,
+        entitledPersonaCount: entitledPersonasCount,
+        totalTokens,
+        avgDailyTokens,
+        totalCostUsd,
+        totalRuns,
+        portFrontend: p.portFrontend ?? 0,
+        portBackend: p.portBackend ?? 0,
+        tagCount: p.tags.length,
+        featureCount: p.features.length,
+        systemIntegration: p.systemIntegration,
+        createdAt: p.createdAt,
+      };
+    });
 
     // 3. Client Companies (KPMG sees all; Client sees strictly own company)
     const scopedCompanies = isKpmg
       ? governance.companies
       : governance.companies.filter((c) => c.id === actor.companyId);
 
-    const companyRows: RawDataRow[] = scopedCompanies.map((c) => ({
-      id: c.id,
-      name: c.name,
-      code: c.code,
-      contactEmail: c.contactEmail,
-      status: c.status,
-      enabledProductCount: governance.entitlements.filter(
-        (e) => e.companyId === c.id && e.enabled
-      ).length,
-      personaCount: governance.personas.filter((p) => p.companyId === c.id).length,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
-    }));
+    const companyRows: RawDataRow[] = scopedCompanies.map((c) => {
+      const companyEntitledProductIds = governance.entitlements
+        .filter((e) => e.companyId === c.id && e.enabled)
+        .map((e) => e.productId);
+      const companyEntitledNames = companyEntitledProductIds
+        .map((pid) => productNameById.get(pid) || pid)
+        .join(", ");
+
+      return {
+        id: c.id,
+        name: c.name,
+        code: c.code,
+        contactEmail: c.contactEmail,
+        status: c.status,
+        enabledProductCount: companyEntitledProductIds.length,
+        personaCount: governance.personas.filter((p) => p.companyId === c.id).length,
+        entitledProductNames: companyEntitledNames || "None",
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      };
+    });
 
     // 4. Client Personas (passcode strictly stripped; viewer-only client personas without
     // canManageDashboards only see their own persona record, never peer employee directories)
@@ -144,6 +204,9 @@ export async function GET(req: NextRequest) {
 
     const personaRows: RawDataRow[] = scopedPersonas.map((p) => {
       const effectiveIds = getEffectiveProductIdsForPersona(p.companyId, p.id);
+      const effectiveNames = effectiveIds
+        .map((pid) => productNameById.get(pid) || pid)
+        .join(", ");
       const enabledPermCount = [
         p.permissions.canLaunchProducts,
         p.permissions.canViewAudit,
@@ -158,6 +221,7 @@ export async function GET(req: NextRequest) {
         email: p.email,
         productAccessMode: p.productAccessMode,
         allowedProductCount: effectiveIds.length,
+        effectiveProductNames: effectiveNames || "None",
         enabledPermissionCount: enabledPermCount,
         canLaunchProducts: p.permissions.canLaunchProducts,
         canViewAudit: p.permissions.canViewAudit,
@@ -183,6 +247,61 @@ export async function GET(req: NextRequest) {
       grantedAt: e.grantedAt,
     }));
 
+    // 6. Granular Product Access Matrix ("Who has access to what")
+    const accessMatrixRows: RawDataRow[] = [];
+    for (const company of scopedCompanies) {
+      const companyPersonas = scopedPersonas.filter((p) => p.companyId === company.id);
+      const isCompanyActive = company.status === "active";
+
+      for (const prod of scopedProducts) {
+        const entitlement = governance.entitlements.find(
+          (e) => e.companyId === company.id && e.productId === prod.id
+        );
+        const isEntitledByCompany = Boolean(entitlement && entitlement.enabled);
+
+        for (const persona of companyPersonas) {
+          const modeAllows =
+            persona.productAccessMode === "all" ||
+            persona.allowedProductIds.includes(prod.id);
+          const canLaunch = Boolean(persona.permissions.canLaunchProducts);
+          const effectiveActive = isCompanyActive && isEntitledByCompany && modeAllows;
+
+          let accessStatus: "Active" | "Restricted" | "Disabled" | "Suspended";
+          if (!isCompanyActive) {
+            accessStatus = "Suspended";
+          } else if (!isEntitledByCompany) {
+            accessStatus = "Disabled";
+          } else if (!modeAllows) {
+            accessStatus = "Restricted";
+          } else {
+            accessStatus = "Active";
+          }
+
+          accessMatrixRows.push({
+            id: `${company.id}_${persona.id}_${prod.id}`,
+            companyName: company.name,
+            companyCode: company.code,
+            companyStatus: company.status,
+            personaName: persona.name,
+            personaEmail: persona.email,
+            roleTitle: persona.roleTitle,
+            productName: prod.name,
+            productId: prod.id,
+            accessStatus,
+            productAccessMode: persona.productAccessMode,
+            isEntitled: effectiveActive,
+            isEntitledNumeric: effectiveActive ? 1 : 0,
+            canLaunch: effectiveActive && canLaunch,
+            canViewAudit: Boolean(persona.permissions.canViewAudit),
+            canManageDashboards: Boolean(persona.permissions.canManageDashboards),
+            canExportData: Boolean(persona.permissions.canExportData),
+            grantedBy: entitlement?.grantedBy || "KPMG Lead",
+            grantedAt: entitlement?.grantedAt || persona.updatedAt || persona.createdAt,
+          });
+        }
+      }
+    }
+
     const payload: LiveDatasetsPayload = {
       datasets: {
         telemetry_events: telemetryRows,
@@ -190,6 +309,7 @@ export async function GET(req: NextRequest) {
         client_companies: companyRows,
         client_personas: personaRows,
         product_entitlements: entitlementRows,
+        product_access_matrix: accessMatrixRows,
       },
       restrictedDatasets,
       fetchedAt: new Date().toISOString(),

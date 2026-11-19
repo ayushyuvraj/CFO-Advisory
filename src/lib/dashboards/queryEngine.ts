@@ -314,6 +314,23 @@ function matchesWidgetFilter(
   }
 }
 
+function resolveTargetField(row: RawDataRow, field: string, datasetId: DatasetId): string {
+  if (readRowField(row, field) !== undefined) return field;
+  if (field === "productName") {
+    if (readRowField(row, "product_name") !== undefined) return "product_name";
+    if (datasetId === "registered_products" && readRowField(row, "name") !== undefined) return "name";
+  }
+  if (field === "product_name") {
+    if (readRowField(row, "productName") !== undefined) return "productName";
+    if (datasetId === "registered_products" && readRowField(row, "name") !== undefined) return "name";
+  }
+  if (field === "name" && datasetId === "registered_products") {
+    if (readRowField(row, "productName") !== undefined) return "productName";
+    if (readRowField(row, "product_name") !== undefined) return "product_name";
+  }
+  return field;
+}
+
 export function filterDatasetRows(
   rows: RawDataRow[],
   widget: DashboardWidget,
@@ -329,16 +346,22 @@ export function filterDatasetRows(
     );
   }
 
-  const applicableCross = crossFilters.filter(
-    (cf) => cf.datasetId === widget.datasetId && cf.sourceWidgetId !== widget.id
-  );
+  const sampleRow = rows[0] || {};
+  const applicableCross = crossFilters.filter((cf) => {
+    if (cf.sourceWidgetId === widget.id) return false;
+    if (cf.datasetId === widget.datasetId) return true;
+    if (rows.length === 0) return false;
+    const targetField = resolveTargetField(sampleRow, cf.field, widget.datasetId);
+    return readRowField(sampleRow, targetField) !== undefined;
+  });
 
   if (applicableCross.length > 0) {
     result = result.filter((row) =>
       applicableCross.every((cf) => {
-        const val = readRowField(row, cf.field);
+        const targetField = resolveTargetField(row, cf.field, widget.datasetId);
+        const val = readRowField(row, targetField);
         if (cf.operator === "in" && cf.values && cf.values.length > 0) {
-          const def = getFieldDef(widget.datasetId, cf.field);
+          const def = getFieldDef(widget.datasetId, targetField);
           const normalizedStr =
             val === null || val === undefined || val === ""
               ? "Unassigned"

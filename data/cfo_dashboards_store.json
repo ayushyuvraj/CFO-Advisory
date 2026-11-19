@@ -1,24 +1,605 @@
 {
   "dashboards": [
     {
-      "id": "dsh_9ff26d66fd2f",
-      "title": "test1",
-      "description": "notes",
+      "id": "dsh_inbuilt_executive_governance",
+      "title": "Executive Command · Product Adoption & Governance",
+      "description": "Institutional executive overview providing real-time visibility into product users, client adoption, token spend, and access governance.",
       "ownerType": "kpmg",
       "ownerUserId": "usr-kpmg-lead",
       "ownerName": "KPMG Lead",
       "visibility": "kpmg_only",
       "assignedCompanyIds": [],
       "refreshIntervalSec": 0,
+      "isInbuilt": true,
+      "createdAt": "2026-11-19T12:00:00.000Z",
+      "updatedAt": "2026-11-19T12:00:00.000Z",
       "pages": [
         {
-          "id": "pg_ab91ae06",
-          "title": "Page 1",
-          "widgets": []
+          "id": "pg_exec_governance_main",
+          "title": "Product Adoption & Governance",
+          "widgets": [
+            {
+              "id": "wgt_inbuilt_header",
+              "type": "section_header",
+              "title": "KPMG Executive Command Center · Product Adoption & Governance",
+              "subtitle": "Institutional oversight of connected platform adoption, authorized client personas, granular access matrices, and real-time AI token telemetry.",
+              "datasetId": "product_access_matrix",
+              "layout": {
+                "x": 0,
+                "y": 0,
+                "w": 24,
+                "h": 2
+              },
+              "encoding": {
+                "y": [],
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "auto",
+                "showLabels": false,
+                "showLegend": false,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "KPMG Executive Command Center · Product Adoption & Governance",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_kpi_companies",
+              "type": "kpi_card",
+              "title": "Client Organizations",
+              "subtitle": "Onboarded enterprise clients",
+              "datasetId": "client_companies",
+              "layout": {
+                "x": 0,
+                "y": 2,
+                "w": 4,
+                "h": 4
+              },
+              "encoding": {
+                "y": [
+                  {
+                    "field": "__record_count",
+                    "aggregation": "count"
+                  }
+                ],
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "integer",
+                "showLabels": false,
+                "showLegend": false,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_kpi_personas",
+              "type": "kpi_card",
+              "title": "Authorized Personas",
+              "subtitle": "Provisioned client identities",
+              "datasetId": "client_personas",
+              "layout": {
+                "x": 4,
+                "y": 2,
+                "w": 4,
+                "h": 4
+              },
+              "encoding": {
+                "y": [
+                  {
+                    "field": "__record_count",
+                    "aggregation": "count"
+                  }
+                ],
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "integer",
+                "showLabels": false,
+                "showLegend": false,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_kpi_entitled_users",
+              "type": "kpi_card",
+              "title": "Authorized Users (Invoice P2P)",
+              "subtitle": "Users with live platform access",
+              "datasetId": "product_access_matrix",
+              "layout": {
+                "x": 8,
+                "y": 2,
+                "w": 4,
+                "h": 4
+              },
+              "encoding": {
+                "y": [
+                  {
+                    "field": "isEntitledNumeric",
+                    "aggregation": "sum"
+                  }
+                ],
+                "filters": [
+                  {
+                    "id": "f_prod_invoice",
+                    "field": "productId",
+                    "operator": "eq",
+                    "values": [
+                      "invoice-processing-p2p"
+                    ]
+                  }
+                ]
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "integer",
+                "showLabels": false,
+                "showLegend": false,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_kpi_daily_tokens",
+              "type": "kpi_card",
+              "title": "Avg Daily Token Spend",
+              "subtitle": "Active daily inference velocity",
+              "datasetId": "registered_products",
+              "layout": {
+                "x": 12,
+                "y": 2,
+                "w": 4,
+                "h": 4
+              },
+              "encoding": {
+                "y": [
+                  {
+                    "field": "avgDailyTokens",
+                    "aggregation": "sum"
+                  }
+                ],
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "tokens",
+                "showLabels": false,
+                "showLegend": false,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_kpi_total_tokens",
+              "type": "kpi_card",
+              "title": "Total Tokens Consumed",
+              "subtitle": "Audit telemetry cumulative",
+              "datasetId": "telemetry_events",
+              "layout": {
+                "x": 16,
+                "y": 2,
+                "w": 4,
+                "h": 4
+              },
+              "encoding": {
+                "y": [
+                  {
+                    "field": "total_tokens",
+                    "aggregation": "sum"
+                  }
+                ],
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "tokens",
+                "showLabels": false,
+                "showLegend": false,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_kpi_total_cost",
+              "type": "kpi_card",
+              "title": "Estimated AI Cost",
+              "subtitle": "Inference expenditure (USD)",
+              "datasetId": "telemetry_events",
+              "layout": {
+                "x": 20,
+                "y": 2,
+                "w": 4,
+                "h": 4
+              },
+              "encoding": {
+                "y": [
+                  {
+                    "field": "estimated_cost_usd",
+                    "aggregation": "sum"
+                  }
+                ],
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "currency_usd",
+                "showLabels": false,
+                "showLegend": false,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_bar_product_adoption",
+              "type": "bar_clustered",
+              "title": "Product Adoption: Authorized Personas & Entitled Clients",
+              "subtitle": "Breakdown of authorized users and entitled organizations across physical platforms",
+              "datasetId": "registered_products",
+              "layout": {
+                "x": 0,
+                "y": 6,
+                "w": 12,
+                "h": 9
+              },
+              "encoding": {
+                "x": {
+                  "field": "name"
+                },
+                "y": [
+                  {
+                    "field": "entitledPersonaCount",
+                    "aggregation": "sum"
+                  },
+                  {
+                    "field": "entitledCompanyCount",
+                    "aggregation": "sum"
+                  }
+                ],
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "auto",
+                "showLabels": true,
+                "showLegend": true,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_area_token_trend",
+              "type": "area",
+              "title": "Daily AI Token Consumption Trend",
+              "subtitle": "Time-series of daily LLM token consumption across audit execution spans",
+              "datasetId": "telemetry_events",
+              "layout": {
+                "x": 12,
+                "y": 6,
+                "w": 12,
+                "h": 9
+              },
+              "encoding": {
+                "x": {
+                  "field": "created_at",
+                  "dateBucket": "day"
+                },
+                "y": [
+                  {
+                    "field": "total_tokens",
+                    "aggregation": "sum"
+                  }
+                ],
+                "filters": []
+              },
+              "style": {
+                "palette": "cobalt_pacific",
+                "numberFormat": "auto",
+                "showLabels": false,
+                "showLegend": true,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_table_access_matrix",
+              "type": "data_table",
+              "title": "Access Governance Matrix · Who Has Access to What",
+              "subtitle": "Persona-level platform access mapping with effective operational status and granular permissions",
+              "datasetId": "product_access_matrix",
+              "layout": {
+                "x": 0,
+                "y": 15,
+                "w": 24,
+                "h": 10
+              },
+              "encoding": {
+                "y": [],
+                "columns": [
+                  {
+                    "field": "companyName"
+                  },
+                  {
+                    "field": "personaName"
+                  },
+                  {
+                    "field": "roleTitle"
+                  },
+                  {
+                    "field": "personaEmail"
+                  },
+                  {
+                    "field": "productName"
+                  },
+                  {
+                    "field": "accessStatus"
+                  },
+                  {
+                    "field": "canLaunch"
+                  },
+                  {
+                    "field": "canViewAudit"
+                  },
+                  {
+                    "field": "canManageDashboards"
+                  }
+                ],
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "auto",
+                "showLabels": false,
+                "showLegend": true,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_slicer_platform",
+              "type": "slicer_category",
+              "title": "Filter by Platform",
+              "subtitle": "Cross-filter page by connected product",
+              "datasetId": "product_access_matrix",
+              "layout": {
+                "x": 0,
+                "y": 25,
+                "w": 8,
+                "h": 4
+              },
+              "encoding": {
+                "y": [],
+                "slicerField": {
+                  "field": "productName"
+                },
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "auto",
+                "showLabels": false,
+                "showLegend": true,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_slicer_company",
+              "type": "slicer_category",
+              "title": "Filter by Client Organization",
+              "subtitle": "Cross-filter page by client company",
+              "datasetId": "product_access_matrix",
+              "layout": {
+                "x": 8,
+                "y": 25,
+                "w": 8,
+                "h": 4
+              },
+              "encoding": {
+                "y": [],
+                "slicerField": {
+                  "field": "companyName"
+                },
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "auto",
+                "showLabels": false,
+                "showLegend": true,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            },
+            {
+              "id": "wgt_slicer_status",
+              "type": "slicer_category",
+              "title": "Filter by Access Status",
+              "subtitle": "Filter by Active, Restricted, Disabled, Suspended",
+              "datasetId": "product_access_matrix",
+              "layout": {
+                "x": 16,
+                "y": 25,
+                "w": 8,
+                "h": 4
+              },
+              "encoding": {
+                "y": [],
+                "slicerField": {
+                  "field": "accessStatus"
+                },
+                "filters": []
+              },
+              "style": {
+                "palette": "kpmg_institutional",
+                "numberFormat": "auto",
+                "showLabels": false,
+                "showLegend": true,
+                "legendPosition": "top",
+                "showGridlines": true,
+                "showTrendline": false,
+                "showSparkline": false,
+                "showDataBars": false,
+                "showColorScale": false,
+                "slicerStyle": "pills",
+                "slicerMultiSelect": true,
+                "accentColor": "#00338D",
+                "textContent": "",
+                "referenceLines": [],
+                "conditionalRules": [],
+                "yAxisMin": null,
+                "yAxisMax": null
+              }
+            }
+          ]
         }
-      ],
-      "createdAt": "2026-11-19T11:32:36.202Z",
-      "updatedAt": "2026-11-19T11:32:39.102Z"
+      ]
     }
   ]
 }
