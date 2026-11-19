@@ -47,7 +47,7 @@ export default function WorkflowsPage() {
     sessionNotice,
     clearSessionNotice,
   } = useAuth();
-  const { activeTab, setActiveTab, setBadges } = useWorkflowsNav();
+  const { activeTab, setActiveTab, setBadges, viewMode, setViewMode } = useWorkflowsNav();
   const [dashboardCount, setDashboardCount] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [products, setProducts] = useState<ConnectedPlatform[]>(CONNECTED_PLATFORMS);
@@ -59,7 +59,6 @@ export default function WorkflowsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilterOption>("all");
   const [sortBy, setSortBy] = useState<SortOption>("name-asc");
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [inspectedProduct, setInspectedProduct] = useState<ConnectedPlatform | null>(null);
   const [probes, setProbes] = useState<Record<string, ProductHealthProbe>>({});
 
@@ -445,7 +444,7 @@ export default function WorkflowsPage() {
                   </button>
                 </div>
               ) : viewMode === "grid" ? (
-                <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
                   {filteredProducts.map((platform: ConnectedPlatform) => (
                     <CompactProductCard
                       key={platform.id}

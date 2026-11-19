@@ -10,6 +10,7 @@ import React, {
 import { usePathname } from "next/navigation";
 
 export type WorkflowsTabId = "catalog" | "audit" | "dashboards" | "governance";
+export type WorkflowsViewMode = "grid" | "table";
 
 export interface TabBadges {
   catalogCount?: number;
@@ -22,6 +23,8 @@ interface WorkflowsNavContextValue {
   setActiveTab: (tab: WorkflowsTabId) => void;
   badges: TabBadges;
   setBadges: React.Dispatch<React.SetStateAction<TabBadges>>;
+  viewMode: WorkflowsViewMode;
+  setViewMode: (mode: WorkflowsViewMode) => void;
 }
 
 const VALID_TABS: readonly WorkflowsTabId[] = [
@@ -57,6 +60,7 @@ export function WorkflowsNavProvider({
     return parseTabFromUrl() || "catalog";
   });
   const [badges, setBadges] = useState<TabBadges>({});
+  const [viewMode, setViewMode] = useState<WorkflowsViewMode>("grid");
 
   // Handle browser back/forward buttons
   useEffect(() => {
@@ -97,6 +101,8 @@ export function WorkflowsNavProvider({
         setActiveTab,
         badges,
         setBadges,
+        viewMode,
+        setViewMode,
       }}
     >
       {children}

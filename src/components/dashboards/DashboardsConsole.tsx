@@ -7,6 +7,8 @@ import {
   Buildings,
   Copy,
   Eye,
+  GridFour,
+  List,
   LockKey,
   PencilSimple,
   PlusCircle,
@@ -18,6 +20,9 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
+import { useWorkflowsNav } from "@/context/WorkflowsNavContext";
+import { UnifiedHubCard } from "@/components/workflows/UnifiedHubCard";
+import { DashboardTableView } from "./DashboardTableView";
 import { CompanyProfile } from "@/lib/governance/types";
 import {
   CreateDashboardInput,
@@ -56,6 +61,7 @@ export function DashboardsConsole({
   onDashboardCountChange,
 }: DashboardsConsoleProps) {
   const { user, isPreviewMode } = useAuth();
+  const { viewMode, setViewMode } = useWorkflowsNav();
   const isKpmgAdmin = Boolean(user && (!user.tenantType || user.tenantType === "kpmg"));
   const canManage =
     !isPreviewMode &&
@@ -340,7 +346,7 @@ export function DashboardsConsole({
   const renderVisibilityBadge = (doc: DashboardDocument) => {
     if (doc.ownerType === "client") {
       return (
-        <span className="inline-flex items-center gap-1 rounded-sm border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#00338D]">
+        <span className="inline-flex items-center gap-1 rounded-xs border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#00338D]">
           <Buildings size={11} weight="bold" />
           {doc.ownerCompanyName || "Company Workspace"}
         </span>
@@ -348,7 +354,7 @@ export function DashboardsConsole({
     }
     if (doc.visibility === "all_clients") {
       return (
-        <span className="inline-flex items-center gap-1 rounded-sm border border-[#009A44]/30 bg-[#009A44]/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#009A44]">
+        <span className="inline-flex items-center gap-1 rounded-xs border border-[#009A44]/30 bg-[#009A44]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#009A44]">
           <UsersThree size={11} weight="bold" />
           All Active Clients
         </span>
@@ -356,7 +362,7 @@ export function DashboardsConsole({
     }
     if (doc.visibility === "specific_companies") {
       return (
-        <span className="inline-flex items-center gap-1 rounded-sm border border-[#009A44]/30 bg-[#009A44]/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#009A44]">
+        <span className="inline-flex items-center gap-1 rounded-xs border border-[#009A44]/30 bg-[#009A44]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#009A44]">
           <Buildings size={11} weight="bold" />
           Published ({doc.assignedCompanyIds.length} Client
           {doc.assignedCompanyIds.length !== 1 ? "s" : ""})
@@ -364,7 +370,7 @@ export function DashboardsConsole({
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#526075]">
+      <span className="inline-flex items-center gap-1 rounded-xs border border-[#D8DFE9] bg-[#F4F6FA] px-2 py-0.5 font-mono text-[11px] font-semibold text-[#526075]">
         <LockKey size={11} weight="bold" />
         KPMG Internal
       </span>
@@ -427,6 +433,38 @@ export function DashboardsConsole({
         sortLabel="Sort"
         countLabel={`${filteredDashboards.length} ${filteredDashboards.length === 1 ? "dashboard" : "dashboards"}`}
       >
+        {/* View Switcher: Grid vs Table */}
+        <div className="flex h-[30px] items-center rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-0.5 box-border">
+          <button
+            type="button"
+            onClick={() => setViewMode("grid")}
+            title="Grid view"
+            aria-label="Grid view"
+            aria-pressed={viewMode === "grid"}
+            className={`flex h-[24px] w-[26px] items-center justify-center rounded-xs transition-colors duration-100 ${
+              viewMode === "grid"
+                ? "bg-white text-[#0C233C] shadow-xs font-bold"
+                : "text-[#526075] hover:text-[#0C233C]"
+            }`}
+          >
+            <GridFour size={15} weight={viewMode === "grid" ? "bold" : "regular"} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("table")}
+            title="Table view"
+            aria-label="Table view"
+            aria-pressed={viewMode === "table"}
+            className={`flex h-[24px] w-[26px] items-center justify-center rounded-xs transition-colors duration-100 ${
+              viewMode === "table"
+                ? "bg-white text-[#0C233C] shadow-xs font-bold"
+                : "text-[#526075] hover:text-[#0C233C]"
+            }`}
+          >
+            <List size={15} weight={viewMode === "table" ? "bold" : "regular"} />
+          </button>
+        </div>
+
         <button
           type="button"
           onClick={() => {
@@ -481,8 +519,8 @@ export function DashboardsConsole({
         transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
       >
         {loading ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((k) => (
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((k) => (
             <div
               key={k}
               className="h-44 animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]"
@@ -513,114 +551,130 @@ export function DashboardsConsole({
             </button>
           )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      ) : viewMode === "grid" ? (
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
           {filteredDashboards.map((doc) => {
             const editable = canEditDoc(doc);
-            const totalWidgets = doc.pages.reduce(
-              (acc, p) => acc + p.widgets.length,
-              0
-            );
             return (
-              <div
+              <UnifiedHubCard
                 key={doc.id}
-                className="flex flex-col justify-between rounded-sm border border-[#D8DFE9] bg-white p-5 shadow-2xs transition-[border-color,box-shadow] hover:border-[#00338D] hover:shadow-md"
-              >
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    {renderVisibilityBadge(doc)}
-                    <span className="font-mono text-[10px] text-[#64748B] tabular-nums">
-                      {doc.pages.length} pg · {totalWidgets} visual
-                      {totalWidgets !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-
-                  <h3 className="mt-3 text-base font-bold tracking-tight text-[#0C233C]">
-                    {doc.title}
-                  </h3>
-                  {doc.description && (
-                    <p className="mt-1 line-clamp-2 text-xs text-[#526075]">
-                      {doc.description}
-                    </p>
-                  )}
-
-                  <p className="mt-3 font-mono text-[10px] text-[#64748B]">
-                    Owner: {doc.ownerName} · Updated{" "}
-                    {new Date(doc.updatedAt).toLocaleDateString()}
-                  </p>
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[#EEF2F6] pt-3">
-                  <div className="flex items-center gap-1.5">
+                dataCardId={doc.id}
+                icon={<PresentationChart size={19} weight="bold" />}
+                badge={renderVisibilityBadge(doc)}
+                title={doc.title}
+                onTitleClick={() => {
+                  setOpenInPresent(false);
+                  setOpenDashboardId(doc.id);
+                }}
+                onClick={() => {
+                  setOpenInPresent(false);
+                  setOpenDashboardId(doc.id);
+                }}
+                actions={
+                  <>
+                    {/* Present Fullscreen */}
                     <button
                       type="button"
-                      onClick={() => {
-                        setOpenInPresent(false);
-                        setOpenDashboardId(doc.id);
-                      }}
-                      className="inline-flex items-center gap-1 rounded-sm bg-[#00338D] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1E49E2]"
-                    >
-                      {editable ? (
-                        <PencilSimple size={13} weight="bold" />
-                      ) : (
-                        <Eye size={13} weight="bold" />
-                      )}
-                      <span>{editable ? "Open Studio" : "Open Viewer"}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setOpenInPresent(true);
                         setOpenDashboardId(doc.id);
                       }}
+                      title={`Present ${doc.title}`}
                       aria-label={`Present ${doc.title}`}
-                      title="Present full-screen"
-                      className="rounded-sm border border-[#D8DFE9] bg-white p-1.5 text-[#00338D] hover:border-[#00338D] hover:bg-[#F4F6FA]"
+                      className="flex h-7.5 w-7.5 items-center justify-center rounded-sm text-[#526075] transition-all duration-150 hover:bg-[#F4F6FA] hover:text-[#00338D] hover:scale-110 active:scale-[0.92]"
                     >
-                      <PresentationChart size={14} weight="light" />
+                      <PresentationChart size={16} weight="bold" />
                     </button>
-                  </div>
 
-                  <div className="flex items-center gap-1">
+                    {/* Share Network (KPMG Admin only) */}
                     {isKpmgAdmin && !isPreviewMode && doc.ownerType === "kpmg" && (
                       <button
                         type="button"
-                        onClick={() => setSharingTarget(doc)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSharingTarget(doc);
+                        }}
+                        title={`Publish ${doc.title}`}
                         aria-label={`Publish ${doc.title}`}
-                        title="Publish & multi-tenant sharing"
-                        className="rounded-sm border border-[#D8DFE9] bg-white p-1.5 text-[#526075] hover:border-[#00338D] hover:text-[#00338D]"
+                        className="flex h-7.5 w-7.5 items-center justify-center rounded-sm text-[#526075] transition-all duration-150 hover:bg-[#F4F6FA] hover:text-[#00338D] hover:scale-110 active:scale-[0.92]"
                       >
-                        <ShareNetwork size={14} weight="light" />
+                        <ShareNetwork size={16} weight="bold" />
                       </button>
                     )}
+
+                    {/* Duplicate */}
                     {canManage && (
                       <button
                         type="button"
-                        onClick={() => void handleDuplicate(doc.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleDuplicate(doc.id);
+                        }}
+                        title={`Duplicate ${doc.title}`}
                         aria-label={`Duplicate ${doc.title}`}
-                        title="Duplicate dashboard"
-                        className="rounded-sm border border-[#D8DFE9] bg-white p-1.5 text-[#526075] hover:border-[#00338D] hover:text-[#00338D]"
+                        className="flex h-7.5 w-7.5 items-center justify-center rounded-sm text-[#526075] transition-all duration-150 hover:bg-[#F4F6FA] hover:text-[#00338D] hover:scale-110 active:scale-[0.92]"
                       >
-                        <Copy size={14} weight="light" />
+                        <Copy size={16} weight="bold" />
                       </button>
                     )}
+
+                    {/* Delete */}
                     {editable && (
                       <button
                         type="button"
-                        onClick={() => setDeleteTarget(doc)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget(doc);
+                        }}
                         aria-label={`Delete ${doc.title}`}
                         title="Delete dashboard"
-                        className="rounded-sm border border-[#D8DFE9] bg-white p-1.5 text-[#526075] hover:border-[#B91C1C] hover:text-[#B91C1C]"
+                        className="flex h-7.5 w-7.5 items-center justify-center rounded-sm text-[#526075] transition-all duration-150 hover:bg-red-50 hover:text-red-700 hover:scale-110 active:scale-[0.92]"
                       >
-                        <Trash size={14} weight="light" />
+                        <Trash size={16} weight="bold" />
                       </button>
                     )}
-                  </div>
-                </div>
-              </div>
+
+                    {/* Primary Studio/Viewer Open Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenInPresent(false);
+                        setOpenDashboardId(doc.id);
+                      }}
+                      title={editable ? "Open Studio" : "Open Viewer"}
+                      aria-label={editable ? "Open Studio" : "Open Viewer"}
+                      className="flex h-7.5 w-7.5 items-center justify-center rounded-sm bg-[#00338D] text-white shadow-xs transition-all duration-150 hover:bg-[#1E49E2] hover:scale-110 hover:shadow-md active:scale-[0.92]"
+                    >
+                      {editable ? (
+                        <PencilSimple size={16} weight="bold" />
+                      ) : (
+                        <Eye size={16} weight="bold" />
+                      )}
+                    </button>
+                  </>
+                }
+              />
             );
           })}
         </div>
+      ) : (
+        <DashboardTableView
+          dashboards={filteredDashboards}
+          canEditDoc={canEditDoc}
+          canManage={canManage}
+          isKpmgAdmin={isKpmgAdmin}
+          isPreviewMode={isPreviewMode}
+          onOpen={(id, present) => {
+            setOpenInPresent(Boolean(present));
+            setOpenDashboardId(id);
+          }}
+          onShare={(d) => setSharingTarget(d)}
+          onDuplicate={(id) => void handleDuplicate(id)}
+          onDelete={(d) => setDeleteTarget(d)}
+          renderVisibilityBadge={renderVisibilityBadge}
+        />
       )}
       </motion.div>
 

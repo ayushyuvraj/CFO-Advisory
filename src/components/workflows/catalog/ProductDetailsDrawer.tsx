@@ -129,7 +129,7 @@ function ProductDetailsDrawerInner({
       role="dialog"
       aria-modal="true"
       aria-labelledby="drawer-product-title"
-      className="fixed inset-0 z-50 flex justify-end"
+      className="fixed inset-0 z-[90] flex justify-end"
     >
       {/* Backdrop */}
       <div
