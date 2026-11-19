@@ -209,6 +209,24 @@ function DrawerInner({
             persona.allowedProductIds.includes(pid)
           );
 
+    // Save preview return origin state so exitPreview returns directly to this company drawer
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem(
+          "kpmg_preview_origin",
+          JSON.stringify({
+            tab: "governance",
+            companyId: company.id,
+            companyName: company.name,
+            personaId: persona.id,
+            timestamp: Date.now(),
+          })
+        );
+      } catch {
+        // Non-fatal storage failure
+      }
+    }
+
     try {
       await startPreviewAs(company, persona, allowed);
       onClose();

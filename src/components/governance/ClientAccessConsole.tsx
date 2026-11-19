@@ -95,9 +95,79 @@ export function ClientAccessConsole({
     setIsCreateModalOpen(false);
   }, []);
 
+  const handleOpenCompanyDrawer = useCallback((companyId: string) => {
+    setSelectedCompanyId(companyId);
+    if (typeof window !== "undefined") {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("companyId", companyId);
+        window.history.replaceState(null, "", url.toString());
+        window.dispatchEvent(new Event("kpmg-nav-change"));
+      } catch {
+        // Non-fatal
+      }
+    }
+  }, []);
+
   const handleCloseDrawer = useCallback(() => {
     setSelectedCompanyId(null);
+    if (typeof window !== "undefined") {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("companyId");
+        window.history.replaceState(null, "", url.toString());
+        window.dispatchEvent(new Event("kpmg-nav-change"));
+      } catch {
+        // Non-fatal
+      }
+    }
   }, []);
+
+  // Deep-link & state restoration: sync selectedCompanyId from URL search params
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const syncFromUrl = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlCompanyId = params.get("companyId");
+        if (urlCompanyId) {
+          setSelectedCompanyId(urlCompanyId);
+        } else {
+          setSelectedCompanyId(null);
+        }
+      } catch {
+        // Non-fatal
+      }
+    };
+
+    syncFromUrl();
+    window.addEventListener("popstate", syncFromUrl);
+    window.addEventListener("kpmg-nav-change", syncFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFromUrl);
+      window.removeEventListener("kpmg-nav-change", syncFromUrl);
+    };
+  }, []);
+
+  // Validate selectedCompanyId against loaded companies
+  useEffect(() => {
+    if (!isLoading && selectedCompanyId && governanceData.companies.length > 0) {
+      const exists = governanceData.companies.some((c) => c.id === selectedCompanyId);
+      if (!exists) {
+        setSelectedCompanyId(null);
+        if (typeof window !== "undefined") {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("companyId");
+            window.history.replaceState(null, "", url.toString());
+            window.dispatchEvent(new Event("kpmg-nav-change"));
+          } catch {
+            // Non-fatal
+          }
+        }
+      }
+    }
+  }, [isLoading, selectedCompanyId, governanceData.companies]);
 
   const handleToggleEntitlement = useCallback(
     async (companyId: string, productId: string, enabled: boolean) => {
@@ -176,6 +246,16 @@ export function ClientAccessConsole({
       personas: prev.personas.filter((p) => p.companyId !== companyId),
     }));
     setSelectedCompanyId(null);
+    if (typeof window !== "undefined") {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("companyId");
+        window.history.replaceState(null, "", url.toString());
+        window.dispatchEvent(new Event("kpmg-nav-change"));
+      } catch {
+        // Non-fatal
+      }
+    }
   }, []);
 
   const handlePersonaSaved = useCallback((persona: CompanyPersona) => {
@@ -493,8 +573,8 @@ export function ClientAccessConsole({
                   }
                   title={company.name}
                   subtitle={company.code}
-                  onTitleClick={() => setSelectedCompanyId(company.id)}
-                  onClick={() => setSelectedCompanyId(company.id)}
+                  onTitleClick={() => handleOpenCompanyDrawer(company.id)}
+                  onClick={() => handleOpenCompanyDrawer(company.id)}
                   meta={
                     <div className="flex items-center gap-2 font-mono text-[11px] text-[#526075]">
                       <span title="Active Entitlements">
@@ -511,7 +591,7 @@ export function ClientAccessConsole({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedCompanyId(company.id);
+                        handleOpenCompanyDrawer(company.id);
                       }}
                       title={`Manage access and personas for ${company.name}`}
                       aria-label={`Manage access for ${company.name}`}
@@ -530,7 +610,7 @@ export function ClientAccessConsole({
             entitlements={governanceData.entitlements}
             personas={governanceData.personas}
             availableProducts={availableProducts}
-            onManage={(id) => setSelectedCompanyId(id)}
+            onManage={(id) => handleOpenCompanyDrawer(id)}
           />
         )
       ) : viewMode === "grid" ? (
