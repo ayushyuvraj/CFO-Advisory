@@ -37,7 +37,7 @@
 
 ## Post-Login Physical Products and Workflows (`/workflows`)
 Only physically deployed and running products are registered:
-- `AI Invoice Processing & P2P Intelligence` (`invoice-processing-p2p` · Transformation & AI · Active · Frontend Port 5173 · Backend Port 8000 · Zoho Books + SAP S/4HANA + Gemini 2.5 Flash)
+- `AI Invoice Processing` (`invoice-processing-p2p` · Transformation & AI · Active · Frontend Port 5173 · Backend Port 8000 · Zoho Books + SAP S/4HANA + Gemini 2.5 Flash)
 - Any non-existent or unconfigured product route returns an explicit 404 / "Under Construction" state. No simulated products or synthetic demo workflows are permitted.
 
 ## Platform Multi-Product & Telemetry Invariants (Strict)

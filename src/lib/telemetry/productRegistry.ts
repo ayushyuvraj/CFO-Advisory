@@ -16,7 +16,7 @@ function getRegistryFile(): string {
 const SEED_PRODUCTS: RegisteredProduct[] = [
   {
     id: "invoice-processing-p2p",
-    name: "AI Invoice Processing & P2P Intelligence",
+    name: "AI Invoice Processing",
     shortName: "Invoice Processing",
     description:
       "Autonomous GST tax invoice intake, multimodal Gemini document extraction, real-time 3-way variance reconciliation against Zoho Books and SAP S/4HANA, exception resolution, and payment release.",

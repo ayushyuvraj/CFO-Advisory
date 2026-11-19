@@ -108,7 +108,7 @@ export function createInbuiltExecutiveDashboard(): DashboardDocument {
           {
             id: "wgt_kpi_entitled_users",
             type: "kpi_card",
-            title: "Authorized Users (Invoice P2P)",
+            title: "Authorized Users (AI Invoice Processing)",
             subtitle: "Users with live platform access",
             datasetId: "product_access_matrix",
             layout: { x: 8, y: 2, w: 4, h: 4 },
