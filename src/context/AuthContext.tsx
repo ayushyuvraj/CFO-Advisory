@@ -395,10 +395,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ action: "exit" }),
     });
     const data = await safeParseJson(res);
-    if (res.ok && data.user) {
-      persistSession(data.user as AuthUser);
-    } else if (user.previewOriginalAdmin) {
-      persistSession(user.previewOriginalAdmin);
+    const restoredUser = (res.ok && data.user
+      ? data.user
+      : user.previewOriginalAdmin) as AuthUser | null;
+
+    if (restoredUser) {
+      // Restore exact origin screen (Governance console + specific Company Detail Drawer)
+      if (typeof window !== "undefined") {
+        try {
+          const raw = sessionStorage.getItem("kpmg_preview_origin");
+          if (raw) {
+            const origin = JSON.parse(raw) as {
+              tab?: string;
+              companyId?: string;
+            };
+            sessionStorage.removeItem("kpmg_preview_origin");
+            const targetTab = origin.tab || "governance";
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set("tab", targetTab);
+            if (origin.companyId) {
+              currentUrl.searchParams.set("companyId", origin.companyId);
+            } else {
+              currentUrl.searchParams.delete("companyId");
+            }
+            window.history.replaceState(null, "", currentUrl.toString());
+            window.dispatchEvent(new Event("kpmg-nav-change"));
+            window.dispatchEvent(new Event("popstate"));
+          } else {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set("tab", "governance");
+            window.history.replaceState(null, "", currentUrl.toString());
+            window.dispatchEvent(new Event("kpmg-nav-change"));
+            window.dispatchEvent(new Event("popstate"));
+          }
+        } catch {
+          // Non-fatal restoration error
+        }
+      }
+      persistSession(restoredUser);
     }
   }, [user]);
 

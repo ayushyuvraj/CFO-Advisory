@@ -20,7 +20,7 @@ export interface TabBadges {
 
 interface WorkflowsNavContextValue {
   activeTab: WorkflowsTabId;
-  setActiveTab: (tab: WorkflowsTabId) => void;
+  setActiveTab: (tab: WorkflowsTabId, extraParams?: Record<string, string | null | undefined>) => void;
   badges: TabBadges;
   setBadges: React.Dispatch<React.SetStateAction<TabBadges>>;
   viewMode: WorkflowsViewMode;
@@ -62,7 +62,7 @@ export function WorkflowsNavProvider({
   const [badges, setBadges] = useState<TabBadges>({});
   const [viewMode, setViewMode] = useState<WorkflowsViewMode>("grid");
 
-  // Handle browser back/forward buttons
+  // Handle browser back/forward buttons and programmatic nav events
   useEffect(() => {
     const handlePopState = () => {
       if (pathname.startsWith("/workflows")) {
@@ -71,11 +71,15 @@ export function WorkflowsNavProvider({
       }
     };
     window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener("kpmg-nav-change", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("kpmg-nav-change", handlePopState);
+    };
   }, [pathname]);
 
   const setActiveTab = useCallback(
-    (tab: WorkflowsTabId) => {
+    (tab: WorkflowsTabId, extraParams?: Record<string, string | null | undefined>) => {
       setActiveTabState(tab);
       if (typeof window !== "undefined" && pathname.startsWith("/workflows")) {
         try {
@@ -85,7 +89,17 @@ export function WorkflowsNavProvider({
           } else {
             currentUrl.searchParams.set("tab", tab);
           }
+          if (extraParams) {
+            for (const [key, val] of Object.entries(extraParams)) {
+              if (val === null || val === undefined) {
+                currentUrl.searchParams.delete(key);
+              } else {
+                currentUrl.searchParams.set(key, val);
+              }
+            }
+          }
           window.history.replaceState(null, "", currentUrl.toString());
+          window.dispatchEvent(new Event("kpmg-nav-change"));
         } catch {
           // Non-fatal history push failure
         }
