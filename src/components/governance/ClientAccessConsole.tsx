@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
 import {
   Buildings,
   Cpu,
@@ -359,7 +360,12 @@ export function ClientAccessConsole({
       )}
 
       {/* Main Content Area */}
-      {isLoading ? (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+      >
+        {isLoading ? (
         <div className="h-48 animate-pulse rounded-sm border border-[#D8DFE9] bg-white" />
       ) : loadError ? (
         <div
@@ -624,6 +630,7 @@ export function ClientAccessConsole({
           })}
         </div>
       )}
+      </motion.div>
 
       {/* Modals & Drawers */}
       <CreateCompanyModal

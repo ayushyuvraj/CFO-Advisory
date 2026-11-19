@@ -3,8 +3,8 @@
 import {
   GridFour,
   List,
+  PlusCircle,
 } from "@phosphor-icons/react";
-import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import {
   UnifiedWorkflowsBar,
   FilterOptionItem,
@@ -102,13 +102,17 @@ export function CatalogControlBar({
         </button>
       </div>
 
-      {/* Primary CTA: Add Product (Preserved Animation) */}
+      {/* Primary CTA: Add Product (Harmonized with all Hub tabs) */}
       {isKpmgAdmin && (
-        <InteractiveHoverButton
+        <button
+          type="button"
           onClick={onOpenAddModal}
-          text="Add Product"
-          className="h-[30px] min-w-[120px] text-xs font-medium"
-        />
+          className="inline-flex h-[30px] items-center justify-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-0 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2] active:scale-[0.98] box-border"
+          title="Add a new platform to catalog"
+        >
+          <PlusCircle size={15} weight="bold" />
+          <span>Add Product</span>
+        </button>
       )}
     </UnifiedWorkflowsBar>
   );

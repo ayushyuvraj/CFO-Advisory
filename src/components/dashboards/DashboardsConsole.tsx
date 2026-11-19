@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "motion/react";
 import {
   ArrowClockwise,
   Buildings,
@@ -474,7 +475,12 @@ export function DashboardsConsole({
       )}
 
       {/* Dashboards Grid */}
-      {loading ? (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+      >
+        {loading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((k) => (
             <div
@@ -616,6 +622,7 @@ export function DashboardsConsole({
           })}
         </div>
       )}
+      </motion.div>
 
       {/* Modals */}
       <CreateDashboardModal

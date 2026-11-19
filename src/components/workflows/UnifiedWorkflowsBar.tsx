@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, ReactNode } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   MagnifyingGlass,
   XCircle,
@@ -25,11 +26,19 @@ interface UnifiedWorkflowsBarProps {
   onSearchChange: (query: string) => void;
   searchPlaceholder?: string;
 
-  // Filter
+  // Primary Filter
   filterOptions?: FilterOptionItem[];
   activeFilter?: string;
   onFilterChange?: (filterId: string) => void;
   filterLabel?: string;
+  filterIcon?: ReactNode;
+
+  // Optional Secondary Filter (e.g. Product Scope in Audit)
+  secondaryFilterOptions?: FilterOptionItem[];
+  secondaryActiveFilter?: string;
+  secondaryOnFilterChange?: (filterId: string) => void;
+  secondaryFilterLabel?: string;
+  secondaryFilterIcon?: ReactNode;
 
   // Sort
   sortOptions?: SortOptionItem[];
@@ -52,6 +61,12 @@ export function UnifiedWorkflowsBar({
   activeFilter,
   onFilterChange,
   filterLabel = "Filter",
+  filterIcon,
+  secondaryFilterOptions,
+  secondaryActiveFilter,
+  secondaryOnFilterChange,
+  secondaryFilterLabel = "Scope",
+  secondaryFilterIcon,
   sortOptions,
   activeSort,
   onSortChange,
@@ -60,9 +75,11 @@ export function UnifiedWorkflowsBar({
   children,
 }: UnifiedWorkflowsBarProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSecondaryFilterOpen, setIsSecondaryFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
   const filterRef = useRef<HTMLDivElement>(null);
+  const secondaryFilterRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,6 +89,12 @@ export function UnifiedWorkflowsBar({
       if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
         setIsFilterOpen(false);
       }
+      if (
+        secondaryFilterRef.current &&
+        !secondaryFilterRef.current.contains(e.target as Node)
+      ) {
+        setIsSecondaryFilterOpen(false);
+      }
       if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
         setIsSortOpen(false);
       }
@@ -80,6 +103,7 @@ export function UnifiedWorkflowsBar({
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsFilterOpen(false);
+        setIsSecondaryFilterOpen(false);
         setIsSortOpen(false);
       }
     }
@@ -96,6 +120,16 @@ export function UnifiedWorkflowsBar({
     activeFilter &&
     activeFilter !== "all" &&
     activeFilter !== "ALL"
+  );
+
+  const hasActiveSecondaryFilter = Boolean(
+    secondaryActiveFilter &&
+    secondaryActiveFilter !== "all" &&
+    secondaryActiveFilter !== "ALL"
+  );
+
+  const activeSecondaryOption = secondaryFilterOptions?.find(
+    (o) => o.id === secondaryActiveFilter
   );
 
   return (
@@ -133,13 +167,97 @@ export function UnifiedWorkflowsBar({
           )}
         </div>
 
-        {/* Filter Popover Button */}
+        {/* Secondary Filter Popover Button (e.g. Product in Audit) */}
+        {secondaryFilterOptions &&
+          secondaryFilterOptions.length > 0 &&
+          secondaryOnFilterChange && (
+            <div ref={secondaryFilterRef} className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSecondaryFilterOpen((prev) => !prev);
+                  setIsFilterOpen(false);
+                  setIsSortOpen(false);
+                }}
+                aria-expanded={isSecondaryFilterOpen}
+                aria-label={`Filter by ${secondaryFilterLabel}`}
+                className={`inline-flex h-[30px] items-center gap-1.5 rounded-sm border px-2.5 py-0 text-xs font-medium transition-all duration-150 active:scale-[0.98] box-border ${
+                  hasActiveSecondaryFilter || isSecondaryFilterOpen
+                    ? "border-[#0C233C] bg-[#F1F5F9] text-[#0C233C] font-semibold"
+                    : "border-[#D8DFE9] bg-[#F8FAFC] text-[#333940] hover:bg-[#F1F5F9] hover:text-[#0C233C]"
+                }`}
+              >
+                {secondaryFilterIcon || <FunnelSimple size={14} weight="bold" />}
+                <span className="max-w-[125px] truncate">
+                  {hasActiveSecondaryFilter && activeSecondaryOption
+                    ? activeSecondaryOption.label
+                    : secondaryFilterLabel}
+                </span>
+                {hasActiveSecondaryFilter && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#0C233C]" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isSecondaryFilterOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96, y: -4 }}
+                    transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                    className="absolute left-0 top-full z-30 mt-1.5 min-w-[200px] max-w-[280px] rounded-sm border border-[#D8DFE9] bg-white p-1.5 shadow-lg"
+                  >
+                    <div className="px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#526075]">
+                      Filter by {secondaryFilterLabel}
+                    </div>
+                    <div className="space-y-0.5 max-h-[240px] overflow-y-auto">
+                      {secondaryFilterOptions.map((opt) => {
+                        const isSelected = secondaryActiveFilter === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              secondaryOnFilterChange(opt.id);
+                              setIsSecondaryFilterOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between rounded-xs px-2 py-1.5 text-xs transition-colors duration-100 ${
+                              isSelected
+                                ? "bg-[#F1F5F9] font-semibold text-[#0C233C]"
+                                : "text-[#333940] hover:bg-[#F8FAFC] hover:text-[#0C233C]"
+                            }`}
+                          >
+                            <span className="truncate">{opt.label}</span>
+                            {isSelected && (
+                              <Check
+                                size={13}
+                                weight="bold"
+                                className="shrink-0 text-[#0C233C]"
+                              />
+                            )}
+                            {opt.count !== undefined && !isSelected && (
+                              <span className="font-mono text-[10px] text-[#526075]">
+                                {opt.count}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+        {/* Primary Filter Popover Button */}
         {filterOptions && filterOptions.length > 0 && onFilterChange && (
           <div ref={filterRef} className="relative">
             <button
               type="button"
               onClick={() => {
                 setIsFilterOpen((prev) => !prev);
+                setIsSecondaryFilterOpen(false);
                 setIsSortOpen(false);
               }}
               aria-expanded={isFilterOpen}
@@ -150,50 +268,62 @@ export function UnifiedWorkflowsBar({
                   : "border-[#D8DFE9] bg-[#F8FAFC] text-[#333940] hover:bg-[#F1F5F9] hover:text-[#0C233C]"
               }`}
             >
-              <FunnelSimple size={14} weight="bold" />
+              {filterIcon || <FunnelSimple size={14} weight="bold" />}
               <span>{filterLabel}</span>
               {hasActiveFilter && (
                 <span className="h-1.5 w-1.5 rounded-full bg-[#0C233C]" />
               )}
             </button>
 
-            {isFilterOpen && (
-              <div className="absolute left-0 top-full z-30 mt-1.5 w-52 rounded-sm border border-[#D8DFE9] bg-white p-1.5 shadow-lg">
-                <div className="px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#526075]">
-                  Filter by
-                </div>
-                <div className="space-y-0.5">
-                  {filterOptions.map((opt) => {
-                    const isSelected = activeFilter === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => {
-                          onFilterChange(opt.id);
-                          setIsFilterOpen(false);
-                        }}
-                        className={`flex w-full items-center justify-between rounded-xs px-2 py-1.5 text-xs transition-colors duration-100 ${
-                          isSelected
-                            ? "bg-[#F1F5F9] font-semibold text-[#0C233C]"
-                            : "text-[#333940] hover:bg-[#F8FAFC] hover:text-[#0C233C]"
-                        }`}
-                      >
-                        <span className="truncate">{opt.label}</span>
-                        {isSelected && (
-                          <Check size={13} weight="bold" className="shrink-0 text-[#0C233C]" />
-                        )}
-                        {opt.count !== undefined && !isSelected && (
-                          <span className="font-mono text-[10px] text-[#526075]">
-                            {opt.count}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {isFilterOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: -4 }}
+                  transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                  className="absolute left-0 top-full z-30 mt-1.5 w-52 rounded-sm border border-[#D8DFE9] bg-white p-1.5 shadow-lg"
+                >
+                  <div className="px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#526075]">
+                    Filter by
+                  </div>
+                  <div className="space-y-0.5">
+                    {filterOptions.map((opt) => {
+                      const isSelected = activeFilter === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            onFilterChange(opt.id);
+                            setIsFilterOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between rounded-xs px-2 py-1.5 text-xs transition-colors duration-100 ${
+                            isSelected
+                              ? "bg-[#F1F5F9] font-semibold text-[#0C233C]"
+                              : "text-[#333940] hover:bg-[#F8FAFC] hover:text-[#0C233C]"
+                          }`}
+                        >
+                          <span className="truncate">{opt.label}</span>
+                          {isSelected && (
+                            <Check
+                              size={13}
+                              weight="bold"
+                              className="shrink-0 text-[#0C233C]"
+                            />
+                          )}
+                          {opt.count !== undefined && !isSelected && (
+                            <span className="font-mono text-[10px] text-[#526075]">
+                              {opt.count}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
@@ -205,6 +335,7 @@ export function UnifiedWorkflowsBar({
               onClick={() => {
                 setIsSortOpen((prev) => !prev);
                 setIsFilterOpen(false);
+                setIsSecondaryFilterOpen(false);
               }}
               aria-expanded={isSortOpen}
               aria-label="Sort records"
@@ -218,38 +349,50 @@ export function UnifiedWorkflowsBar({
               <span>{sortLabel}</span>
             </button>
 
-            {isSortOpen && (
-              <div className="absolute left-0 top-full z-30 mt-1.5 w-52 rounded-sm border border-[#D8DFE9] bg-white p-1.5 shadow-lg">
-                <div className="px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#526075]">
-                  Sort by
-                </div>
-                <div className="space-y-0.5">
-                  {sortOptions.map((opt) => {
-                    const isSelected = activeSort === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => {
-                          onSortChange(opt.id);
-                          setIsSortOpen(false);
-                        }}
-                        className={`flex w-full items-center justify-between rounded-xs px-2 py-1.5 text-xs transition-colors duration-100 ${
-                          isSelected
-                            ? "bg-[#F1F5F9] font-semibold text-[#0C233C]"
-                            : "text-[#333940] hover:bg-[#F8FAFC] hover:text-[#0C233C]"
-                        }`}
-                      >
-                        <span className="truncate">{opt.label}</span>
-                        {isSelected && (
-                          <Check size={13} weight="bold" className="shrink-0 text-[#0C233C]" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {isSortOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: -4 }}
+                  transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+                  className="absolute left-0 top-full z-30 mt-1.5 w-52 rounded-sm border border-[#D8DFE9] bg-white p-1.5 shadow-lg"
+                >
+                  <div className="px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#526075]">
+                    Sort by
+                  </div>
+                  <div className="space-y-0.5">
+                    {sortOptions.map((opt) => {
+                      const isSelected = activeSort === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            onSortChange(opt.id);
+                            setIsSortOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between rounded-xs px-2 py-1.5 text-xs transition-colors duration-100 ${
+                            isSelected
+                              ? "bg-[#F1F5F9] font-semibold text-[#0C233C]"
+                              : "text-[#333940] hover:bg-[#F8FAFC] hover:text-[#0C233C]"
+                          }`}
+                        >
+                          <span className="truncate">{opt.label}</span>
+                          {isSelected && (
+                            <Check
+                              size={13}
+                              weight="bold"
+                              className="shrink-0 text-[#0C233C]"
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>
@@ -257,7 +400,7 @@ export function UnifiedWorkflowsBar({
       {/* Right: Live Count Badge + Custom Actions */}
       <div className="flex items-center justify-between gap-3 lg:justify-end">
         {/* Count Badge */}
-        <span className="font-mono text-xs text-[#526075]">
+        <span className="font-mono text-xs text-[#526075] whitespace-nowrap">
           {countLabel}
         </span>
 

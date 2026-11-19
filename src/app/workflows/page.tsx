@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState, useEffect, useMemo } from "react";
+import { motion } from "motion/react";
 import { LockKey } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
 import { SignInCard } from "@/components/auth/SignInCard";
@@ -408,7 +409,12 @@ export default function WorkflowsPage() {
                 onOpenAddModal={() => setIsAddModalOpen(true)}
               />
 
-              {visibleProducts.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+              >
+                {visibleProducts.length === 0 ? (
                 <div className="rounded-sm border border-[#D8DFE9] bg-white px-6 py-16 text-center shadow-sm">
                   <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-sm bg-[#F4F6FA] text-[#4B5563]">
                     <LockKey size={24} weight="bold" />
@@ -460,6 +466,7 @@ export default function WorkflowsPage() {
                   onInspect={(p) => setInspectedProduct(p)}
                 />
               )}
+              </motion.div>
 
               {/* Slide-over Progressive Disclosure Inspector Drawer */}
               <ProductDetailsDrawer
