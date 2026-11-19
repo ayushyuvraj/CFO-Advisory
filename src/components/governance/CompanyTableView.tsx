@@ -35,7 +35,7 @@ export function CompanyTableView({
               <th className="py-2.5 px-4 font-semibold">Organization</th>
               <th className="py-2.5 px-4 font-semibold">Code</th>
               <th className="py-2.5 px-4 font-semibold">Entitlements</th>
-              <th className="py-2.5 px-4 font-semibold">Personas</th>
+              <th className="py-2.5 px-4 text-center font-semibold">Personas</th>
               <th className="py-2.5 px-4 text-right font-semibold">Actions</th>
             </tr>
           </thead>
@@ -96,7 +96,7 @@ export function CompanyTableView({
                   </td>
 
                   {/* Dedicated Personas Column */}
-                  <td className="whitespace-nowrap py-3 px-4 font-mono text-[11px] text-[#526075]">
+                  <td className="whitespace-nowrap py-3 px-4 text-center font-mono text-[11px] text-[#526075]">
                     {personaCount}
                   </td>
 
