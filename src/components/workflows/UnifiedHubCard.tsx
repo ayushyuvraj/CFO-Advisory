@@ -6,22 +6,28 @@ export interface UnifiedHubCardProps {
   icon: ReactNode;
   badge: ReactNode;
   title: string;
+  subtitle?: ReactNode;
+  meta?: ReactNode;
   onTitleClick?: () => void;
   actions: ReactNode;
   dataCardId?: string;
   onClick?: () => void;
   className?: string;
+  children?: ReactNode;
 }
 
 export function UnifiedHubCard({
   icon,
   badge,
   title,
+  subtitle,
+  meta,
   onTitleClick,
   actions,
   dataCardId,
   onClick,
   className = "",
+  children,
 }: UnifiedHubCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
@@ -122,7 +128,7 @@ export function UnifiedHubCard({
           : "transform 420ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 350ms ease-out, border-color 250ms ease-out",
         willChange: "transform, box-shadow",
       }}
-      className={`group relative flex flex-col justify-between rounded-sm border bg-white p-4.5 cursor-pointer select-none min-h-[178px] ${
+      className={`group relative flex flex-col justify-between rounded-sm border bg-white p-4.5 cursor-pointer select-none h-[181px] ${
         isHovered
           ? "border-[#C5CFDC] shadow-[0_20px_35px_-10px_rgba(12,35,60,0.12),0_10px_20px_-5px_rgba(12,35,60,0.06)]"
           : "border-[#D8DFE9] shadow-xs"
@@ -144,7 +150,7 @@ export function UnifiedHubCard({
           transition: "transform 180ms cubic-bezier(0.23, 1, 0.32, 1)",
         }}
       >
-        <div className="flex items-center justify-between pb-3">
+        <div className="flex items-center justify-between pb-2.5">
           {/* 34px x 34px Icon Container */}
           <div
             className={`flex h-8.5 w-8.5 items-center justify-center rounded-sm transition-all duration-200 ${
@@ -160,7 +166,7 @@ export function UnifiedHubCard({
           {badge}
         </div>
 
-        {/* Title (Standardized font, size, line-height, and 2-line clamp across all sheets) */}
+        {/* Title (Standardized font, size, line-height across all sheets) */}
         <h3
           onClick={(e) => {
             if (onTitleClick) {
@@ -168,22 +174,35 @@ export function UnifiedHubCard({
               onTitleClick();
             }
           }}
-          className="font-sans text-[13.5px] font-bold leading-snug text-[#0C233C] transition-colors duration-150 group-hover:text-[#00338D] line-clamp-2 min-h-[38px]"
+          className={`font-sans text-[13.5px] font-bold leading-snug text-[#0C233C] transition-colors duration-150 group-hover:text-[#00338D] ${
+            subtitle ? "line-clamp-1" : "line-clamp-2 min-h-[38px]"
+          }`}
           title={title}
         >
           {title}
         </h3>
+
+        {subtitle && (
+          <div className="mt-0.5 font-mono text-[11px] font-semibold text-[#00338D] truncate">
+            {subtitle}
+          </div>
+        )}
+
+        {children}
       </div>
 
-      {/* Bottom Section: Smile Style Pure Icon Action Bar (Z-plane 22px) */}
+      {/* Bottom Section: Smile Style Pure Icon Action Bar + Left Meta (Z-plane 22px) */}
       <div
         style={{
           transform: isHovered ? "translateZ(22px)" : "translateZ(0)",
           transition: "transform 180ms cubic-bezier(0.23, 1, 0.32, 1)",
         }}
-        className="mt-4 flex items-center justify-end border-t border-[#F1F5F9] pt-3"
+        className="flex items-center justify-between border-t border-[#F1F5F9] pt-2.5"
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2 min-w-0 pr-2">
+          {meta}
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
           {actions}
         </div>
       </div>
