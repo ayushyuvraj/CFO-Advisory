@@ -423,7 +423,7 @@ export function AccountMenu({
         aria-expanded={open}
         aria-controls={menuId}
         aria-label={`Account menu for ${user.name}`}
-        className={`relative inline-flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold tracking-[0.04em] text-white select-none transition-[background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+        className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold tracking-[0.04em] text-white select-none transition-[background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
           open
             ? "bg-[#1E49E2] ring-2 ring-[#1E49E2]/25 ring-offset-2 ring-offset-white"
             : "bg-[#00338D] hover:bg-[#1E49E2]"
