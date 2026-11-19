@@ -16,6 +16,24 @@ import {
 } from "@phosphor-icons/react";
 import { TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
 import { AuditInspectorDrawer } from "./AuditInspectorDrawer";
+import {
+  UnifiedWorkflowsBar,
+  FilterOptionItem,
+  SortOptionItem,
+} from "./UnifiedWorkflowsBar";
+
+const AUDIT_STATUS_FILTERS: FilterOptionItem[] = [
+  { id: "ALL", label: "All Statuses" },
+  { id: "SUCCESS", label: "Success Only" },
+  { id: "FAILED", label: "Failed Only" },
+];
+
+const AUDIT_SORT_OPTIONS: SortOptionItem[] = [
+  { id: "newest", label: "Timestamp (Newest)" },
+  { id: "oldest", label: "Timestamp (Oldest)" },
+  { id: "duration-desc", label: "Latency (High → Low)" },
+  { id: "cost-desc", label: "Spend (High → Low)" },
+];
 
 interface AuditConsoleProps {
   availableProducts?: Array<{ id: string; title: string }>;
@@ -27,6 +45,7 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
   const [selectedProduct, setSelectedProduct] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeEvent, setActiveEvent] = useState<TelemetryEvent | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -131,6 +150,22 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
     }
     return Array.from(map.entries()).map(([id, title]) => ({ id, title }));
   }, [availableProducts, events]);
+
+  const sortedEvents = useMemo(() => {
+    return [...events].sort((a, b) => {
+      if (sortBy === "oldest") {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+      if (sortBy === "duration-desc") {
+        return (b.duration_ms ?? 0) - (a.duration_ms ?? 0);
+      }
+      if (sortBy === "cost-desc") {
+        return (b.estimated_cost_usd ?? 0) - (a.estimated_cost_usd ?? 0);
+      }
+      // default newest
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [events, sortBy]);
 
   const handleInspect = useCallback((event: TelemetryEvent) => {
     setActiveEvent(event);
@@ -251,95 +286,88 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
       )}
 
       {/* Tier 2: Search, Filter & Event Table */}
-      <div className="rounded-sm border border-[#D8DFE9] bg-white shadow-xs">
-        {/* Filter Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D8DFE9] bg-[#F8FAFC] p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0C233C]">
-              <Funnel size={14} weight="bold" className="text-[#00338D]" />
-              <span>Filters:</span>
-            </div>
+      <div className="space-y-3">
+        <UnifiedWorkflowsBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search actions, models, entities..."
+          filterOptions={AUDIT_STATUS_FILTERS}
+          activeFilter={selectedStatus}
+          onFilterChange={setSelectedStatus}
+          filterLabel="Status"
+          sortOptions={AUDIT_SORT_OPTIONS}
+          activeSort={sortBy}
+          onSortChange={setSortBy}
+          sortLabel="Sort"
+          countLabel={`${sortedEvents.length} events`}
+        >
+          {/* Product Scope Dropdown */}
+          <select
+            aria-label="Filter telemetry by product"
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(e.target.value)}
+            className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
+          >
+            <option value="ALL">All Products</option>
+            {productFilterOptions.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.title}
+              </option>
+            ))}
+          </select>
 
-            {/* Product Filter */}
-            <select
-              aria-label="Filter telemetry by product"
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-              className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
-            >
-              <option value="ALL">All Active Products</option>
-              {productFilterOptions.map((opt) => (
-                <option key={opt.id} value={opt.id}>
-                  {opt.title}
-                </option>
-              ))}
-            </select>
+          {/* Refresh Action */}
+          <button
+            type="button"
+            onClick={() => void handleManualRefresh()}
+            className="inline-flex items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#333940] transition-colors hover:bg-[#F8FAFC]"
+            title="Refresh telemetry"
+          >
+            <ArrowsClockwise size={14} weight="bold" className={isRefreshing ? "animate-spin text-[#00338D]" : ""} />
+            <span>Refresh</span>
+          </button>
+        </UnifiedWorkflowsBar>
 
-            {/* Status Filter */}
-            <select
-              aria-label="Filter telemetry by status"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-1.5 font-mono text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="SUCCESS">Success Only</option>
-              <option value="FAILED">Failed Only</option>
-            </select>
-          </div>
-
-          {/* Search Box */}
-          <div className="relative w-full sm:w-72">
-            <MagnifyingGlass size={14} weight="bold" className="absolute left-3 top-2.5 text-[#4B5563]" />
-            <input
-              type="text"
-              placeholder="Search actions, models, entities..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-sm border border-[#D8DFE9] bg-white py-1.5 pl-8 pr-3 text-xs text-[#0C233C] focus:border-[#00338D] focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-xs">
-            <thead>
-              <tr className="border-b border-[#D8DFE9] bg-[#F4F6FA] font-mono text-[11px] font-semibold uppercase text-[#4B5563]">
-                <th className="py-3 px-4">Timestamp (UTC)</th>
-                <th className="py-3 px-4">Product</th>
-                <th className="py-3 px-4">Action / Workflow Step</th>
-                <th className="py-3 px-4">Entity ID</th>
-                <th className="py-3 px-4">Model Used</th>
-                <th className="py-3 px-4">Tokens</th>
-                <th className="py-3 px-4">Latency</th>
-                <th className="py-3 px-4">Cost</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Audit</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#D8DFE9]">
-              {events.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-xs text-[#4B5563]">
-                    <div className="max-w-md mx-auto space-y-2">
-                      <ChartLineUp size={28} weight="light" className="mx-auto text-[#00338D]" />
-                      <p className="font-semibold text-[#0C233C]">No live telemetry events recorded yet</p>
-                      <p className="text-[#4B5563] text-[11px]">
-                        Execute an operation in a connected product (e.g. AI Invoice Processing) to capture real-time audit data.
-                      </p>
-                    </div>
-                  </td>
+        <div className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs">
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-xs">
+              <thead>
+                <tr className="border-b border-[#D8DFE9] bg-[#F4F6FA] font-mono text-[11px] font-semibold uppercase text-[#4B5563]">
+                  <th className="py-3 px-4">Timestamp (UTC)</th>
+                  <th className="py-3 px-4">Product</th>
+                  <th className="py-3 px-4">Action / Workflow Step</th>
+                  <th className="py-3 px-4">Entity ID</th>
+                  <th className="py-3 px-4">Model Used</th>
+                  <th className="py-3 px-4">Tokens</th>
+                  <th className="py-3 px-4">Latency</th>
+                  <th className="py-3 px-4">Cost</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Audit</th>
                 </tr>
-              ) : (
-                events.map((evt) => {
-                  const isSuccess = evt.action_status === "SUCCESS";
-                  return (
-                    <tr
-                      key={evt.id}
-                      className="transition-colors hover:bg-[#F8FAFC] cursor-pointer"
-                      onClick={() => handleInspect(evt)}
-                    >
+              </thead>
+              <tbody className="divide-y divide-[#D8DFE9]">
+                {sortedEvents.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="py-12 text-center text-xs text-[#4B5563]">
+                      <div className="max-w-md mx-auto space-y-2">
+                        <ChartLineUp size={28} weight="light" className="mx-auto text-[#00338D]" />
+                        <p className="font-semibold text-[#0C233C]">No live telemetry events recorded yet</p>
+                        <p className="text-[#4B5563] text-[11px]">
+                          Execute an operation in a connected product (e.g. AI Invoice Processing) to capture real-time audit data.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  sortedEvents.map((evt) => {
+                    const isSuccess = evt.action_status === "SUCCESS";
+                    return (
+                      <tr
+                        key={evt.id}
+                        className="transition-colors hover:bg-[#F8FAFC] cursor-pointer"
+                        onClick={() => handleInspect(evt)}
+                      >
                       <td className="py-3 px-4 font-mono text-[11px] text-[#4B5563] whitespace-nowrap">
                         {new Date(evt.created_at).toLocaleTimeString()}
                       </td>
@@ -398,6 +426,7 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
           </table>
         </div>
       </div>
+    </div>
 
       {/* Slideout Inspector Drawer */}
       <AuditInspectorDrawer

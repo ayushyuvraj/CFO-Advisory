@@ -22,6 +22,11 @@ import {
 import { ConnectedPlatform } from "@/data/platforms";
 import { CreateCompanyModal } from "./CreateCompanyModal";
 import { CompanyDetailDrawer } from "./CompanyDetailDrawer";
+import {
+  UnifiedWorkflowsBar,
+  FilterOptionItem,
+  SortOptionItem,
+} from "@/components/workflows/UnifiedWorkflowsBar";
 
 interface ClientAccessConsoleProps {
   availableProducts: ConnectedPlatform[];
@@ -42,6 +47,8 @@ export function ClientAccessConsole({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [governanceFilter, setGovernanceFilter] = useState<"all" | "active" | "suspended">("all");
+  const [governanceSort, setGovernanceSort] = useState<"name-asc" | "name-desc">("name-asc");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
     null
@@ -210,12 +217,26 @@ export function ClientAccessConsole({
     ? governanceData.personas.filter((p) => p.companyId === selectedCompany.id)
     : [];
 
-  const filteredCompanies = governanceData.companies.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.contactEmail.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCompanies = useMemo(() => {
+    let list = governanceData.companies;
+    if (governanceFilter !== "all") {
+      list = list.filter((c) => c.status === governanceFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.code.toLowerCase().includes(q) ||
+          c.contactEmail.toLowerCase().includes(q)
+      );
+    }
+    return [...list].sort((a, b) => {
+      if (governanceSort === "name-asc") return a.name.localeCompare(b.name);
+      if (governanceSort === "name-desc") return b.name.localeCompare(a.name);
+      return 0;
+    });
+  }, [governanceData.companies, governanceFilter, searchQuery, governanceSort]);
 
   const registeredProductIds = useMemo(
     () => new Set(availableProducts.map((p) => p.id)),
@@ -298,71 +319,74 @@ export function ClientAccessConsole({
         </div>
       </div>
 
-      {/* Control Bar: View Mode Switcher + Search + Onboard Company CTA */}
-      <div className="flex flex-col justify-between gap-4 rounded-sm border border-[#D8DFE9] bg-white p-4 shadow-xs sm:flex-row sm:items-center">
-        <div className="flex flex-wrap items-center gap-3">
-          <div
-            role="tablist"
-            aria-label="Governance view mode"
-            className="inline-flex rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-1 text-xs"
+      {/* Unified Control Bar */}
+      <UnifiedWorkflowsBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search client organizations, domains, contacts..."
+        filterOptions={[
+          { id: "all", label: "All Organizations" },
+          { id: "active", label: "Active Clients Only" },
+          { id: "suspended", label: "Suspended" },
+        ]}
+        activeFilter={governanceFilter}
+        onFilterChange={(id) => setGovernanceFilter(id as "all" | "active" | "suspended")}
+        filterLabel="Status"
+        sortOptions={[
+          { id: "name-asc", label: "Company Name (A → Z)" },
+          { id: "name-desc", label: "Company Name (Z → A)" },
+        ]}
+        activeSort={governanceSort}
+        onSortChange={(id) => setGovernanceSort(id as "name-asc" | "name-desc")}
+        sortLabel="Sort"
+        countLabel={`${filteredCompanies.length} ${filteredCompanies.length === 1 ? "organization" : "organizations"}`}
+      >
+        {/* View Switcher: By Company vs By Product */}
+        <div
+          role="tablist"
+          aria-label="Governance view mode"
+          className="inline-flex rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-0.5 text-xs"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewMode === "by-company"}
+            onClick={() => setViewMode("by-company")}
+            className={`inline-flex items-center gap-1.5 rounded-xs px-2.5 py-1 text-xs font-semibold transition-all ${
+              viewMode === "by-company"
+                ? "bg-white text-[#00338D] shadow-xs"
+                : "text-[#4B5563] hover:text-[#0C233C]"
+            }`}
           >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={viewMode === "by-company"}
-              onClick={() => setViewMode("by-company")}
-              className={`inline-flex items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition-all ${
-                viewMode === "by-company"
-                  ? "bg-[#00338D] text-white shadow-xs"
-                  : "text-[#4B5563] hover:text-[#0C233C]"
-              }`}
-            >
-              <Buildings size={15} weight="bold" />
-              <span>By Company ({governanceData.companies.length})</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={viewMode === "by-product"}
-              onClick={() => setViewMode("by-product")}
-              className={`inline-flex items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition-all ${
-                viewMode === "by-product"
-                  ? "bg-[#00338D] text-white shadow-xs"
-                  : "text-[#4B5563] hover:text-[#0C233C]"
-              }`}
-            >
-              <Cpu size={15} weight="bold" />
-              <span>By Product ({availableProducts.length})</span>
-            </button>
-          </div>
-
-          {viewMode === "by-company" && governanceData.companies.length > 0 && (
-            <div className="relative">
-              <MagnifyingGlass
-                size={15}
-                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#4B5563]"
-              />
-              <input
-                type="text"
-                aria-label="Search companies"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search companies..."
-                className="w-56 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] py-1.5 pr-3 pl-9 text-xs text-[#0C233C] focus:border-[#1E49E2] focus:bg-white focus:outline-none"
-              />
-            </div>
-          )}
+            <Buildings size={14} weight="bold" />
+            <span>Companies ({governanceData.companies.length})</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewMode === "by-product"}
+            onClick={() => setViewMode("by-product")}
+            className={`inline-flex items-center gap-1.5 rounded-xs px-2.5 py-1 text-xs font-semibold transition-all ${
+              viewMode === "by-product"
+                ? "bg-white text-[#00338D] shadow-xs"
+                : "text-[#4B5563] hover:text-[#0C233C]"
+            }`}
+          >
+            <Cpu size={14} weight="bold" />
+            <span>Products ({availableProducts.length})</span>
+          </button>
         </div>
 
+        {/* Primary CTA: Onboard Company */}
         <button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
+          className="inline-flex items-center justify-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2]"
         >
-          <PlusCircle size={16} weight="bold" />
-          <span>Create Company Profile</span>
+          <PlusCircle size={15} weight="bold" />
+          <span>Add Organization</span>
         </button>
-      </div>
+      </UnifiedWorkflowsBar>
 
       {/* Inline Action Error Alert */}
       {actionError && (

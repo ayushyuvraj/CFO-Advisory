@@ -1,19 +1,9 @@
 "use client";
 
 import { useCallback, useState, useEffect, useMemo } from "react";
-import {
-  ArrowSquareOut,
-  CheckCircle,
-  Cpu,
-  Database,
-  Eye,
-  LockKey,
-  Sparkle,
-  Prohibit,
-} from "@phosphor-icons/react";
+import { LockKey } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
 import { SignInCard } from "@/components/auth/SignInCard";
-import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { CONNECTED_PLATFORMS, type ConnectedPlatform } from "@/data/platforms";
 import { AmbientLedgerGridCanvas } from "@/components/three/AmbientLedgerGridCanvas";
 import { AddProductModal } from "@/components/workflows/AddProductModal";
@@ -26,26 +16,17 @@ import { ClientAccessConsole } from "@/components/governance/ClientAccessConsole
 import { PreviewBanner } from "@/components/governance/PreviewBanner";
 import { DashboardsConsole } from "@/components/dashboards/DashboardsConsole";
 import { RegisteredProduct, TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
-
-function isSafeClientLaunchUrl(rawUrl: string): boolean {
-  try {
-    const parsed = new URL(rawUrl);
-    if (parsed.protocol === "https:") return true;
-    if (
-      parsed.protocol === "http:" &&
-      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
-    ) {
-      return true;
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-function isValidPort(port: unknown): port is number {
-  return typeof port === "number" && Number.isInteger(port) && port >= 1 && port <= 65535;
-}
+import {
+  CatalogControlBar,
+  StatusFilterOption,
+  SortOption,
+} from "@/components/workflows/catalog/CatalogControlBar";
+import {
+  CompactProductCard,
+  ProductHealthProbe,
+} from "@/components/workflows/catalog/CompactProductCard";
+import { ProductTableView } from "@/components/workflows/catalog/ProductTableView";
+import { ProductDetailsDrawer } from "@/components/workflows/catalog/ProductDetailsDrawer";
 
 function WorkflowsSkeleton() {
   return (
@@ -74,6 +55,12 @@ export default function WorkflowsPage() {
     latestEvent?: TelemetryEvent;
     metrics?: TelemetryMetrics;
   } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilterOption>("all");
+  const [sortBy, setSortBy] = useState<SortOption>("name-asc");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [inspectedProduct, setInspectedProduct] = useState<ConnectedPlatform | null>(null);
+  const [probes, setProbes] = useState<Record<string, ProductHealthProbe>>({});
 
   const isKpmgAdmin = Boolean(user && (!user.tenantType || user.tenantType === "kpmg"));
   const isClientUser = Boolean(user && user.tenantType === "client");
@@ -115,6 +102,23 @@ export default function WorkflowsPage() {
       }
     } catch (err) {
       console.error("[Catalog] Error fetching products:", err);
+    }
+  }, []);
+
+  const fetchProbes = useCallback(async () => {
+    try {
+      const res = await fetch("/api/products/probe", {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.probes) {
+          setProbes(data.probes);
+        }
+      }
+    } catch (err) {
+      console.error("[Catalog] Error probing health:", err);
     }
   }, []);
 
@@ -258,10 +262,22 @@ export default function WorkflowsPage() {
     setIsAddModalOpen(false);
   }, []);
 
+  // Poll live health probes every 8s when user is active
+  useEffect(() => {
+    if (!user) return;
+    void fetchProbes();
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      void fetchProbes();
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [user, fetchProbes]);
+
   const handleProductCreated = useCallback(() => {
     void fetchProducts();
+    void fetchProbes();
     void fetchTelemetrySummary();
-  }, [fetchProducts, fetchTelemetrySummary]);
+  }, [fetchProducts, fetchProbes, fetchTelemetrySummary]);
 
   // Filter products according to client company entitlements and persona scope
   const visibleProducts = useMemo(() => {
@@ -271,6 +287,56 @@ export default function WorkflowsPage() {
     const allowedIds = user?.allowedProductIds || [];
     return products.filter((p) => allowedIds.includes(p.id));
   }, [isKpmgAdmin, products, user?.allowedProductIds]);
+
+  // Client-side search, dynamic health status filtering, and sorting
+  const filteredProducts = useMemo(() => {
+    let result = visibleProducts.filter((p) => {
+      // Dynamic Health & DB Status filter
+      if (statusFilter !== "all") {
+        const probeStatus = probes[p.id]?.status ?? (p.status === "active" ? "operational" : "maintenance");
+        if (statusFilter === "active" && probeStatus !== "operational") {
+          return false;
+        }
+        if (statusFilter === "maintenance" && probeStatus !== "maintenance") {
+          return false;
+        }
+        if (statusFilter === "offline" && probeStatus !== "offline") {
+          return false;
+        }
+      }
+
+      // Search query filter
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
+      return (
+        p.title.toLowerCase().includes(q) ||
+        p.shortName.toLowerCase().includes(q) ||
+        p.id.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.systemIntegration.toLowerCase().includes(q) ||
+        p.tags.some((tag) => tag.toLowerCase().includes(q))
+      );
+    });
+
+    // Sorting
+    result = [...result].sort((a, b) => {
+      if (sortBy === "name-asc") {
+        return a.title.localeCompare(b.title);
+      }
+      if (sortBy === "name-desc") {
+        return b.title.localeCompare(a.title);
+      }
+      if (sortBy === "status") {
+        const statusA = probes[a.id]?.status ?? (a.status === "active" ? "operational" : "maintenance");
+        const statusB = probes[b.id]?.status ?? (b.status === "active" ? "operational" : "maintenance");
+        const order: Record<string, number> = { operational: 0, active: 0, maintenance: 1, offline: 2 };
+        return (order[statusA] ?? 3) - (order[statusB] ?? 3);
+      }
+      return 0;
+    });
+
+    return result;
+  }, [visibleProducts, statusFilter, searchQuery, sortBy, probes]);
 
   // Synchronize badge metrics with top navigation header
   useEffect(() => {
@@ -323,255 +389,92 @@ export default function WorkflowsPage() {
             </div>
           )}
 
-          {/* Tab 1: Solution Catalog View */}
-        {effectiveActiveTab === "catalog" && (
-          <div className="mt-6 space-y-5">
-            {isKpmgAdmin && (
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-xs font-medium text-[#526075]">
-                  {visibleProducts.length} connected platform
-                  {visibleProducts.length !== 1 ? "s" : ""}
-                </p>
-                <InteractiveHoverButton
-                  text="Add Product"
-                  onClick={() => setIsAddModalOpen(true)}
+            {/* Tab 1: Solution Catalog View */}
+          {effectiveActiveTab === "catalog" && (
+            <div className="mt-6 space-y-4">
+              {/* Scalable Catalog Control Bar */}
+              <CatalogControlBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                sortBy={sortBy}
+                onSortByChange={setSortBy}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                filteredCount={filteredProducts.length}
+                totalCount={visibleProducts.length}
+                isKpmgAdmin={isKpmgAdmin}
+                onOpenAddModal={() => setIsAddModalOpen(true)}
+              />
+
+              {visibleProducts.length === 0 ? (
+                <div className="rounded-sm border border-[#D8DFE9] bg-white px-6 py-16 text-center shadow-sm">
+                  <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-sm bg-[#F4F6FA] text-[#4B5563]">
+                    <LockKey size={24} weight="bold" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-bold text-[#0C233C]">
+                    No Platforms Currently Assigned
+                  </h3>
+                  <p className="mx-auto mt-2 max-w-md text-sm text-[#4B5563]">
+                    {isClientUser
+                      ? `Your organization (${user.companyName || "Client"}) does not currently have active access to any platforms under your persona (${user.role}). Contact your KPMG CFO Advisory Lead to enable system access.`
+                      : "No physical platforms are currently registered in the catalog."}
+                  </p>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="rounded-sm border border-[#D8DFE9] bg-white px-6 py-12 text-center shadow-xs">
+                  <p className="font-mono text-xs text-[#526075]">
+                    No platforms match your filter criteria ({statusFilter !== "all" ? `Status: ${statusFilter}` : ""}{searchQuery ? `, Search: "${searchQuery}"` : ""}).
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setStatusFilter("all");
+                    }}
+                    className="mt-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-3 py-1.5 font-mono text-xs font-semibold text-[#00338D] transition-colors hover:border-[#00338D] hover:bg-white"
+                  >
+                    Reset Filter & Search
+                  </button>
+                </div>
+              ) : viewMode === "grid" ? (
+                <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredProducts.map((platform: ConnectedPlatform) => (
+                    <CompactProductCard
+                      key={platform.id}
+                      platform={platform}
+                      probe={probes[platform.id]}
+                      canLaunchProducts={canLaunchProducts}
+                      isPreviewMode={isPreviewMode}
+                      onInspect={(p) => setInspectedProduct(p)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <ProductTableView
+                  products={filteredProducts}
+                  probes={probes}
+                  canLaunchProducts={canLaunchProducts}
+                  isPreviewMode={isPreviewMode}
+                  onInspect={(p) => setInspectedProduct(p)}
                 />
-              </div>
-            )}
+              )}
 
-            <div className="grid grid-cols-1 gap-6">
-            {visibleProducts.length === 0 ? (
-              <div className="rounded-sm border border-[#D8DFE9] bg-white px-6 py-16 text-center shadow-sm">
-                <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-sm bg-[#F4F6FA] text-[#4B5563]">
-                  <LockKey size={24} weight="bold" />
-                </div>
-                <h3 className="mt-4 text-lg font-bold text-[#0C233C]">
-                  No Platforms Currently Assigned
-                </h3>
-                <p className="mx-auto mt-2 max-w-md text-sm text-[#4B5563]">
-                  {isClientUser
-                    ? `Your organization (${user.companyName || "Client"}) does not currently have active access to any platforms under your persona (${user.role}). Contact your KPMG CFO Advisory Lead to enable system access.`
-                    : "No physical platforms are currently registered in the catalog."}
-                </p>
-              </div>
-            ) : (
-              visibleProducts.map((platform: ConnectedPlatform) => (
-                <div
-                  key={platform.id}
-                  className="relative overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-[#00338D] hover:shadow-md"
-                >
-                  <div className="border-b border-[#D8DFE9] bg-[#F8FAFC] px-6 py-4 sm:px-8">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className={`inline-flex h-2.5 w-2.5 rounded-full ${platform.status === "active"
-                              ? "bg-[#009A44] animate-pulse"
-                              : "bg-amber-500"
-                            }`}
-                        />
-                        <span
-                          className={`font-mono text-xs font-semibold uppercase tracking-wider ${platform.status === "active"
-                              ? "text-[#009A44]"
-                              : "text-amber-700"
-                            }`}
-                        >
-                          {platform.status === "active"
-                            ? `Platform Live · Port ${platform.portFrontend}`
-                            : `Maintenance · Port ${platform.portFrontend}`}
-                        </span>
-                        {platform.portBackend && (
-                          <span className="rounded-sm border border-[#D8DFE9] bg-white px-2 py-0.5 font-mono text-[11px] text-[#4B5563]">
-                            Backend :{platform.portBackend}
-                          </span>
-                        )}
-                      </div>
-                      <span className="rounded-sm border border-[#D8DFE9] bg-white px-2.5 py-0.5 font-mono text-xs font-medium text-[#00338D]">
-                        {platform.category}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-6 sm:p-8">
-                    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="max-w-3xl space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="inline-flex h-11 w-11 items-center justify-center rounded-sm bg-[#00338D]/10 text-[#00338D]">
-                            <Cpu size={24} weight="bold" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold tracking-tight text-[#0C233C] sm:text-2xl">
-                              {platform.title}
-                            </h3>
-                            <p className="font-mono text-xs text-[#1E49E2]">
-                              System Identifier: {platform.id}
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="text-sm leading-relaxed text-[#333940]">
-                          {platform.description}
-                        </p>
-
-                        <div className="rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-4">
-                          <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-[#0C233C] uppercase">
-                            <Sparkle size={14} weight="bold" className="text-[#00338D]" />
-                            Core Platform Capabilities
-                          </h4>
-                          <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                            {platform.features.map((feature, idx) => (
-                              <div key={idx} className="flex items-start gap-2 text-xs text-[#333940]">
-                                <CheckCircle size={15} weight="fill" className="mt-0.5 shrink-0 text-[#009A44]" />
-                                <span>{feature}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 pt-1 text-xs text-[#4B5563]">
-                          <Database size={15} weight="bold" className="text-[#00338D]" />
-                          <span className="font-medium text-[#0C233C]">Integrated Systems:</span>
-                          <span className="font-mono">{platform.systemIntegration}</span>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {platform.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2.5 py-1 font-mono text-[11px] text-[#333940]"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Live Telemetry Status Bar for Connected Platform */}
-                        {canViewAudit &&
-                          telemetrySummary &&
-                          telemetrySummary.total > 0 &&
-                          telemetrySummary.latestEvent && (
-                            <div className="rounded-sm border border-[#009A44]/40 bg-[#009A44]/5 p-4 transition-colors hover:border-[#009A44]">
-                              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#009A44]/20 pb-2.5">
-                                <div className="flex items-center gap-2">
-                                  <span className="h-2 w-2 rounded-full bg-[#009A44] animate-pulse" />
-                                  <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#009A44]">
-                                    Live Telemetry Lineage · {telemetrySummary.total} Run{telemetrySummary.total > 1 ? "s" : ""} Recorded
-                                  </span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setActiveTab("audit")}
-                                  className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-[#00338D] hover:underline"
-                                >
-                                  <span>Open Live Audit Inspector →</span>
-                                </button>
-                              </div>
-                              <div className="mt-2.5 grid grid-cols-2 gap-3 font-mono text-[11px] sm:grid-cols-4">
-                                <div>
-                                  <p className="text-[#4B5563]">Last Action</p>
-                                  <p className="font-semibold text-[#0C233C] truncate">{telemetrySummary.latestEvent.action_name}</p>
-                                </div>
-                                <div>
-                                  <p className="text-[#4B5563]">Active Model</p>
-                                  <p className="font-semibold text-[#1E49E2]">{telemetrySummary.latestEvent.model_name}</p>
-                                </div>
-                                <div>
-                                  <p className="text-[#4B5563]">Total Tokens</p>
-                                  <p className="font-semibold text-[#0C233C]">{telemetrySummary.latestEvent.total_tokens?.toLocaleString()}</p>
-                                </div>
-                                <div>
-                                  <p className="text-[#4B5563]">Pipeline Latency</p>
-                                  <p className="font-semibold text-[#009A44]">{telemetrySummary.latestEvent.duration_ms} ms</p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                      </div>
-
-                      {/* 1-Click Launch Action Column */}
-                      <div className="flex w-full shrink-0 flex-col gap-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] p-6 lg:w-72">
-                        <div className="space-y-1">
-                          <p className="font-mono text-xs font-semibold text-[#0C233C] uppercase tracking-wider">
-                            {isPreviewMode
-                              ? "Preview Perspective"
-                              : canLaunchProducts
-                                ? "One-Click Access"
-                                : "Launch Restricted"}
-                          </p>
-                          <p className="text-xs text-[#4B5563]">
-                            {isPreviewMode
-                              ? canLaunchProducts
-                                ? "This persona is entitled to launch this platform (disabled during read-only preview)."
-                                : "This persona does not have execution privileges to launch this platform."
-                              : canLaunchProducts
-                                ? "Opens the live connected platform directly in a new browser tab."
-                                : "Your current persona does not have execution privileges to launch this platform."}
-                          </p>
-                        </div>
-
-                        {isPreviewMode ? (
-                          <button
-                            type="button"
-                            disabled
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-4 py-3 text-xs font-semibold text-[#00338D] cursor-not-allowed"
-                          >
-                            <Eye size={16} weight="bold" />
-                            <span>
-                              {canLaunchProducts
-                                ? "Launch Enabled (Preview Mode)"
-                                : "Launch Disabled by Role"}
-                            </span>
-                          </button>
-                        ) : canLaunchProducts && isSafeClientLaunchUrl(platform.launchUrl) ? (
-                          <a
-                            href={platform.launchUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-[background-color,transform] duration-150 hover:bg-[#1E49E2] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2"
-                          >
-                            <span>Launch Platform</span>
-                            <ArrowSquareOut size={18} weight="bold" />
-                          </a>
-                        ) : (
-                          <button
-                            type="button"
-                            disabled
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#D8DFE9] bg-gray-100 px-4 py-3 text-xs font-semibold text-[#6B7280] cursor-not-allowed"
-                          >
-                            <Prohibit size={16} weight="bold" />
-                            <span>
-                              {canLaunchProducts
-                                ? "Invalid Launch URL"
-                                : "Launch Disabled by Role"}
-                            </span>
-                          </button>
-                        )}
-
-                        {isValidPort(platform.portBackend) && canLaunchProducts && !isPreviewMode && (
-                          <a
-                            href={`http://localhost:${platform.portBackend}/docs`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-white px-3 py-2 text-xs font-medium text-[#333940] transition-[border-color,color] duration-150 hover:border-[#00338D] hover:text-[#00338D]"
-                          >
-                            <span>Backend API Docs</span>
-                            <ArrowSquareOut size={13} weight="light" />
-                          </a>
-                        )}
-
-                        <div className="border-t border-[#D8DFE9] pt-3 text-center">
-                          <p className="font-mono text-[11px] text-[#4B5563]">
-                            Target: {platform.launchUrl}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+              {/* Slide-over Progressive Disclosure Inspector Drawer */}
+              <ProductDetailsDrawer
+                platform={inspectedProduct}
+                probe={inspectedProduct ? probes[inspectedProduct.id] : undefined}
+                isOpen={Boolean(inspectedProduct)}
+                onClose={() => setInspectedProduct(null)}
+                telemetrySummary={telemetrySummary}
+                canLaunchProducts={canLaunchProducts}
+                isPreviewMode={isPreviewMode}
+                canViewAudit={canViewAudit}
+                onOpenAuditTab={() => setActiveTab("audit")}
+              />
             </div>
-          </div>
-        )}
+          )}
 
         {/* Tab 2: Live Audit & Observability Console View */}
         {effectiveActiveTab === "audit" && canViewAudit && (
