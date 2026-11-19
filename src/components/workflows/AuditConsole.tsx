@@ -16,6 +16,7 @@ import { AuditInspectorDrawer } from "./AuditInspectorDrawer";
 import {
   UnifiedWorkflowsBar,
   FilterOptionItem,
+  FilterCategoryGroup,
   SortOptionItem,
 } from "./UnifiedWorkflowsBar";
 
@@ -38,7 +39,7 @@ interface AuditConsoleProps {
 
 export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
   const [events, setEvents] = useState<TelemetryEvent[]>([]);
-  const [metrics, setMetrics] = useState<TelemetryMetrics | null>(null);
+  const [, setMetrics] = useState<TelemetryMetrics | null>(null);
   const [selectedProduct, setSelectedProduct] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -175,6 +176,29 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
     [productFilterOptions]
   );
 
+  const auditFilterGroups = useMemo<FilterCategoryGroup[]>(() => {
+    return [
+      {
+        id: "status",
+        label: "Status",
+        options: AUDIT_STATUS_FILTERS,
+        activeValue: selectedStatus,
+        onChange: setSelectedStatus,
+        defaultId: "ALL",
+      },
+      {
+        id: "product",
+        label: "Product",
+        icon: <Cpu size={13} weight="bold" />,
+        options: productFilterItems,
+        activeValue: selectedProduct,
+        onChange: setSelectedProduct,
+        defaultId: "ALL",
+        searchable: true,
+      },
+    ];
+  }, [selectedStatus, selectedProduct, productFilterItems]);
+
   const handleExportCsv = useCallback(() => {
     if (sortedEvents.length === 0) return;
     const headers = [
@@ -231,15 +255,8 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder="Search actions, models, entities..."
-        secondaryFilterOptions={productFilterItems}
-        secondaryActiveFilter={selectedProduct}
-        secondaryOnFilterChange={setSelectedProduct}
-        secondaryFilterLabel="Product"
-        secondaryFilterIcon={<Cpu size={14} weight="bold" />}
-        filterOptions={AUDIT_STATUS_FILTERS}
-        activeFilter={selectedStatus}
-        onFilterChange={setSelectedStatus}
-        filterLabel="Status"
+        filterGroups={auditFilterGroups}
+        filterLabel="Filter"
         sortOptions={AUDIT_SORT_OPTIONS}
         activeSort={sortBy}
         onSortChange={setSortBy}
