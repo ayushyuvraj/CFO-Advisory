@@ -84,91 +84,91 @@ export function Navbar() {
   };
 
   return (
-    <header className="frosted-header fixed top-0 left-0 right-0 z-40 h-[72px] border-b border-[#D8DFE9] bg-white/95 backdrop-blur-[8px]">
-      <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
-        {/* Left: Standalone KPMG Logo in exact brand alignment */}
-        <div className="flex items-center">
+    <header className="frosted-header fixed top-0 left-0 right-0 z-40 h-[76px] border-b border-[#D8DFE9] bg-white/95 backdrop-blur-[8px]">
+      <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 xl:px-[85px]">
+        {/* Left Group: Logo (x=85px) + Navigation (x=215px, gap=48px from logo) */}
+        <div className="flex h-full items-center gap-[48px]">
           <Link
             href="/"
             aria-label="KPMG CFO Advisory Home"
             className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             onClick={() => setMobileOpen(false)}
           >
-            <KpmgLogo className="h-[28px] w-auto shrink-0" />
+            <KpmgLogo className="h-[32px] w-[82px] shrink-0" />
           </Link>
+
+          {/* Workspace Tabs (on /workflows when authenticated): Exactly matches KPMG font, spacing & line height */}
+          {isAuthedWorkflows && (
+            <nav
+              aria-label="Workflows Hub Navigation"
+              role="tablist"
+              className="hidden h-full items-center gap-[32px] lg:flex"
+            >
+              {workflowsTabs.map((item) => {
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`relative flex h-[76px] items-center gap-2 text-[16px] leading-[18px] tracking-[0.44px] whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
+                      isActive
+                        ? "font-semibold text-[#00338D]"
+                        : "font-normal text-[#0C233C] hover:text-[#00338D]"
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    {item.badge !== undefined && (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-mono text-[11px] leading-none select-none ${
+                          isActive
+                            ? "bg-[#00338D]/10 text-[#00338D]"
+                            : "bg-[#F4F6FA] text-[#526075]"
+                        }`}
+                      >
+                        {item.isLive && (
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {item.badge}
+                      </span>
+                    )}
+                    {isActive && (
+                      <span
+                        className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#00338D]"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          )}
+
+          {/* Landing Chapter Links (on / or unauthenticated): Seamless identical starting position and font */}
+          {showLandingLinks && !isAuthedWorkflows && (
+            <nav
+              aria-label="Primary Navigation"
+              className="hidden h-full items-center gap-[32px] lg:flex"
+            >
+              {NAV_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex h-[76px] items-center whitespace-nowrap text-[16px] font-normal leading-[18px] tracking-[0.44px] text-[#0C233C] transition-colors duration-150 hover:text-[#00338D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          )}
         </div>
 
-        {/* Center Nav: Horizontal One-Word Workspace Tabs (on /workflows) */}
-        {isAuthedWorkflows && (
-          <nav
-            aria-label="Workflows Hub Navigation"
-            role="tablist"
-            className="hidden h-full items-center gap-1 sm:gap-2 lg:flex lg:gap-6"
-          >
-            {workflowsTabs.map((item) => {
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`relative flex h-[72px] items-center gap-2 px-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
-                    isActive
-                      ? "font-semibold text-[#00338D]"
-                      : "text-[#333940] hover:text-[#00338D]"
-                  }`}
-                >
-                  <span>{item.label}</span>
-                  {item.badge !== undefined && (
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-mono text-[11px] leading-none select-none ${
-                        isActive
-                          ? "bg-[#00338D]/10 text-[#00338D]"
-                          : "bg-[#F4F6FA] text-[#526075]"
-                      }`}
-                    >
-                      {item.isLive && (
-                        <span
-                          className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse"
-                          aria-hidden="true"
-                        />
-                      )}
-                      {item.badge}
-                    </span>
-                  )}
-                  {isActive && (
-                    <span
-                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#00338D]"
-                      aria-hidden="true"
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        )}
-
-        {/* Landing Chapter Links (on / or unauthenticated) */}
-        {showLandingLinks && !isAuthedWorkflows && (
-          <nav
-            aria-label="Primary Navigation"
-            className="hidden items-center gap-7 lg:flex"
-          >
-            {NAV_LINKS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="whitespace-nowrap rounded-sm text-sm font-medium text-[#333940] transition-colors duration-150 hover:text-[#00338D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        )}
-
-        {/* Right Utility: Account Menu & Mobile Toggle */}
+        {/* Right Utility: Account Menu & Mobile Toggle (aligned to right edge 85px) */}
         <div className="flex items-center gap-3">
           {user ? (
             <AccountMenu placement="navbar" />
@@ -215,10 +215,10 @@ export function Navbar() {
                       setActiveTab(item.id);
                       setMobileOpen(false);
                     }}
-                    className={`flex items-center justify-between rounded-sm px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
+                    className={`flex items-center justify-between rounded-sm px-3 py-2.5 text-base font-normal transition-colors duration-150 ${
                       isActive
                         ? "bg-[#00338D]/10 font-semibold text-[#00338D]"
-                        : "text-[#333940] hover:bg-[#F4F6FA] hover:text-[#00338D]"
+                        : "text-[#0C233C] hover:bg-[#F4F6FA] hover:text-[#00338D]"
                     }`}
                   >
                     <span>{item.label}</span>
@@ -252,7 +252,7 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-sm px-2 py-1.5 text-sm font-medium text-[#333940] transition-colors duration-150 hover:bg-[#F4F6FA] hover:text-[#00338D]"
+                  className="rounded-sm px-2 py-1.5 text-base font-normal text-[#0C233C] transition-colors duration-150 hover:bg-[#F4F6FA] hover:text-[#00338D]"
                 >
                   {item.label}
                 </Link>

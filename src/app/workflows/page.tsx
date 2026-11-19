@@ -49,7 +49,7 @@ function isValidPort(port: unknown): port is number {
 
 function WorkflowsSkeleton() {
   return (
-    <div className="pt-[72px] pb-20">
+    <div className="pt-[76px] pb-20">
       <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6 lg:px-8">
         <div className="h-96 animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]" />
       </div>
@@ -305,7 +305,7 @@ export default function WorkflowsPage() {
   }
 
   return (
-    <section className="relative min-h-[100dvh] bg-[#F8FAFC] pt-[72px] pb-20">
+    <section className="relative min-h-[100dvh] bg-[#F8FAFC] pt-[76px] pb-20">
       <AmbientLedgerGridCanvas />
 
       <div className="relative z-10">
