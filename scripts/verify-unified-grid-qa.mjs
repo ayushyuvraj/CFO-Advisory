@@ -563,6 +563,7 @@ async function runTest() {
     process.exit(1);
   } finally {
     if (client) await client.close();
+    process.exit(0);
   }
 }
 
