@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { List, X } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
+import { useWorkflowsNav, type WorkflowsTabId } from "@/context/WorkflowsNavContext";
 import { KpmgLogo } from "@/components/brand/KpmgLogo";
 import { AccountMenu } from "@/components/layout/AccountMenu";
 
@@ -16,27 +17,57 @@ const NAV_LINKS = [
   { label: "Gateway", href: "/#chapter-gateway" },
 ];
 
-function KpmgWordmark() {
-  return (
-    <span className="inline-flex items-center gap-3.5">
-      <KpmgLogo className="h-[30px] w-auto shrink-0" />
-      <span className="h-6 w-px bg-[#D8DFE9]" aria-hidden="true" />
-      <span className="text-sm font-medium tracking-tight text-[#0C233C] whitespace-nowrap">
-        CFO Advisory
-      </span>
-    </span>
-  );
+interface WorkflowsNavItem {
+  id: WorkflowsTabId;
+  label: string;
+  badge?: number;
+  isLive?: boolean;
 }
 
 export function Navbar() {
   const pathname = usePathname();
   const { user, isLoading, openLogin } = useAuth();
+  const { activeTab, setActiveTab, badges } = useWorkflowsNav();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isLandingRoute = pathname === "/";
   const isWorkflowsRoute = pathname.startsWith("/workflows");
-  const showSectionLinks = isLandingRoute || (!user && !isLoading);
-  const showMobileMenuButton = showSectionLinks || !user;
+  const isAuthedWorkflows = isWorkflowsRoute && Boolean(user);
+  const showLandingLinks = isLandingRoute || (!user && !isLoading);
+
+  const isKpmgAdmin = Boolean(user && (!user.tenantType || user.tenantType === "kpmg"));
+  const canViewAudit = isKpmgAdmin || Boolean(user?.permissions?.canViewAudit);
+
+  const workflowsTabs: WorkflowsNavItem[] = [
+    {
+      id: "catalog",
+      label: "Catalog",
+      badge: badges.catalogCount,
+    },
+    ...(canViewAudit
+      ? [
+          {
+            id: "audit" as WorkflowsTabId,
+            label: "Audit",
+            badge: badges.auditTotal,
+            isLive: true,
+          },
+        ]
+      : []),
+    {
+      id: "dashboards",
+      label: "Dashboards",
+      badge: badges.dashboardCount ?? undefined,
+    },
+    ...(isKpmgAdmin
+      ? [
+          {
+            id: "governance" as WorkflowsTabId,
+            label: "Governance",
+          },
+        ]
+      : []),
+  ];
 
   const handleSignInClick = () => {
     setMobileOpen(false);
@@ -53,18 +84,74 @@ export function Navbar() {
   };
 
   return (
-    <header className="frosted-header fixed top-0 left-0 right-0 z-40 h-[72px] border-b border-[#D8DFE9]">
+    <header className="frosted-header fixed top-0 left-0 right-0 z-40 h-[72px] border-b border-[#D8DFE9] bg-white/95 backdrop-blur-[8px]">
       <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          aria-label="KPMG CFO Advisory Home"
-          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          onClick={() => setMobileOpen(false)}
-        >
-          <KpmgWordmark />
-        </Link>
+        {/* Left: Standalone KPMG Logo in exact brand alignment */}
+        <div className="flex items-center">
+          <Link
+            href="/"
+            aria-label="KPMG CFO Advisory Home"
+            className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            onClick={() => setMobileOpen(false)}
+          >
+            <KpmgLogo className="h-[28px] w-auto shrink-0" />
+          </Link>
+        </div>
 
-        {showSectionLinks && (
+        {/* Center Nav: Horizontal One-Word Workspace Tabs (on /workflows) */}
+        {isAuthedWorkflows && (
+          <nav
+            aria-label="Workflows Hub Navigation"
+            role="tablist"
+            className="hidden h-full items-center gap-1 sm:gap-2 lg:flex lg:gap-6"
+          >
+            {workflowsTabs.map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`relative flex h-[72px] items-center gap-2 px-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2] ${
+                    isActive
+                      ? "font-semibold text-[#00338D]"
+                      : "text-[#333940] hover:text-[#00338D]"
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {item.badge !== undefined && (
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-mono text-[11px] leading-none select-none ${
+                        isActive
+                          ? "bg-[#00338D]/10 text-[#00338D]"
+                          : "bg-[#F4F6FA] text-[#526075]"
+                      }`}
+                    >
+                      {item.isLive && (
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse"
+                          aria-hidden="true"
+                        />
+                      )}
+                      {item.badge}
+                    </span>
+                  )}
+                  {isActive && (
+                    <span
+                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#00338D]"
+                      aria-hidden="true"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        )}
+
+        {/* Landing Chapter Links (on / or unauthenticated) */}
+        {showLandingLinks && !isAuthedWorkflows && (
           <nav
             aria-label="Primary Navigation"
             className="hidden items-center gap-7 lg:flex"
@@ -81,11 +168,10 @@ export function Navbar() {
           </nav>
         )}
 
-        <div className="flex items-center gap-2.5">
+        {/* Right Utility: Account Menu & Mobile Toggle */}
+        <div className="flex items-center gap-3">
           {user ? (
-            <div className={isWorkflowsRoute ? "lg:hidden" : undefined}>
-              <AccountMenu />
-            </div>
+            <AccountMenu placement="navbar" />
           ) : (
             <button
               type="button"
@@ -96,23 +182,70 @@ export function Navbar() {
             </button>
           )}
 
-          {showMobileMenuButton && (
-            <button
-              type="button"
-              onClick={() => setMobileOpen((prev) => !prev)}
-              aria-expanded={mobileOpen}
-              aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
-              className="inline-flex items-center justify-center rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-2 text-[#0C233C] transition-[border-color,transform] duration-150 hover:border-[#00338D] active:scale-[0.98] lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
-            >
-              {mobileOpen ? <X size={20} weight="light" /> : <List size={20} weight="light" />}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((prev) => !prev)}
+            aria-expanded={mobileOpen}
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+            className="inline-flex items-center justify-center rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] p-2 text-[#0C233C] transition-[border-color,transform] duration-150 hover:border-[#00338D] active:scale-[0.98] lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
+          >
+            {mobileOpen ? <X size={20} weight="light" /> : <List size={20} weight="light" />}
+          </button>
         </div>
       </div>
 
-      {mobileOpen && showMobileMenuButton && (
+      {/* Mobile Drawer */}
+      {mobileOpen && (
         <div className="border-b border-[#D8DFE9] bg-white px-4 py-5 shadow-lg lg:hidden">
-          {showSectionLinks && (
+          {isAuthedWorkflows && (
+            <nav
+              aria-label="Mobile Workflows Navigation"
+              role="tablist"
+              className="flex flex-col gap-1 pb-2"
+            >
+              {workflowsTabs.map((item) => {
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setMobileOpen(false);
+                    }}
+                    className={`flex items-center justify-between rounded-sm px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
+                      isActive
+                        ? "bg-[#00338D]/10 font-semibold text-[#00338D]"
+                        : "text-[#333940] hover:bg-[#F4F6FA] hover:text-[#00338D]"
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    {item.badge !== undefined && (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-mono text-[11px] leading-none ${
+                          isActive
+                            ? "bg-[#00338D]/15 text-[#00338D]"
+                            : "bg-[#F4F6FA] text-[#526075]"
+                        }`}
+                      >
+                        {item.isLive && (
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-[#009A44] animate-pulse"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          )}
+
+          {showLandingLinks && !isAuthedWorkflows && (
             <nav aria-label="Mobile Navigation" className="flex flex-col gap-3">
               {NAV_LINKS.map((item) => (
                 <Link
@@ -130,7 +263,7 @@ export function Navbar() {
           {!user && (
             <div
               className={`flex flex-col gap-2.5 ${
-                showSectionLinks ? "mt-4 border-t border-[#D8DFE9] pt-4" : ""
+                showLandingLinks ? "mt-4 border-t border-[#D8DFE9] pt-4" : ""
               }`}
             >
               <button
