@@ -27,6 +27,7 @@ import { UnifiedHubCard } from "@/components/workflows/UnifiedHubCard";
 import { useWorkflowsNav } from "@/context/WorkflowsNavContext";
 import {
   UnifiedWorkflowsBar,
+  FilterCategoryGroup,
 } from "@/components/workflows/UnifiedWorkflowsBar";
 
 interface ClientAccessConsoleProps {
@@ -50,6 +51,7 @@ export function ClientAccessConsole({
   const [actionError, setActionError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [governanceFilter, setGovernanceFilter] = useState<"all" | "active" | "suspended">("all");
+  const [productAccessFilter, setProductAccessFilter] = useState("all");
   const [governanceSort, setGovernanceSort] = useState<"name-asc" | "name-desc">("name-asc");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
@@ -154,7 +156,9 @@ export function ClientAccessConsole({
     if (!isLoading && selectedCompanyId && governanceData.companies.length > 0) {
       const exists = governanceData.companies.some((c) => c.id === selectedCompanyId);
       if (!exists) {
-        setSelectedCompanyId(null);
+        setTimeout(() => {
+          setSelectedCompanyId(null);
+        }, 0);
         if (typeof window !== "undefined") {
           try {
             const url = new URL(window.location.href);
@@ -284,6 +288,15 @@ export function ClientAccessConsole({
         if (governanceFilter !== "all" && company.status !== governanceFilter) {
           return false;
         }
+        if (productAccessFilter !== "all") {
+          const hasEntitlement = governanceData.entitlements.some(
+            (e) =>
+              e.companyId === company.id &&
+              e.productId === productAccessFilter &&
+              e.enabled
+          );
+          if (!hasEntitlement) return false;
+        }
         if (!searchQuery.trim()) return true;
         const q = searchQuery.toLowerCase().trim();
         return (
@@ -300,10 +313,57 @@ export function ClientAccessConsole({
       });
   }, [
     governanceData.companies,
+    governanceData.entitlements,
     governanceFilter,
+    productAccessFilter,
     governanceSort,
     searchQuery,
   ]);
+
+  const filteredProducts = useMemo(() => {
+    return availableProducts.filter((p) => {
+      if (productAccessFilter !== "all" && p.id !== productAccessFilter) {
+        return false;
+      }
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
+      return (
+        p.title.toLowerCase().includes(q) ||
+        (p.description ? p.description.toLowerCase().includes(q) : false) ||
+        p.id.toLowerCase().includes(q)
+      );
+    });
+  }, [availableProducts, productAccessFilter, searchQuery]);
+
+  const governanceFilterGroups = useMemo<FilterCategoryGroup[]>(() => {
+    return [
+      {
+        id: "status",
+        label: "Status",
+        options: [
+          { id: "all", label: "All Organizations" },
+          { id: "active", label: "Active Clients Only" },
+          { id: "suspended", label: "Suspended" },
+        ],
+        activeValue: governanceFilter,
+        onChange: (id) => setGovernanceFilter(id as "all" | "active" | "suspended"),
+        defaultId: "all",
+      },
+      {
+        id: "product-access",
+        label: "Product Access",
+        icon: <Cpu size={13} weight="bold" />,
+        options: [
+          { id: "all", label: "All Products" },
+          ...availableProducts.map((p) => ({ id: p.id, label: p.title })),
+        ],
+        activeValue: productAccessFilter,
+        onChange: setProductAccessFilter,
+        defaultId: "all",
+        searchable: true,
+      },
+    ];
+  }, [governanceFilter, productAccessFilter, availableProducts]);
 
   const selectedCompany = useMemo(
     () =>
@@ -355,14 +415,8 @@ export function ClientAccessConsole({
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder="Search organizations, domains..."
-        filterOptions={[
-          { id: "all", label: "All Organizations" },
-          { id: "active", label: "Active Clients Only" },
-          { id: "suspended", label: "Suspended" },
-        ]}
-        activeFilter={governanceFilter}
-        onFilterChange={(id) => setGovernanceFilter(id as "all" | "active" | "suspended")}
-        filterLabel="Status"
+        filterGroups={governanceFilterGroups}
+        filterLabel="Filter"
         sortOptions={[
           { id: "name-asc", label: "Company Name (A → Z)" },
           { id: "name-desc", label: "Company Name (Z → A)" },
@@ -373,7 +427,7 @@ export function ClientAccessConsole({
         countLabel={
           governanceScope === "by-company"
             ? `${filteredCompanies.length} ${filteredCompanies.length === 1 ? "organization" : "organizations"}`
-            : `${availableProducts.length} ${availableProducts.length === 1 ? "product" : "products"}`
+            : `${filteredProducts.length} ${filteredProducts.length === 1 ? "product" : "products"}`
         }
       >
         {/* View Switcher: Grid vs Table */}
@@ -613,10 +667,26 @@ export function ClientAccessConsole({
             onManage={(id) => handleOpenCompanyDrawer(id)}
           />
         )
+      ) : filteredProducts.length === 0 ? (
+        <div className="rounded-sm border border-dashed border-[#D8DFE9] bg-white px-6 py-12 text-center shadow-xs">
+          <p className="text-sm font-semibold text-[#0C233C]">
+            No products match the selected criteria
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery("");
+              setProductAccessFilter("all");
+            }}
+            className="mt-3 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-3.5 py-1.5 text-xs font-semibold text-[#00338D] hover:bg-[#F4F6FA]"
+          >
+            Reset Product Filter & Search
+          </button>
+        </div>
       ) : viewMode === "grid" ? (
         /* VIEW 2: BY PRODUCT (Unified 4-Card Grid) */
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-          {availableProducts.map((platform) => {
+          {filteredProducts.map((platform) => {
             const entitledCompaniesCount = governanceData.entitlements.filter(
               (e) =>
                 e.productId === platform.id &&
@@ -665,7 +735,7 @@ export function ClientAccessConsole({
       ) : (
         /* VIEW 2: BY PRODUCT (Standardized Table View) */
         <ProductGovernanceTableView
-          products={availableProducts}
+          products={filteredProducts}
           companies={governanceData.companies}
           entitlements={governanceData.entitlements}
           onManage={(id) => setSelectedProductId(id)}

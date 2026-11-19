@@ -38,8 +38,7 @@ import { ImportDashboardModal } from "./modals/ImportDashboardModal";
 import { ConfirmActionModal } from "./modals/ConfirmActionModal";
 import {
   UnifiedWorkflowsBar,
-  FilterOptionItem,
-  SortOptionItem,
+  FilterCategoryGroup,
 } from "@/components/workflows/UnifiedWorkflowsBar";
 
 const EMPTY_DATASETS: LiveDatasetsPayload = {
@@ -76,7 +75,8 @@ export function DashboardsConsole({
   const [companies, setCompanies] = useState<CompanyProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [scopeFilter, setScopeFilter] = useState<"all" | "mine" | "shared">("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [accessFilter, setAccessFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"title-asc" | "title-desc" | "recent">("title-asc");
 
@@ -187,19 +187,28 @@ export function DashboardsConsole({
 
   const filteredDashboards = useMemo(() => {
     let result = dashboards;
-    if (scopeFilter === "mine") {
+    if (sourceFilter === "kpmg") {
+      result = result.filter((d) => d.ownerType === "kpmg" && !d.isInbuilt);
+    } else if (sourceFilter === "third-party") {
       result = isKpmgAdmin
-        ? dashboards.filter((d) => d.ownerType === "kpmg")
-        : dashboards.filter(
-            (d) => d.ownerType === "client" && d.ownerCompanyId === user?.companyId
-          );
-    } else if (scopeFilter === "shared") {
+        ? result.filter((d) => d.ownerType === "client")
+        : result.filter((d) => d.ownerType === "client" && d.ownerCompanyId === user?.companyId);
+    } else if (sourceFilter === "inbuilt") {
+      result = result.filter((d) => Boolean(d.isInbuilt));
+    }
+
+    if (accessFilter === "internal") {
+      result = result.filter(
+        (d) => d.visibility === "kpmg_only" || d.visibility === "company_internal"
+      );
+    } else if (accessFilter === "published") {
       result = isKpmgAdmin
-        ? dashboards.filter(
+        ? result.filter(
             (d) =>
-              d.visibility === "specific_companies" || d.visibility === "all_clients"
+              d.visibility === "specific_companies" ||
+              d.visibility === "all_clients"
           )
-        : dashboards.filter((d) => d.ownerType === "kpmg");
+        : result.filter((d) => d.ownerType === "kpmg");
     }
 
     if (searchQuery.trim()) {
@@ -228,7 +237,37 @@ export function DashboardsConsole({
     });
 
     return result;
-  }, [dashboards, scopeFilter, searchQuery, sortBy, isKpmgAdmin, user?.companyId]);
+  }, [dashboards, sourceFilter, accessFilter, searchQuery, sortBy, isKpmgAdmin, user?.companyId]);
+
+  const dashboardFilterGroups = useMemo<FilterCategoryGroup[]>(() => {
+    return [
+      {
+        id: "source",
+        label: "Source",
+        options: [
+          { id: "all", label: "All Dashboards" },
+          { id: "kpmg", label: "KPMG Authored" },
+          { id: "third-party", label: isKpmgAdmin ? "Third-Party / Client" : "Company Workspace" },
+          { id: "inbuilt", label: "System Inbuilt" },
+        ],
+        activeValue: sourceFilter,
+        onChange: setSourceFilter,
+        defaultId: "all",
+      },
+      {
+        id: "access",
+        label: "Access",
+        options: [
+          { id: "all", label: "All Access Levels" },
+          { id: "internal", label: "Internal / Private Only" },
+          { id: "published", label: isKpmgAdmin ? "Published to Clients" : "Published by KPMG" },
+        ],
+        activeValue: accessFilter,
+        onChange: setAccessFilter,
+        defaultId: "all",
+      },
+    ];
+  }, [sourceFilter, accessFilter, isKpmgAdmin]);
 
   const handleCreate = async (input: CreateDashboardInput) => {
     const res = await fetch("/api/dashboards", {
@@ -454,14 +493,8 @@ export function DashboardsConsole({
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder="Search executive dashboards..."
-        filterOptions={[
-          { id: "all", label: "All Dashboards" },
-          { id: "mine", label: isKpmgAdmin ? "KPMG Authored" : "Company Workspace" },
-          { id: "shared", label: isKpmgAdmin ? "Published to Clients" : "Published by KPMG" },
-        ]}
-        activeFilter={scopeFilter}
-        onFilterChange={(id) => setScopeFilter(id as "all" | "mine" | "shared")}
-        filterLabel="Scope"
+        filterGroups={dashboardFilterGroups}
+        filterLabel="Filter"
         sortOptions={[
           { id: "title-asc", label: "Title (A → Z)" },
           { id: "title-desc", label: "Title (Z → A)" },
