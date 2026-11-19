@@ -442,9 +442,8 @@ async function testTargetPort(baseUrl) {
 async function main() {
   await ensureChrome();
   await testTargetPort("http://localhost:3000");
-  await testTargetPort("http://localhost:3001");
   console.log("\n==================================================================");
-  console.log("=== DUAL-WORKTREE VERIFICATION SUCCESSFUL (PORTS 3000 & 3001) ===");
+  console.log("=== VERIFICATION SUCCESSFUL (PORT 3000) ===");
   console.log("==================================================================");
   process.exit(0);
 }

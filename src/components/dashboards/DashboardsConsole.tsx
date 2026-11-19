@@ -106,12 +106,11 @@ export function DashboardsConsole({
       const data = await res.json();
       const list = (data.dashboards || []) as DashboardDocument[];
       setDashboards(list);
-      onDashboardCountChange?.(list.length);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboards.");
     }
-  }, [user, onDashboardCountChange]);
+  }, [user]);
 
   const fetchDatasets = useCallback(async () => {
     if (!user) return;
@@ -169,6 +168,10 @@ export function DashboardsConsole({
       active = false;
     };
   }, [user, isPreviewMode, fetchDashboards, fetchDatasets, fetchCompanies]);
+
+  useEffect(() => {
+    onDashboardCountChange?.(dashboards.length);
+  }, [dashboards.length, onDashboardCountChange]);
 
   const canEditDoc = useCallback(
     (doc: DashboardDocument): boolean => {
@@ -281,11 +284,7 @@ export function DashboardsConsole({
       throw new Error(data.error || "Failed to create dashboard.");
     }
     const created = data.dashboard as DashboardDocument;
-    setDashboards((prev) => {
-      const next = [created, ...prev];
-      onDashboardCountChange?.(next.length);
-      return next;
-    });
+    setDashboards((prev) => [created, ...prev]);
     setOpenInPresent(false);
     setOpenDashboardId(created.id);
   };
@@ -345,11 +344,7 @@ export function DashboardsConsole({
       }
       if (data.dashboard) {
         const clone = data.dashboard as DashboardDocument;
-        setDashboards((prev) => {
-          const next = [clone, ...prev];
-          onDashboardCountChange?.(next.length);
-          return next;
-        });
+        setDashboards((prev) => [clone, ...prev]);
         setError(null);
       }
     } catch {
@@ -369,11 +364,7 @@ export function DashboardsConsole({
         const data = await res.json().catch(() => ({}));
         setError(data.error || "Failed to delete dashboard.");
       } else {
-        setDashboards((prev) => {
-          const next = prev.filter((d) => d.id !== deleteTarget.id);
-          onDashboardCountChange?.(next.length);
-          return next;
-        });
+        setDashboards((prev) => prev.filter((d) => d.id !== deleteTarget.id));
         if (openDashboardId === deleteTarget.id) {
           setOpenDashboardId(null);
         }

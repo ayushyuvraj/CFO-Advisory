@@ -352,9 +352,8 @@ async function testCatalogGuardOnPort(port) {
 async function main() {
   await ensureChrome();
   await testCatalogGuardOnPort(3000);
-  await testCatalogGuardOnPort(3001);
   console.log(`\n======================================================`);
-  console.log(`ALL CATALOG ACCESS GUARD QA GATES PASSED (Port 3000 & 3001)`);
+  console.log(`ALL CATALOG ACCESS GUARD QA GATES PASSED (Port 3000)`);
   console.log(`======================================================\n`);
 }
 

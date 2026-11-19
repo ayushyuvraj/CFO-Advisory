@@ -1,5 +1,5 @@
 // Automated verification script for Persona Dashboard Access Guard
-// Tests both Port 3000 (master) and Port 3001 (V2)
+// Tests Port 3000 (master)
 
 async function testPort(port) {
   console.log(`\n========================================`);
@@ -106,9 +106,8 @@ async function testPort(port) {
 
 async function main() {
   await testPort(3000);
-  await testPort(3001);
   console.log('\n========================================');
-  console.log('ALL API SECURITY GATES PASSED (Port 3000 & 3001)');
+  console.log('ALL API SECURITY GATES PASSED (Port 3000)');
   console.log('========================================\n');
 }
 

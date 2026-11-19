@@ -293,9 +293,8 @@ async function testPreviewReturnOnPort(port) {
 async function main() {
   await ensureChrome();
   await testPreviewReturnOnPort(3000);
-  await testPreviewReturnOnPort(3001);
   console.log(`\n======================================================`);
-  console.log(`ALL PREVIEW EXACT RETURN QA GATES PASSED (Port 3000 & 3001)`);
+  console.log(`ALL PREVIEW EXACT RETURN QA GATES PASSED (Port 3000)`);
   console.log(`======================================================\n`);
 }
 

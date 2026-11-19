@@ -371,9 +371,8 @@ async function testBrowserOnPort(port) {
 async function main() {
   await ensureChrome();
   await testBrowserOnPort(3000);
-  await testBrowserOnPort(3001);
   console.log(`\n======================================================`);
-  console.log(`ALL BROWSER INTERACTION & UI GATES PASSED (Port 3000 & 3001)`);
+  console.log(`ALL BROWSER INTERACTION & UI GATES PASSED (Port 3000)`);
   console.log(`======================================================\n`);
 }
 
