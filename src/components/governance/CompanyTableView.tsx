@@ -97,7 +97,7 @@ export function CompanyTableView({
 
                   {/* Dedicated Personas Column */}
                   <td className="whitespace-nowrap py-3 px-4 font-mono text-[11px] text-[#526075]">
-                    {personaCount} Persona{personaCount !== 1 ? "s" : ""}
+                    {personaCount}
                   </td>
 
                   {/* Actions */}
