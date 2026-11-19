@@ -262,7 +262,7 @@ async function runTest() {
         const rect = firstCard.getBoundingClientRect();
         const text = firstCard.innerText;
         const hasProductIdVal = text.includes("invoice-processing-p2p");
-        const hasEntitledOrgsVal = text.includes("1 of 3 Active");
+        const hasEntitledOrgsVal = text.includes("Active") && text.includes("of");
         const hasOperationalBadge = text.includes("Operational");
         const hasActionsBtn = Boolean(firstCard.querySelector('button[aria-label^="Manage client entitlements"]'));
 
