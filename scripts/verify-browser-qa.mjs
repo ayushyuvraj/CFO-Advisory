@@ -429,17 +429,21 @@ async function runQAPass(baseUrl, label) {
       const text = document.body.innerText.toLowerCase();
       const hasBar = Boolean(document.querySelector("input[placeholder*='actions']"));
       const hasFilter = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Status') || b.innerText.trim().startsWith('Filter')));
+      const hasProductFilter = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Product')));
       const hasSort = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.trim().startsWith('Sort')));
       const hasSOXBanner = text.includes("sox audit command center") || text.includes("continuous telemetry ingestion active");
       const hasKPICards = text.includes("total spend (usd)") || text.includes("tokens consumed") || text.includes("avg latency");
       const hasPollingBadge = text.includes("3s polling") || text.includes("polling");
-      return { hasBar, hasFilter, hasSort, hasSOXBanner, hasKPICards, hasPollingBadge, isAuditActive: text.includes("audit") };
+      const hasExportLogBtn = Boolean(Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes("Export Log")));
+      return { hasBar, hasFilter, hasProductFilter, hasSort, hasSOXBanner, hasKPICards, hasPollingBadge, hasExportLogBtn, isAuditActive: text.includes("audit") };
     })()
   `);
   console.log(`[QA Audit Strip Check]:`, JSON.stringify(auditStripCheck, null, 2));
   if (!auditStripCheck.hasBar) defects.push("Audit tab: Unified search input missing.");
   if (!auditStripCheck.hasFilter) defects.push("Audit tab: Status filter button missing.");
+  if (!auditStripCheck.hasProductFilter) defects.push("Audit tab: Product filter button missing.");
   if (!auditStripCheck.hasSort) defects.push("Audit tab: Sort button missing.");
+  if (!auditStripCheck.hasExportLogBtn) defects.push("Audit tab: Export Log primary CTA button missing.");
   if (auditStripCheck.hasSOXBanner) defects.push("FAIL: Redundant SOX Command Center banner still visible in Audit tab.");
   if (auditStripCheck.hasKPICards) defects.push("FAIL: Redundant KPI cards still visible in Audit tab.");
   if (!auditStripCheck.hasPollingBadge) defects.push("FAIL: 3s polling indicator missing in Audit tab.");

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { List, X } from "@phosphor-icons/react";
+import { motion } from "motion/react";
 import { useAuth } from "@/context/AuthContext";
 import { useWorkflowsNav, type WorkflowsTabId } from "@/context/WorkflowsNavContext";
 import { KpmgLogo } from "@/components/brand/KpmgLogo";
@@ -115,9 +116,16 @@ export function Navbar() {
                   >
                     <span>{item.label}</span>
                     {isActive && (
-                      <span
+                      <motion.span
+                        layoutId="activeWorkflowsTabIndicator"
                         className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#00338D]"
                         aria-hidden="true"
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 38,
+                          mass: 0.6,
+                        }}
                       />
                     )}
                   </button>

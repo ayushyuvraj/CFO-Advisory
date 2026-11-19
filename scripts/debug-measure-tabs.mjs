@@ -155,7 +155,7 @@ async function main() {
     { name: "catalog", searchPlaceholder: "Search platforms" },
     { name: "audit", searchPlaceholder: "Search actions" },
     { name: "dashboards", searchPlaceholder: "Search executive" },
-    { name: "governance", searchPlaceholder: "Search client" },
+    { name: "governance", searchPlaceholder: "Search organizations" },
   ];
 
   const results = [];

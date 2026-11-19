@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { motion } from "motion/react";
 import {
   ArrowsClockwise,
   CheckCircle,
   XCircle,
   Eye,
   ChartLineUp,
+  Cpu,
+  DownloadSimple,
 } from "@phosphor-icons/react";
 import { TelemetryEvent, TelemetryMetrics } from "@/lib/telemetry/types";
 import { AuditInspectorDrawer } from "./AuditInspectorDrawer";
@@ -161,6 +164,57 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
     });
   }, [events, sortBy]);
 
+  const productFilterItems: FilterOptionItem[] = useMemo(
+    () => [
+      { id: "ALL", label: "All Products" },
+      ...productFilterOptions.map((opt) => ({
+        id: opt.id,
+        label: opt.title,
+      })),
+    ],
+    [productFilterOptions]
+  );
+
+  const handleExportCsv = useCallback(() => {
+    if (sortedEvents.length === 0) return;
+    const headers = [
+      "Timestamp_UTC",
+      "Product",
+      "Action",
+      "Workflow_Step",
+      "Entity_ID",
+      "Model_Used",
+      "Input_Tokens",
+      "Output_Tokens",
+      "Latency_Ms",
+      "Cost_USD",
+      "Status",
+    ];
+    const rows = sortedEvents.map((evt) => [
+      `"${new Date(evt.timestamp_start || evt.created_at || Date.now()).toISOString()}"`,
+      `"${(evt.product_name ?? "").replace(/"/g, '""')}"`,
+      `"${(evt.action_name ?? "").replace(/"/g, '""')}"`,
+      `"${(evt.step_name ?? "").replace(/"/g, '""')}"`,
+      `"${(evt.target_entity_id ?? "").replace(/"/g, '""')}"`,
+      `"${(evt.model_name ?? "").replace(/"/g, '""')}"`,
+      evt.prompt_tokens || 0,
+      evt.completion_tokens || 0,
+      evt.duration_ms || 0,
+      `$${(evt.estimated_cost_usd || 0).toFixed(6)}`,
+      `"${evt.action_status || "SUCCESS"}"`,
+    ]);
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kpmg-audit-telemetry-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [sortedEvents]);
+
   const handleInspect = useCallback((event: TelemetryEvent) => {
     setActiveEvent(event);
     setDrawerOpen(true);
@@ -172,11 +226,16 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
 
   return (
     <div className="space-y-4">
-      {/* Unified Control Bar: Placed at top at exact same vertical coordinate as Solution Catalog */}
+      {/* Unified Control Bar: Sits at identical Y = 100px & 52px height as all Hub tabs */}
       <UnifiedWorkflowsBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder="Search actions, models, entities..."
+        secondaryFilterOptions={productFilterItems}
+        secondaryActiveFilter={selectedProduct}
+        secondaryOnFilterChange={setSelectedProduct}
+        secondaryFilterLabel="Product"
+        secondaryFilterIcon={<Cpu size={14} weight="bold" />}
         filterOptions={AUDIT_STATUS_FILTERS}
         activeFilter={selectedStatus}
         onFilterChange={setSelectedStatus}
@@ -187,22 +246,7 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
         sortLabel="Sort"
         countLabel={`${sortedEvents.length} events`}
       >
-        {/* Product Scope Dropdown */}
-        <select
-          aria-label="Filter telemetry by product"
-          value={selectedProduct}
-          onChange={(e) => setSelectedProduct(e.target.value)}
-          className="h-[30px] rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-0 font-mono text-xs text-[#0C233C] focus:border-[#0C233C] focus:outline-none box-border"
-        >
-          <option value="ALL">All Products</option>
-          {productFilterOptions.map((opt) => (
-            <option key={opt.id} value={opt.id}>
-              {opt.title}
-            </option>
-          ))}
-        </select>
-
-        {/* Live Ingestion Indicator & Refresh Action */}
+        {/* Live Ingestion Indicator, Refresh Action & Primary Export CTA */}
         <div className="flex items-center gap-1.5">
           <span
             className="inline-flex h-[30px] items-center gap-1.5 rounded-sm border border-[#D8DFE9] bg-[#F8FAFC] px-2.5 py-0 font-mono text-[11px] text-[#526075] box-border"
@@ -225,10 +269,25 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
             />
             <span>Refresh</span>
           </button>
+
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="inline-flex h-[30px] items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-0 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1E49E2] active:scale-[0.98] box-border"
+            title="Export filtered audit telemetry log to CSV"
+          >
+            <DownloadSimple size={15} weight="bold" />
+            <span>Export Log</span>
+          </button>
         </div>
       </UnifiedWorkflowsBar>
 
-      <div className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+        className="overflow-hidden rounded-sm border border-[#D8DFE9] bg-white shadow-xs"
+      >
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-xs">
@@ -325,7 +384,7 @@ export function AuditConsole({ availableProducts }: AuditConsoleProps = {}) {
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
 
       {/* Slideout Inspector Drawer */}
       <AuditInspectorDrawer
