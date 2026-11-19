@@ -224,10 +224,12 @@ async function runTest() {
       details: `Headers: ${companyTableMetrics.headers.join(" | ")}`,
     });
 
+    const isPureNumberPersonas = /^\d+$/.test(companyTableMetrics.firstRow[4]);
+
     results.push({
-      test: "Company Table View: Separate PERSONAS Column",
-      pass: hasSeparatePersonas,
-      details: `Personas count in row 1: "${companyTableMetrics.firstRow[4]}"`,
+      test: "Company Table View: Separate PERSONAS Column (Pure Number, No Words)",
+      pass: hasSeparatePersonas && isPureNumberPersonas,
+      details: `Personas count in row 1: "${companyTableMetrics.firstRow[4]}" (pure numeric: ${isPureNumberPersonas})`,
     });
 
     results.push({
