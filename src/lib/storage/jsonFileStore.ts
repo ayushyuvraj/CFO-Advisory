@@ -62,7 +62,7 @@ function isRetryableFsError(err: unknown): boolean {
 
 /**
  * Acquires a cross-process lockfile (`O_EXCL`) with automatic stale-lock recovery
- * so concurrent writes across Ports 3000 & 3001 never lose updates or hit EPERM.
+ * so concurrent writes never lose updates or hit EPERM.
  */
 export function withFileLock<T>(targetFile: string, fn: () => T): T {
   ensureDataDir();

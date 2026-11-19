@@ -631,16 +631,14 @@ async function runQAPass(baseUrl, label) {
 async function main() {
   const chromeProc = await ensureChrome();
   try {
-    const res3000 = await runQAPass("http://localhost:3000", "port3000_original");
-    const res3001 = await runQAPass("http://localhost:3001", "port3001_v2");
+    const res3000 = await runQAPass("http://localhost:3000", "port3000");
 
     console.log(`\n======================================================`);
     console.log(`[FINAL QA VERDICT]`);
-    console.log(`Port 3000 (Original): ${res3000.passed ? "PASSED (100% GREEN)" : "FAILED"}`);
-    console.log(`Port 3001 (V2):       ${res3001.passed ? "PASSED (100% GREEN)" : "FAILED"}`);
+    console.log(`Port 3000: ${res3000.passed ? "PASSED (100% GREEN)" : "FAILED"}`);
     console.log(`======================================================\n`);
 
-    if (!res3000.passed || !res3001.passed) {
+    if (!res3000.passed) {
       process.exit(1);
     }
   } finally {
