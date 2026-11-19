@@ -203,11 +203,17 @@ async function runTest() {
         const firstRowTds = Array.from(document.querySelectorAll('table tbody tr:first-child td')).map(td => td.innerText.trim());
         const orgCellHtml = document.querySelector('table tbody tr:first-child td:nth-child(2)')?.innerHTML || "";
         const hasTicketInOrg = orgCellHtml.includes("rounded-xs border");
+        const personasTh = document.querySelectorAll('table thead th')[4];
+        const personasTd = document.querySelector('table tbody tr:first-child td:nth-child(5)');
+        const personasThAlign = personasTh ? window.getComputedStyle(personasTh).textAlign : "";
+        const personasTdAlign = personasTd ? window.getComputedStyle(personasTd).textAlign : "";
         return {
           headers: ths,
           firstRow: firstRowTds,
           hasTicketInOrg,
-          columnCount: ths.length
+          columnCount: ths.length,
+          personasThAlign,
+          personasTdAlign
         };
       })()
     `);
@@ -225,11 +231,12 @@ async function runTest() {
     });
 
     const isPureNumberPersonas = /^\d+$/.test(companyTableMetrics.firstRow[4]);
+    const isPersonasCenterAligned = companyTableMetrics.personasThAlign === "center" && companyTableMetrics.personasTdAlign === "center";
 
     results.push({
-      test: "Company Table View: Separate PERSONAS Column (Pure Number, No Words)",
-      pass: hasSeparatePersonas && isPureNumberPersonas,
-      details: `Personas count in row 1: "${companyTableMetrics.firstRow[4]}" (pure numeric: ${isPureNumberPersonas})`,
+      test: "Company Table View: Separate PERSONAS Column (Pure Number, Center-Aligned)",
+      pass: hasSeparatePersonas && isPureNumberPersonas && isPersonasCenterAligned,
+      details: `Personas count: "${companyTableMetrics.firstRow[4]}", Th align: "${companyTableMetrics.personasThAlign}", Td align: "${companyTableMetrics.personasTdAlign}"`,
     });
 
     results.push({
