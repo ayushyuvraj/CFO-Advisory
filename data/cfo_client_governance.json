@@ -1,0 +1,108 @@
+{
+  "companies": [
+    {
+      "id": "cmp_5cddd97be7cc",
+      "name": "Apex Global",
+      "code": "APEX-GLOBAL",
+      "contactEmail": "team@apexglobal.com",
+      "status": "active",
+      "notes": "test2",
+      "createdAt": "2026-11-18T05:52:31.604Z",
+      "updatedAt": "2026-11-18T05:52:31.604Z"
+    },
+    {
+      "id": "cmp_f74872465eaa",
+      "name": "xyz ltd",
+      "code": "XYZ-LTD",
+      "contactEmail": "xyzmain@xyz.com",
+      "status": "active",
+      "notes": "test2",
+      "createdAt": "2026-11-18T09:40:04.925Z",
+      "updatedAt": "2026-11-18T09:40:04.925Z"
+    },
+    {
+      "id": "cmp_424218a77246",
+      "name": "ABC Ltd",
+      "code": "ABC-LTD",
+      "contactEmail": "cfo@abc.com",
+      "status": "active",
+      "notes": "",
+      "createdAt": "2026-11-19T10:33:46.329Z",
+      "updatedAt": "2026-11-19T10:33:46.329Z"
+    }
+  ],
+  "entitlements": [
+    {
+      "companyId": "cmp_f74872465eaa",
+      "productId": "invoice-processing-p2p",
+      "enabled": true,
+      "grantedAt": "2026-11-19T12:29:14.541Z",
+      "grantedBy": "KPMG Lead"
+    },
+    {
+      "companyId": "cmp_5cddd97be7cc",
+      "productId": "invoice-processing-p2p",
+      "enabled": true,
+      "grantedAt": "2026-11-19T14:01:13.137Z",
+      "grantedBy": "KPMG Lead"
+    }
+  ],
+  "personas": [
+    {
+      "id": "prs_745259921823",
+      "companyId": "cmp_f74872465eaa",
+      "name": "cro xyz",
+      "roleTitle": "cfo",
+      "email": "cfo@xyz.com",
+      "passcode": "CFO@123",
+      "productAccessMode": "custom",
+      "allowedProductIds": [
+        "invoice-processing-p2p"
+      ],
+      "permissions": {
+        "canLaunchProducts": true,
+        "canViewAudit": true,
+        "canManageDashboards": true,
+        "canExportData": true
+      },
+      "createdAt": "2026-11-18T09:45:56.651Z",
+      "updatedAt": "2026-11-18T09:46:39.129Z"
+    },
+    {
+      "id": "prs_1564cfb9b1e0",
+      "companyId": "cmp_424218a77246",
+      "name": "cfo",
+      "roleTitle": "cfo",
+      "email": "cfo@abc.com",
+      "passcode": "abcl@123",
+      "productAccessMode": "all",
+      "allowedProductIds": [],
+      "permissions": {
+        "canLaunchProducts": true,
+        "canViewAudit": true,
+        "canManageDashboards": false,
+        "canExportData": false
+      },
+      "createdAt": "2026-11-19T10:34:31.336Z",
+      "updatedAt": "2026-11-19T10:34:31.336Z"
+    },
+    {
+      "id": "prs_0298ad17f20b",
+      "companyId": "cmp_5cddd97be7cc",
+      "name": "admin",
+      "roleTitle": "admin",
+      "email": "admin@apex.com",
+      "passcode": "apex@123",
+      "productAccessMode": "all",
+      "allowedProductIds": [],
+      "permissions": {
+        "canLaunchProducts": true,
+        "canViewAudit": false,
+        "canManageDashboards": false,
+        "canExportData": false
+      },
+      "createdAt": "2026-11-19T14:01:37.137Z",
+      "updatedAt": "2026-11-19T14:01:37.137Z"
+    }
+  ]
+}
