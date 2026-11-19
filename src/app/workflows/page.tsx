@@ -19,9 +19,9 @@ import { AmbientLedgerGridCanvas } from "@/components/three/AmbientLedgerGridCan
 import { AddProductModal } from "@/components/workflows/AddProductModal";
 import { AuditConsole } from "@/components/workflows/AuditConsole";
 import {
-  WorkflowsSidebar,
+  useWorkflowsNav,
   type WorkflowsTabId,
-} from "@/components/workflows/WorkflowsSidebar";
+} from "@/context/WorkflowsNavContext";
 import { ClientAccessConsole } from "@/components/governance/ClientAccessConsole";
 import { PreviewBanner } from "@/components/governance/PreviewBanner";
 import { DashboardsConsole } from "@/components/dashboards/DashboardsConsole";
@@ -49,7 +49,7 @@ function isValidPort(port: unknown): port is number {
 
 function WorkflowsSkeleton() {
   return (
-    <div className="pt-[72px] pb-20 lg:pl-[68px]">
+    <div className="pt-[72px] pb-20">
       <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6 lg:px-8">
         <div className="h-96 animate-pulse rounded-sm border border-[#D8DFE9] bg-[#F4F6FA]" />
       </div>
@@ -65,8 +65,7 @@ export default function WorkflowsPage() {
     sessionNotice,
     clearSessionNotice,
   } = useAuth();
-  const [activeTab, setActiveTab] = useState<WorkflowsTabId>("catalog");
-  const [isSidebarPinned, setIsSidebarPinned] = useState(false);
+  const { activeTab, setActiveTab, setBadges } = useWorkflowsNav();
   const [dashboardCount, setDashboardCount] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [products, setProducts] = useState<ConnectedPlatform[]>(CONNECTED_PLATFORMS);
@@ -82,7 +81,7 @@ export default function WorkflowsPage() {
   const canLaunchProducts = isKpmgAdmin || Boolean(user?.permissions?.canLaunchProducts);
 
   // Derive effective tab cleanly based on current role permissions
-  const effectiveActiveTab: "catalog" | "audit" | "dashboards" | "governance" =
+  const effectiveActiveTab: WorkflowsTabId =
     (isClientUser && activeTab === "governance") ||
       (isClientUser && !canViewAudit && activeTab === "audit")
       ? "catalog"
@@ -273,6 +272,22 @@ export default function WorkflowsPage() {
     return products.filter((p) => allowedIds.includes(p.id));
   }, [isKpmgAdmin, products, user?.allowedProductIds]);
 
+  // Synchronize badge metrics with top navigation header
+  useEffect(() => {
+    setBadges({
+      catalogCount: visibleProducts.length,
+      auditTotal: telemetrySummary?.total,
+      dashboardCount: dashboardCount,
+    });
+  }, [visibleProducts.length, telemetrySummary?.total, dashboardCount, setBadges]);
+
+  // Auto-correct active tab if restricted under current persona/tenant
+  useEffect(() => {
+    if (effectiveActiveTab !== activeTab) {
+      setActiveTab(effectiveActiveTab);
+    }
+  }, [effectiveActiveTab, activeTab, setActiveTab]);
+
   if (isLoading) {
     return <WorkflowsSkeleton />;
   }
@@ -293,30 +308,13 @@ export default function WorkflowsPage() {
     <section className="relative min-h-[100dvh] bg-[#F8FAFC] pt-[72px] pb-20">
       <AmbientLedgerGridCanvas />
 
-      <div
-        className={`relative z-10 transition-[padding-left] duration-[240ms] ease-[cubic-bezier(0.2,0,0,1)] ${
-          isSidebarPinned ? "lg:pl-[264px]" : "lg:pl-[68px]"
-        }`}
-      >
+      <div className="relative z-10">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <h1 className="sr-only">
             {isClientUser && user.companyName
               ? `${user.companyName} Workflows Hub`
               : "KPMG CFO Advisory Workflows Hub"}
           </h1>
-
-          {/* Gemini-Inspired Hover-Expand Left Sidebar + Mobile Drawer */}
-          <WorkflowsSidebar
-            activeTab={effectiveActiveTab}
-            onSelectTab={setActiveTab}
-            productCount={visibleProducts.length}
-            canViewAudit={canViewAudit}
-            auditTotal={telemetrySummary?.total ?? 0}
-            dashboardCount={dashboardCount}
-            isKpmgAdmin={isKpmgAdmin}
-            pinned={isSidebarPinned}
-            onTogglePin={() => setIsSidebarPinned((prev) => !prev)}
-          />
 
           {/* KPMG Instant Preview Banner */}
           {isPreviewMode && (
