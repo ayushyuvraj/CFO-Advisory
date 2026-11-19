@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import {
   ArrowClockwise,
+  ArrowCounterClockwise,
   Buildings,
   Copy,
   Eye,
@@ -48,6 +49,7 @@ const EMPTY_DATASETS: LiveDatasetsPayload = {
     client_companies: [],
     client_personas: [],
     product_entitlements: [],
+    product_access_matrix: [],
   },
   restrictedDatasets: {},
   fetchedAt: new Date().toISOString(),
@@ -210,6 +212,9 @@ export function DashboardsConsole({
     }
 
     result = [...result].sort((a, b) => {
+      if (a.isInbuilt && !b.isInbuilt) return -1;
+      if (!a.isInbuilt && b.isInbuilt) return 1;
+
       if (sortBy === "title-asc") {
         return a.title.localeCompare(b.title);
       }
@@ -343,7 +348,41 @@ export function DashboardsConsole({
     }
   };
 
+  const handleResetInbuilt = async () => {
+    try {
+      const res = await fetch("/api/dashboards/reset-inbuilt", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to reset inbuilt dashboard.");
+      }
+      const data = await res.json();
+      const fresh = data.dashboard as DashboardDocument;
+      setDashboards((prev) => {
+        const filtered = prev.filter((d) => d.id !== fresh.id);
+        return [fresh, ...filtered];
+      });
+      setError(null);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to reset inbuilt dashboard."
+      );
+    }
+  };
+
   const renderVisibilityBadge = (doc: DashboardDocument) => {
+    if (doc.isInbuilt) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-xs border border-[#00338D]/40 bg-[#00338D]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#00338D]">
+          <PresentationChart size={11} weight="bold" />
+          Inbuilt Executive
+        </span>
+      );
+    }
     if (doc.ownerType === "client") {
       return (
         <span className="inline-flex items-center gap-1 rounded-xs border border-[#1E49E2]/30 bg-[#1E49E2]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#00338D]">
@@ -619,20 +658,37 @@ export function DashboardsConsole({
                       </button>
                     )}
 
-                    {/* Delete */}
-                    {editable && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteTarget(doc);
-                        }}
-                        aria-label={`Delete ${doc.title}`}
-                        title="Delete dashboard"
-                        className="flex h-7.5 w-7.5 items-center justify-center rounded-sm text-[#526075] transition-all duration-150 hover:bg-red-50 hover:text-red-700 hover:scale-110 active:scale-[0.92]"
-                      >
-                        <Trash size={16} weight="bold" />
-                      </button>
+                    {/* Reset or Delete */}
+                    {doc.isInbuilt ? (
+                      isKpmgAdmin && !isPreviewMode && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleResetInbuilt();
+                          }}
+                          aria-label={`Reset ${doc.title} to default layout`}
+                          title="Reset to default executive layout"
+                          className="flex h-7.5 w-7.5 items-center justify-center rounded-sm text-[#526075] transition-all duration-150 hover:bg-[#F4F6FA] hover:text-[#00338D] hover:scale-110 active:scale-[0.92]"
+                        >
+                          <ArrowCounterClockwise size={16} weight="bold" />
+                        </button>
+                      )
+                    ) : (
+                      editable && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget(doc);
+                          }}
+                          aria-label={`Delete ${doc.title}`}
+                          title="Delete dashboard"
+                          className="flex h-7.5 w-7.5 items-center justify-center rounded-sm text-[#526075] transition-all duration-150 hover:bg-red-50 hover:text-red-700 hover:scale-110 active:scale-[0.92]"
+                        >
+                          <Trash size={16} weight="bold" />
+                        </button>
+                      )
                     )}
 
                     {/* Primary Studio/Viewer Open Button */}

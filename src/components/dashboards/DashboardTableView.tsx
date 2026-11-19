@@ -110,7 +110,7 @@ export function DashboardTableView({
                       )}
 
                       {/* Delete */}
-                      {canManage && (
+                      {canManage && !doc.isInbuilt && (
                         <button
                           type="button"
                           onClick={() => onDelete(doc)}

@@ -3,7 +3,8 @@ export type DatasetId =
   | "registered_products"
   | "client_companies"
   | "client_personas"
-  | "product_entitlements";
+  | "product_entitlements"
+  | "product_access_matrix";
 
 export type FieldDataType = "dimension" | "measure" | "datetime" | "boolean";
 
@@ -234,6 +235,7 @@ export interface DashboardDocument {
   assignedCompanyIds: string[];
   refreshIntervalSec: 0 | 10 | 30 | 60;
   pages: DashboardPage[];
+  isInbuilt?: boolean;
   createdAt: string;
   updatedAt: string;
 }
