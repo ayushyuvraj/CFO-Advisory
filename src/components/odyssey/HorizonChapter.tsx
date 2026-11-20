@@ -1,28 +1,83 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { ArrowRight, ChartBar, ClipboardText, TrendUp } from "@phosphor-icons/react";
 import { HeroBackground } from "@/components/editorial/HeroBackground";
 import { useAuth } from "@/context/AuthContext";
 
 const FIELD_LINKS = [
-  { label: "Finance operations", anchor: "finance-operations", Icon: ChartBar },
-  { label: "Reporting & compliance", anchor: "reporting-compliance", Icon: ClipboardText },
-  { label: "Insights & optimization", anchor: "insights-optimization", Icon: TrendUp },
-];
+  {
+    label: "Finance operations",
+    anchor: "finance-operations",
+    Icon: ChartBar,
+    description: "Manage payables, reconciliation, order-to-cash, trade documentation and fixed asset accounting.",
+  },
+  {
+    label: "Reporting & compliance",
+    anchor: "reporting-compliance",
+    Icon: ClipboardText,
+    description: "Support management reporting, financial close, audit, GAAP analysis, lease accounting and tax.",
+  },
+  {
+    label: "Insights & optimization",
+    anchor: "insights-optimization",
+    Icon: TrendUp,
+    description: "Use business insights and process mining to improve workflows, optimize capital and evaluate competitor tools.",
+  },
+] as const;
+
+function HeroFieldLinks() {
+  const [activeField, setActiveField] = useState<(typeof FIELD_LINKS)[number]["anchor"]>(FIELD_LINKS[0].anchor);
+
+  return (
+    <nav aria-label="MS-F&A Fields of Play" className="mt-5 max-w-lg sm:mt-6">
+      <ul className="space-y-1">
+        {FIELD_LINKS.map(({ label, anchor, Icon, description }) => {
+          const labelId = `hero-${anchor}-label`;
+          const descriptionId = `hero-${anchor}-description`;
+
+          return (
+            <li key={anchor}>
+              <a
+                href={`#${anchor}`}
+                aria-labelledby={labelId}
+                aria-describedby={descriptionId}
+                data-active={activeField === anchor}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") setActiveField(anchor);
+                }}
+                onFocus={() => setActiveField(anchor)}
+                className="hero-field-link group grid min-h-11 grid-cols-[1.375rem_minmax(0,1fr)_1rem] items-start gap-3 rounded-sm border border-transparent px-3 py-2.5 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ice"
+              >
+                <Icon size={22} weight="light" className="mt-px text-ice" aria-hidden="true" />
+                <span>
+                  <span id={labelId} className="block font-medium leading-6">{label}</span>
+                  <span id={descriptionId} className="hero-field-description mt-1 block text-sm leading-relaxed text-white/85">{description}</span>
+                </span>
+                <ArrowRight size={16} weight="light" className="advisory-action-arrow mt-1 text-ice" aria-hidden="true" />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+      <div aria-hidden="true" className="hero-field-preview mt-3 rounded-sm border border-white/15 border-l-2 border-l-ice bg-white/5 px-4 py-3">
+        {FIELD_LINKS.map(({ anchor, description }) => (
+          <p
+            key={anchor}
+            data-active={activeField === anchor}
+            className="invisible col-start-1 row-start-1 text-sm leading-relaxed text-white/90 data-[active=true]:visible"
+          >
+            {description}
+          </p>
+        ))}
+      </div>
+    </nav>
+  );
+}
 
 export function HorizonChapter() {
-  const router = useRouter();
   const { user, openLogin } = useAuth();
-
-  const handleGatewayClick = () => {
-    if (user) {
-      router.push("/workflows");
-      return;
-    }
-    openLogin();
-  };
 
   return (
     <section id="chapter-horizon" className="pt-18">
@@ -48,30 +103,21 @@ export function HorizonChapter() {
         </div>
         <div className="relative flex min-w-0 flex-col justify-center bg-[#001B44]/25 px-5 py-8 text-white sm:px-10 sm:py-12 lg:px-[clamp(2.75rem,5vw,6rem)]">
           <div className="grid max-w-lg gap-3 sm:grid-cols-[1.15fr_1fr]">
-            <button
-              type="button"
-              onClick={handleGatewayClick}
-              className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-sm bg-white px-3.5 py-3 text-sm font-semibold text-kpmg-blue hover:bg-ice focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ice"
-            >
-              {user ? "Workflows Hub" : "Sign in to Workflows"}
-              <ArrowRight size={18} weight="light" className="advisory-action-arrow shrink-0" aria-hidden="true" />
-            </button>
+            {!user && (
+              <button
+                type="button"
+                onClick={openLogin}
+                className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-sm bg-white px-3.5 py-3 text-sm font-semibold text-kpmg-blue hover:bg-ice focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ice"
+              >
+                Sign in to Workflows
+                <ArrowRight size={18} weight="light" className="advisory-action-arrow shrink-0" aria-hidden="true" />
+              </button>
+            )}
             <a href="#fields-of-play" className="inline-flex min-h-12 items-center justify-center rounded-sm border border-white/70 px-3.5 py-3 text-sm font-semibold text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ice">
               Fields of Play
             </a>
           </div>
-          <nav aria-label="MS-F&A Fields of Play" className="mt-5 max-w-lg space-y-1 sm:mt-7">
-            {FIELD_LINKS.map(({ label, anchor, Icon }) => (
-              <a
-                key={anchor}
-                href={`#${anchor}`}
-                className="group flex min-h-11 items-center gap-3 rounded-sm py-2 text-base font-medium hover:text-ice hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ice"
-              >
-                <Icon size={22} weight="light" className="advisory-action-arrow shrink-0 text-ice" aria-hidden="true" />
-                {label}
-              </a>
-            ))}
-          </nav>
+          <HeroFieldLinks />
         </div>
       </div>
     </section>

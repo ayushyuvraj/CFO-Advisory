@@ -138,13 +138,15 @@ function EditorialNavbar({ isHome }: { isHome: boolean }) {
                   {user.name}
                 </span>
               </div>
-              <Link
-                href="/workflows"
-                className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-2 text-sm font-medium whitespace-nowrap text-white duration-150 hover:bg-[#1E49E2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
-              >
-                <SquaresFour size={16} weight="light" />
-                <span>Workflows Hub</span>
-              </Link>
+              {!isHome && (
+                <Link
+                  href="/workflows"
+                  className="inline-flex items-center gap-1.5 rounded-sm bg-[#00338D] px-3.5 py-2 text-sm font-medium whitespace-nowrap text-white duration-150 hover:bg-[#1E49E2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E49E2]"
+                >
+                  <SquaresFour size={16} weight="light" />
+                  <span>Workflows Hub</span>
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={handleSignOut}
@@ -201,14 +203,16 @@ function EditorialNavbar({ isHome }: { isHome: boolean }) {
                   <span className="font-medium text-[#0C233C]">{user.name}</span>
                   <span className="text-[#4B5563]">{user.badge}</span>
                 </div>
-                <Link
-                  href="/workflows"
-                  onClick={() => setMobileOpen(false)}
-                  className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white duration-150 hover:bg-[#1E49E2]"
-                >
-                  <SquaresFour size={16} weight="light" />
-                  <span>Workflows Hub</span>
-                </Link>
+                {!isHome && (
+                  <Link
+                    href="/workflows"
+                    onClick={() => setMobileOpen(false)}
+                    className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#00338D] px-4 py-2.5 text-sm font-medium text-white duration-150 hover:bg-[#1E49E2]"
+                  >
+                    <SquaresFour size={16} weight="light" />
+                    <span>Workflows Hub</span>
+                  </Link>
+                )}
                 <button
                   type="button"
                   onClick={handleSignOut}

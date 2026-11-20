@@ -1,20 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowUp } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
 
 export function GatewayChapter() {
-  const router = useRouter();
   const { user, openLogin } = useAuth();
-
-  const handleGateway = () => {
-    if (user) {
-      router.push("/workflows");
-      return;
-    }
-    openLogin();
-  };
 
   return (
     <section id="chapter-gateway" className="relative z-10 scroll-mt-18 px-5 py-14 sm:px-8 sm:py-20">
@@ -33,14 +23,16 @@ export function GatewayChapter() {
               Access connected finance platforms and workflows available to your engagement.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleGateway}
-            className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-sm bg-white px-5 py-3 text-sm font-semibold text-kpmg-blue hover:bg-ice focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            {user ? "Workflows Hub" : "Sign in to Workflows"}
-            <ArrowRight size={18} weight="light" className="advisory-action-arrow" aria-hidden="true" />
-          </button>
+          {!user && (
+            <button
+              type="button"
+              onClick={openLogin}
+              className="group inline-flex min-h-12 shrink-0 items-center gap-3 rounded-sm bg-white px-5 py-3 text-sm font-semibold text-kpmg-blue hover:bg-ice focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Sign in to Workflows
+              <ArrowRight size={18} weight="light" className="advisory-action-arrow" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
       <div className="mx-auto mt-5 flex max-w-[1336px] justify-end">

@@ -97,6 +97,25 @@ body {
   }
 }
 
+.hero-field-preview {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-field-description {
+    display: none;
+  }
+
+  .hero-field-preview {
+    display: grid;
+  }
+
+  .hero-field-link[data-active="true"] {
+    border-color: rgb(255 255 255 / 20%);
+    background-color: rgb(255 255 255 / 8%);
+  }
+}
+
 .editorial-nav-link {
   position: relative;
 }
