@@ -65,7 +65,7 @@ export const CHAPTERS: ChapterMeta[] = [
     code: "04",
     currencySymbol: "€",
     currencyCode: "EUR / GBP",
-    label: "EUR & GBP · Tax & Balance Sheet Tally",
+    label: "EUR & GBP · Reporting & Tax",
     shortLabel: "04 € / £",
     anchorId: "chapter-eur",
     accentHex: "#7213EA",

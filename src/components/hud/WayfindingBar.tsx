@@ -13,7 +13,6 @@ import {
 export function WayfindingBar() {
   const {
     activeChapter,
-    activeScenario,
     audioEnabled,
     toggleAudio,
     scrollToChapter,
@@ -68,19 +67,8 @@ export function WayfindingBar() {
           })}
         </nav>
 
-        {/* Right: Reconciled status + Circular loop cue + Sound toggle */}
+        {/* Right: Circular loop cue and sound toggle */}
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => scrollToChapter("chapter-eur")}
-            className="hidden items-center gap-1.5 rounded-sm border border-[#009A44]/30 bg-[#009A44]/8 px-2.5 py-1.5 font-mono text-[11px] font-medium text-[#009A44] transition-colors hover:bg-[#009A44]/14 sm:inline-flex"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-[#009A44]" />
-            <span className="tabular-nums">
-              {activeScenario.shortTag} · Δ 0.00
-            </span>
-          </button>
-
           <span
             title="Circular infinite scroll enabled"
             className="hidden items-center gap-1 rounded-sm border border-[#D8DFE9] bg-[#F4F6FA] px-2 py-1.5 font-mono text-[10px] text-[#526075] xl:inline-flex"

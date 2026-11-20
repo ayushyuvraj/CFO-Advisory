@@ -1,5 +1,6 @@
 # dependencies
 /node_modules
+/.npm-cache/
 /.pnp
 .pnp.*
 .yarn/*
@@ -23,6 +24,7 @@ yarn-error.log*
 
 # env
 .env*
+!.env.example
 
 # typescript
 *.tsbuildinfo
@@ -35,6 +37,7 @@ __pycache__/
 *.db
 *.sqlite*
 data/.session_secret
+/data/cfo_*.json
 data/*.bak
 data/*.lock
 

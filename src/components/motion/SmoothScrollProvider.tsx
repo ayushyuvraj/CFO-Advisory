@@ -8,8 +8,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useIsomorphicLayoutEffect } from "@/hooks/useIsomorphicLayoutEffect";
 import {
+  CHAPTERS,
   useEquilibriumScene,
-  type ChapterId,
 } from "@/context/EquilibriumSceneContext";
 import { audioEngine } from "@/lib/audio/ProceduralAudioEngine";
 
@@ -73,20 +73,6 @@ export function SmoothScrollProvider({
       scrollProgressRef.current = p;
       scrollVelocityRef.current = e.velocity || 0;
       audioEngine.modulateByScroll(e.velocity || 0, p);
-
-      const chapter: ChapterId =
-        p < 0.16
-          ? 1
-          : p < 0.39
-            ? 2
-            : p < 0.63
-              ? 3
-              : p < 0.84
-                ? 4
-                : p < 0.96
-                  ? 5
-                  : 1;
-      setActiveChapter(chapter);
     });
 
     const tick = (time: number) => {
@@ -106,8 +92,22 @@ export function SmoothScrollProvider({
     prefersReducedMotion,
     scrollProgressRef,
     scrollVelocityRef,
-    setActiveChapter,
   ]);
+
+  useEffect(() => {
+    if (!isInfiniteRoute) return;
+
+    const sections = [...CHAPTERS, { id: 1 as const, anchorId: "chapter-horizon-loop" }];
+    const triggers = sections.map(({ id, anchorId }) => ScrollTrigger.create({
+      trigger: `#${anchorId}`,
+      start: "top 30%",
+      end: "bottom 30%",
+      onToggle: ({ isActive }) => {
+        if (isActive) setActiveChapter(id);
+      },
+    }));
+    return () => triggers.forEach((trigger) => trigger.kill());
+  }, [isInfiniteRoute, setActiveChapter]);
 
   useIsomorphicLayoutEffect(() => {
     const isRouteTransition =

@@ -328,7 +328,6 @@ function CurrencyNotePlane({
 }
 
 function StudioKpmgGridAndMotes() {
-  const { activeScenario } = useEquilibriumScene();
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const count = 260;
 
@@ -357,7 +356,7 @@ function StudioKpmgGridAndMotes() {
   useFrame((state) => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    const t = state.clock.elapsedTime * activeScenario.particleVelocity;
+    const t = state.clock.elapsedTime;
 
     for (let i = 0; i < count; i++) {
       const m = motes[i];

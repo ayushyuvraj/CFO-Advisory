@@ -3,8 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { AuthProvider } from "@/context/AuthContext";
 import { WorkflowsNavProvider } from "@/context/WorkflowsNavContext";
-import { EquilibriumSceneProvider } from "@/context/EquilibriumSceneContext";
-import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
 import { Navbar } from "@/components/layout/Navbar";
 import { LoginModal } from "@/components/auth/LoginModal";
 import "./globals.css";
@@ -41,13 +39,9 @@ export default function RootLayout({
         <MotionConfig reducedMotion="user">
           <AuthProvider>
             <WorkflowsNavProvider>
-              <EquilibriumSceneProvider>
-                <SmoothScrollProvider>
-                  <Navbar />
-                  <main>{children}</main>
-                  <LoginModal />
-                </SmoothScrollProvider>
-              </EquilibriumSceneProvider>
+              <Navbar />
+              <main>{children}</main>
+              <LoginModal />
             </WorkflowsNavProvider>
           </AuthProvider>
         </MotionConfig>

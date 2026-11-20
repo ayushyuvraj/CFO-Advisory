@@ -25,7 +25,7 @@ const SEED_PRODUCTS: RegisteredProduct[] = [
     portFrontend: 5173,
     portBackend: 8000,
     apiKey:
-      process.env.INVOICE_P2P_API_KEY || "kpmg_sec_prod_invoice_p2p_live",
+      process.env.INVOICE_P2P_API_KEY || "",
     status: "active",
     tags: [
       "Vite :5173",

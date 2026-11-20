@@ -284,7 +284,7 @@ export function SignInCard({
         </div>
 
         <p className="mt-1 text-[13px] text-[#526075]">
-          KPMG CFO Advisory
+          Managed Services Finance &amp; Accounting
         </p>
       </div>
 

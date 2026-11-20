@@ -20,7 +20,7 @@ const SERVER_KPMG_EMAIL = (
   process.env.KPMG_LEAD_EMAIL || "kpmg.lead@kpmg.com"
 ).trim().toLowerCase();
 const SERVER_KPMG_PASSCODE =
-  process.env.KPMG_LEAD_PASSCODE || "KPMG#Lead2026!";
+  process.env.KPMG_LEAD_PASSCODE || "";
 
 export const SERVER_KPMG_PROFILE = {
   id: "usr-kpmg-lead",
@@ -91,6 +91,7 @@ export function verifyKpmgLeadCredentials(email: string, passcode: string): bool
   const cleanEmail = email.trim().toLowerCase();
   const cleanPasscode = passcode.trim();
   return (
+    SERVER_KPMG_PASSCODE.length > 0 &&
     timingSafeEqualString(cleanEmail, SERVER_KPMG_EMAIL) &&
     timingSafeEqualString(cleanPasscode, SERVER_KPMG_PASSCODE)
   );
